@@ -56,6 +56,7 @@
                 $("#local_upload_message").hide();
                 document.getElementById("thumb_img").src=data.thumb;
                 document.getElementById("png_link").href=data.png;
+                document.getElementById("tag_label").innerHTML = '<h4>Tag: <b><font color="red">' + data.tag + '</font></b> Please write down for later use</h4>';
                 document.getElementById("view_web").href='sharevol/index.html?data=' + data.json;
                 $("#local_upload_result_container").show();
                 //window.open('sharevol/index.html?data=' + data.result, target="_blank");
@@ -115,6 +116,9 @@
         <div id="local_upload_result_container">
             <div class="row">
                 <a href="#" target="_blank" id="png_link"><img id="thumb_img" src=""/></a>
+            </div>
+            <div class="row">
+                <label id="tag_label"></label>
             </div>
             <div class="row">
                 <a href="#" target="_blank" id="view_web"><h4>View vol with sharevol</h4></a>

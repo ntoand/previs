@@ -1,7 +1,5 @@
 #!/usr/bin/env python
-#process uploaded zip file
-# input: zip file
-# output: xrw volume data for LavaVu + mosaiced png for WebGL 
+#convert tiff2tga
 
 import os
 import sys
@@ -51,8 +49,8 @@ def main(argv):
     if (input_file == '' or ouput_dir == ''):
         #help()
         #return jsonError("wrong_parameters")
-        print >> sys.stderr, "not_zip_file"
-        return 1
+        print >> sys.stderr, "wrong_input_args"
+        raise NameError("wrong_input_args")
 
     list_tiff_files = []
 
@@ -73,8 +71,12 @@ def main(argv):
         print >> sys.stderr, "file_size_too_big"
         raise NameError("file_size_too_big")
 
+    """
     zfile = zipfile.ZipFile(input_file)
     zfile.extractall(ouput_dir + '/' + filename)
+    """
+    #unzip
+    subprocess.check_output(['unzip', input_file, '-d', ouput_dir + '/' + filename])
 
     # convert tif files to tga
     tga_dir = ouput_dir + '/' + filename + '_tga'
@@ -96,7 +98,6 @@ def main(argv):
     res_x = -1
     res_y = -1
 
-    DEVNULL = open(os.devnull, 'wb')
     for tiff_file in list_tiff_files:
         base=os.path.basename(tiff_file)
         

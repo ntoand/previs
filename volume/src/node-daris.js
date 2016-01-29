@@ -42,7 +42,7 @@ function convertToNifti(io, data) {
 	var result_msg = 'convert to nii ok. Now convert to xwr';
 	var dirpath = path.dirname(process.mainModule.filename) + public_data_path + data.cid;
 	if(!myutils.fileExists(dirpath + '/0001.nii')) {
-		var cmd = 'cd ' + scripts_dir + ' && sh dcm2nii --input ' + dirpath + ' --mapping DicomToNifti';
+		var cmd = 'cd ' + scripts_dir + ' && python dcm2nii.py -i ' + dirpath;
 		console.log(cmd);
 		exec(cmd, function(err, stdout, stderr) 
 	    {

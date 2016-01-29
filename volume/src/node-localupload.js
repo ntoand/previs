@@ -5,10 +5,12 @@ var fs 			= require('fs');
 var path        = require('path');
 //var dbmanager = require('./src/dbmanager.js');
 var exec 		= require('child_process').exec;
+var crypto 		= require('crypto');
 
 var myutils 	  = require('./node-utils');
 
 var tiff_data_dir = path.dirname(process.mainModule.filename) + '/public/data/tiff/';
+var info_dir = path.dirname(process.mainModule.filename) + '/public/data/info/';
 var scripts_dir = './src';
 
 function processUploadFile(io, data) {
@@ -25,7 +27,7 @@ function processUploadFile(io, data) {
 			io.emit('processuploadfile', {status: 'error', result: 'cannot_convert_to_tga', detail: stderr});
 			return;
 		}
-		io.emit('processuploadfile', {status: 'working', cid: data.cid, result: 'convert tiff to tga ok. Now convert to xrw'})
+		io.emit('processuploadfile', {status: 'working', result: 'convert tiff to tga ok. Now convert to xrw'})
 		convertToXRW(io, data);
 
     });
@@ -48,7 +50,7 @@ function convertToXRW(io, data) {
 			io.emit('processuploadfile', {status: 'error', result: 'cannot_convert_to_xrw', detail: stderr});
 			return;
 		}
-		io.emit('processuploadfile', {status: 'working', cid: data.cid, result: 'convert tga to xrw ok. Now convert to png'})
+		io.emit('processuploadfile', {status: 'working', result: 'convert tga to xrw ok. Now convert to png'})
 
 		convertToPNG(io, data);
     });
@@ -71,7 +73,7 @@ function convertToPNG(io, data) {
 			io.emit('processuploadfile', {status: 'error', result: 'cannot_convert_to_png', detail: stderr});
 			return;
 		}
-		io.emit('processuploadfile', {status: 'working', cid: data.cid, result: 'convert xrw to png ok. Now prepare json file'});
+		io.emit('processuploadfile', {status: 'working', result: 'convert xrw to png ok. Now prepare json file'});
 		sendViewDataToClient(io, data);
     });
 }
@@ -90,7 +92,7 @@ function sendViewDataToClient(io, data) {
 
 	fs.readFile(jsontemp, 'utf8', function (err, jsondata) {
 		if (err) {
-			io.emit('processuploadfile', {status: 'error', cid: data.cid, result: 'cannot_generate_json'});
+			io.emit('processuploadfile', {status: 'error', result: 'cannot_generate_json'});
 			throw err;
 		} 
 		var obj = JSON.parse(jsondata);
@@ -107,11 +109,41 @@ function sendViewDataToClient(io, data) {
 	    	//write
 			fs.writeFile( jsonfile, JSON.stringify(obj, null, 4), function(err) {
 				if (err) {
-					io.emit('processuploadfile', {status: 'error', cid: data.cid, result: 'cannot_generate_json'});
+					io.emit('processuploadfile', {status: 'error', result: 'cannot_generate_json'});
 					throw err;
 				} 
-				io.emit('processuploadfile', {status: 'done', cid: data.cid, json: jsonurl, thumb: thumburl, 
+				//generete tag for later use
+				var found = 1;
+				var tag_str = '';
+				while (found == 1){
+					tag_str = crypto.randomBytes(3).toString('hex');
+					if(!myutils.fileExists(info_dir+'/'+tag_str+'.json')) {
+						found = 0;
+					}
+				};
+				console.log(tag_str);
+
+				var tag_json = {};
+				tag_json.tag=tag_str;
+				tag_json.date=Date.now();
+				var volumes = [];
+				var volume = {};
+				volume.type='localupload';
+				volume.json=jsonurl;
+				volume.thumb=thumburl;
+				volume.png=pngurl;
+				volume.xwr=xrwurl;
+				volumes.push(volume);
+				tag_json.volumes=volumes;
+
+				fs.writeFile( info_dir+'/'+tag_str+'.json', JSON.stringify(tag_json, null, 4), function(err) {
+					if (err) {
+						io.emit('processuploadfile', {status: 'error', result: 'cannot_generate_tag_json'});
+						throw err;
+					} 
+					io.emit('processuploadfile', {status: 'done', tag: tag_str, json: jsonurl, thumb: thumburl, 
 											  png: pngurl, xwr: xrwurl});
+				});	
 			});
 	    });		
 	});
