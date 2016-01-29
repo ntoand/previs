@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+	<title>Monash MIVP Cave2 Volume Renderer</title>
+
+    <!-- Bootstrap style-->
+    <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+
+    <!-- style -->
+    <link rel="stylesheet" href="css/style.css">
+
+	<!-- jQuery library -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
+    <script src="//code.jquery.com/ui/1.11.4/jquery-ui.min.js" type="text/javascript"></script>
+    <script src="lib/jquery/jquery.cookie.js" type="text/javascript"></script>
+
+    <!-- Bootstrap-->
+    <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+
+    <!-- Include Fancytree skin and library -->
+    <link href="lib/fancytree/skin-win8/ui.fancytree.min.css" rel="stylesheet" type="text/css">
+    <script src="lib/fancytree/jquery.fancytree-all.min.js" type="text/javascript"></script>
+
+	<!-- main scripts -->
+	<script type="text/javascript">
+
+	$(document).ready(function(){
+   		$('#header').load("header.html");
+   		$('#footer').load("footer.html");
+
+        socket.on('viewdataset', function (data) {
+            console.log(data);
+            lstatus = document.getElementById(data.cid + "_status");
+            imgprocess = document.getElementById(data.cid + "_img");
+            if(data.status === 'working') {                         
+                imgprocess.style.visibility = 'visible';            
+                lstatus.style.color = 'blue';
+                lstatus.innerHTML = "Working... " + data.result;
+            }
+            else if (data.status === 'done') {
+                imgprocess.style.visibility = 'hidden';
+                console.log('done, now open new page');
+                lstatus.innerHTML = '';
+                window.open('sharevol/index.html?data=' + data.result, target="_blank");
+            }
+            else if (data.status === 'error') {
+                imgprocess.style.visibility = 'hidden';
+                lstatus.style.color = 'red';
+                lstatus.innerHTML = "Error: " + data.result;
+                alert(data.detail);
+            }
+        });
+	});
+
+    function darisTreeCreate()
+    {
+        var daris_session = $.cookie("DARIS-SESSION");
+        $("#daris_tree").fancytree(
+        { 
+            source: 
+            {
+                url: "rest/projects?sid=" + daris_session
+            },
+            // Called when a lazy node is expanded for the first time
+            lazyLoad: function(event, data){
+                var node = data.node;
+                // Load child nodes via ajax GET /getTreeData?mode=children&parent=1234
+                data.result = {
+                    url: "rest/members",
+                    data: {sid: daris_session, cid: node.key},
+                    cache: false
+                };
+            },
+            
+            checkbox: true,
+
+            postProcess: function(event, data) {
+                var orgResponse = data.response;
+
+                if( orgResponse.status === "ok" ) {
+                    data.result = orgResponse.result;
+                } else {
+                    console.log(orgResponse.result);
+                    // Signal error condition to tree loader
+                    data.result = {
+                      error: "ERROR: " + orgResponse.result
+                    }
+
+                    if(orgResponse.result === "session_invalid") {
+                        $("#daris_tree").fancytree('destroy');
+                        $("#daris_div_login").show();
+                        $("#daris_select_container").hide();
+                        $("#daris_div_logoff").hide();
+                    }
+                }
+            },
+
+            select: function(event, data) {
+                var node = data.node;
+                if(node.selected == true)
+                {
+                    var row_div = document.createElement("div");
+                    row_div.setAttribute("id", node.key);
+                    console.log(row_div);
+
+                    var x_button = document.createElement("button");
+                    x_button.innerHTML = 'X';
+                    x_button.setAttribute("id", "delete_button");
+                    x_button.onclick = function() { // Note this is a function
+                        row_div.remove();
+                        node_to_deselect = data.tree.getNodeByKey(node.key);
+                        console.log(node_to_deselect);
+                        node_to_deselect.setSelected(false);
+                    };
+
+                    var view_button = document.createElement("button");
+                    view_button.setAttribute("id", "view_button");
+                    view_button.innerHTML = 'WEB';
+                    view_button.onclick = function () {
+                        console.log('view ' + node.key);
+                        socket.emit('viewdataset', {task: "view", sid: $.cookie("DARIS-SESSION"), cid: node.key});
+
+                        var lstatus = document.getElementById(node.key + "_status");
+                        var imgprocess = document.getElementById(node.key + "_img");
+                        lstatus.style.color = "blue";
+                        lstatus.innerHTML = "Working..." ;
+                        
+                    };
+
+                    /*
+                    var cave_button = document.createElement("button");
+                    cave_button.setAttribute("id", "cave_button");
+                    cave_button.innerHTML = 'CAVE';
+                    cave_button.onclick = function () {
+                        alert("Will display this dataset on the CAVE (using LavaVR?)");
+                    };
+                    */
+
+                    var content_span = document.createElement("span");
+                    content_span.setAttribute("id", "dataset");
+                    content_span.innerHTML = node.title;
+
+                    var status_label = document.createElement("label");
+                    status_label.setAttribute("id", node.key + "_status");
+                    status_label.setAttribute("class", "status_label");
+                    status_label.innerHTML = "";
+
+                    var process_img = document.createElement("img");
+                    process_img.setAttribute("src", "data:image/gif;base64,R0lGODlhEAAQAPIAAP///wAAAMLCwkJCQgAAAGJiYoKCgpKSkiH+GkNyZWF0ZWQgd2l0aCBhamF4bG9hZC5pbmZvACH5BAAKAAAAIf8LTkVUU0NBUEUyLjADAQAAACwAAAAAEAAQAAADMwi63P4wyklrE2MIOggZnAdOmGYJRbExwroUmcG2LmDEwnHQLVsYOd2mBzkYDAdKa+dIAAAh+QQACgABACwAAAAAEAAQAAADNAi63P5OjCEgG4QMu7DmikRxQlFUYDEZIGBMRVsaqHwctXXf7WEYB4Ag1xjihkMZsiUkKhIAIfkEAAoAAgAsAAAAABAAEAAAAzYIujIjK8pByJDMlFYvBoVjHA70GU7xSUJhmKtwHPAKzLO9HMaoKwJZ7Rf8AYPDDzKpZBqfvwQAIfkEAAoAAwAsAAAAABAAEAAAAzMIumIlK8oyhpHsnFZfhYumCYUhDAQxRIdhHBGqRoKw0R8DYlJd8z0fMDgsGo/IpHI5TAAAIfkEAAoABAAsAAAAABAAEAAAAzIIunInK0rnZBTwGPNMgQwmdsNgXGJUlIWEuR5oWUIpz8pAEAMe6TwfwyYsGo/IpFKSAAAh+QQACgAFACwAAAAAEAAQAAADMwi6IMKQORfjdOe82p4wGccc4CEuQradylesojEMBgsUc2G7sDX3lQGBMLAJibufbSlKAAAh+QQACgAGACwAAAAAEAAQAAADMgi63P7wCRHZnFVdmgHu2nFwlWCI3WGc3TSWhUFGxTAUkGCbtgENBMJAEJsxgMLWzpEAACH5BAAKAAcALAAAAAAQABAAAAMyCLrc/jDKSatlQtScKdceCAjDII7HcQ4EMTCpyrCuUBjCYRgHVtqlAiB1YhiCnlsRkAAAOwAAAAAAAAAAAA==");
+                    process_img.setAttribute("id", node.key + "_img");
+                    process_img.setAttribute("class", "img_process");
+
+                    row_div.appendChild(x_button); 
+                    row_div.appendChild(view_button);
+                    row_div.appendChild(cave_button);
+                    row_div.appendChild(content_span);
+                    row_div.appendChild(process_img);
+                    row_div.appendChild(status_label);
+                    $('#datasets').append(row_div);
+                }
+                else
+                {
+                    console.log("Deselect " + node.key)
+                    var row_div = document.getElementById(node.key);
+                    console.log(row_div);
+                    if(row_div)
+                        row_div.remove();
+                }
+            }
+        });
+    }
+
+    $(function(){
+
+        var daris_session = $.cookie("DARIS-SESSION");
+        if(daris_session)
+        {
+            darisTreeCreate();
+            $("#daris_labelLogoff").text("Logged in");
+            $("#daris_div_login").hide();
+            $("#daris_div_logoff").show();
+            $("#daris_select_container").show();
+            $("#daris_loginfail").hide();
+        }
+
+        $("#daris_btnLogin").click(function(event){
+
+            if($("#daris_domain").val() == '' || $("#daris_user").val() == '' || $("#daris_password").val() == '' ) {
+                $("#daris_loginfail").text("Please input values in all fields!");
+                $("#daris_loginfail").show();
+                return;
+            }               
+        
+            var domain_str=$("#daris_domain").val()
+            var user_str=$("#daris_user").val();
+            var password_str=$("#daris_password").val();
+        
+            $.ajax({
+                url: "rest/login",
+                dataType: "json",
+                method: "POST",
+                data: { domain: domain_str, user: user_str, password: password_str },
+                statusCode: {
+                    401: function() {
+                        $("#daris_loginfail").text("Authentication failed! Please try again.");
+                        $("#daris_loginfail").show();
+                    },
+                },
+                success: function(retjson) {
+
+                    if(retjson.status === "error") {
+                        $("#daris_loginfail").text("Authentication failed! Please try again.");
+                        $("#daris_loginfail").show();
+                        return;
+                    }
+
+                    var daris_session = retjson.result;
+                    
+                    $.cookie("DARIS-SESSION", daris_session);
+
+                    darisTreeCreate();
+                    
+                    $("#daris_labelLogoff").text("Logged in");
+                    $("#daris_div_login").hide();
+                    $("#daris_div_logoff").show();
+                    $("#daris_select_container").show();
+                    $("#daris_loginfail").hide();
+                },
+            });
+        }); // end daris_btnLogin clicked
+
+        $("#daris_btnLogoff").click(function(event){
+            var daris_session = $.cookie("DARIS-SESSION");
+            $.ajax({
+                url: "rest/logoff",
+                dataType: "json",
+                data: { sid: daris_session }
+            });
+            $("#daris_tree").fancytree('destroy');
+            $("#daris_div_login").show();
+            $("#daris_select_container").hide();
+            $("#daris_div_logoff").hide();
+            $.cookie("DARIS-SESSION") = undefined;
+        }); // end daris_btnLogoff clicked
+
+        $("#btnRunOnCAVE").click(function(event){
+            alert("Under development!");
+        }); // end btnRunOnCAVE clicked
+
+    });
+
+	</script>
+
+</head>
+
+<body>
+    <div id="header"></div>
+    
+    <div class="container">
+        <h3>DaRIS</h3>
+        <div id=daris_div_login>  
+            <div class="row"> 
+            <div class="col-sm-4">    
+                <h4>DaRIS login</h4>      
+                <p><input type="text" id="daris_domain" value="mon-daris" placeholder="Domain" class="form-control"></p>
+                <p><input type="text" id="daris_user" value="dev" placeholder="User" class="form-control"></p>
+                <p><input type="password" id="daris_password" value="dev123" placeholder="Password" class="form-control"></p 
+                <p><label id=daris_loginfail>Authentication failed! Please try again.</label></p>
+                <button type="button" id="daris_btnLogin" class="btn btn-default">Login</button>
+            </div>
+            </div>
+        </div>
+        <div id=daris_div_logoff>
+            <label id=daris_labelLogoff>Logged in!</label>
+            <button type="button" id="daris_btnLogoff">Logoff</button>
+        </div>
+
+
+        <div id=daris_select_container>
+
+            <ul class="nav nav-tabs">
+                <li class="active"><a data-toggle="tab" href="#daris_tree_tab">Tree</a></li>
+                <li><a data-toggle="tab" href="#daris_search_tab">Search</a></li>
+            </ul>
+
+            <div class="tab-content">
+                <div id="daris_tree_tab" class="tab-pane fade in active">
+                    <div id=daris_div_tree>
+                        <div id=daris_tree></div>
+                    </div>
+                </div>
+                <div id="daris_search_tab" class="tab-pane fade">
+                    <h4>DaRIS search</h4>
+                    <p>Select datasets using DaRIS query</p>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="container">
+        <h3>Selected datasets</h3>
+        <div id="datasets_container">
+            <div id="datasets"></div>
+            <!--
+            <div><button type="button" id="btnRunOnCAVE" class="btn btn-default">Show all on CAVE</button></div>
+            -->
+        </div>
+    </div>
+
+	<div id="footer"></div>
+
+    <!-- socket.io -->
+    <script src="https://cdn.socket.io/socket.io-1.4.3.js"></script>
+    <script>
+      var socket = io();
+    </script>
+</body>
