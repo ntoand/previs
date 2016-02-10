@@ -13,6 +13,7 @@ var app 		  = require('express')();
 var http 		  = require('http').Server(app);
 var io 			  = require('socket.io')(http);
 var formidable 	  = require('formidable')
+var bodyParser = require('body-parser');
 
 var myutils	      = require('./src/node-utils');
 var mydaris		  = require('./src/node-daris');
@@ -23,6 +24,8 @@ var scripts_dir = './src';
 var tiff_data_dir = './public/data/tiff/';
 
 app.use(express.static('public'));
+app.use(bodyParser.json()); // support json encoded bodies
+app.use(bodyParser.urlencoded({ extended: true })); // support encoded bodies
 
 //app.listen(3000, function () {
 http.listen(3000, function(){
@@ -67,12 +70,13 @@ app.post('/localupload', function (req, res) {
 
 // ===== DARIS SELECT  =======
 app.post('/rest/login', function (req, res) {
-	var domain = req.query.domain;
-	var user = req.query.user;
-	var password = req.query.password;
-	console.log(domain + user + password);
 
-	var cmd = 'cd ' + scripts_dir + ' && python run_daris.py -t logon';
+	var domain = req.body.domain;
+	var user = req.body.user;
+	var password = req.body.password;
+	//console.log(domain + ' ' + user + ' ' + password);
+
+	var cmd = 'cd ' + scripts_dir + ' && python run_daris.py -t logon -a ' + domain + '/' + user + '/' + password;
     console.log(cmd);
     exec(cmd, function(err, stdout, stderr) 
     {

@@ -1,4 +1,5 @@
 import os
+import sys
 import DarisUtils as daris
 from lxml import etree
 import json
@@ -7,17 +8,18 @@ class DarisServices:
 	"""
 	Provide DaRIS DarisServices
 	"""
-	def __init__(self, server, port, domain, username, password):
+	def __init__(self, server, port):
 		self.server = server
 		self.port = port
-		self.domain = domain
-		self.username = username
-		self.password = password
 		daris.DarisUtils.init(server, port)
 
-	def connect(self):
+	def connect(self, args):
 		#print self.server + " " + str(self.port) + " " + self.domain + " " + self.username + " " +  self.password
-		ret = daris.DarisUtils.daris_logon(self.server, self.port, self.domain, self.username, self.password)
+		v = args.split('/')
+		#print >> sys.stderr, v
+		if(len(v) != 3):
+			return self.jsonError('Wrong argument string')
+		ret = daris.DarisUtils.daris_logon(self.server, self.port, v[0], v[1], v[2])
 		if(ret == -1):
 			return self.jsonError("authentication_failure")
 		json_ret = {}

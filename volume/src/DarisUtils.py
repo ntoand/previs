@@ -29,7 +29,7 @@ class DarisUtils:
         return base_command
     
     @staticmethod
-    def daris_logon(server, port, domain, user, passwod):
+    def daris_logon(server, port, domain, user, password):
         """
         DaRIS logon
         """
@@ -38,7 +38,7 @@ class DarisUtils:
         DarisUtils.mfsid = ''
         base_command = DarisUtils.buildbasecomnand()
         try:
-            MFLUX_SID = subprocess.check_output(base_command + ['logon', domain, user, passwod])
+            MFLUX_SID = subprocess.check_output(base_command + ['logon', domain, user, password])
             DarisUtils.mfsid = MFLUX_SID.strip()
         except subprocess.CalledProcessError as e:
             print >> sys.stderr, "Error: " + str(e.returncode) + " Output:" + e.output.decode()

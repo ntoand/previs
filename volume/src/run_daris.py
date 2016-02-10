@@ -8,15 +8,15 @@ daris_server = 'mf-erc'
 if(daris_server == 'mf-erc'):
     server = 'mf-erc.its.monash.edu'
     port = 8443
-    domain = 'mon-daris'
-    user = 'dev'
-    passwd = 'dev123'
+    #domain = 'mon-daris'
+    #user = 'dev'
+    #passwd = 'dev123'
 else:
     server = 'titanium.cave.monash.edu'
     port = 8085
-    domain = 'mivp'
-    user = 'toand'
-    passwd = 'test123'
+    #domain = 'mivp'
+    #user = 'toand'
+    #passwd = 'test123'
 
 def main(argv):
     try:
@@ -38,13 +38,13 @@ def main(argv):
             sid = arg
         elif opt in ("-c", "--cid"):
             cid = arg
-        elif opt in ("-a", "---args"):
+        elif opt in ("-a", "--args"):
             args = arg
 
-    serv = dis.DarisServices(server, port, domain, user, passwd)
+    serv = dis.DarisServices(server, port)
     if(task == 'logon'):
         #print '\nConnect to DaRIS'
-        print serv.connect()
+        print serv.connect(args)
 
     if(task == 'logoff'):
         print serv.disconnect(sid)
