@@ -192,3 +192,55 @@ class DarisServices:
 		json_ret['status'] = 'ok'
 		json_ret['result'] = args
 		return json.dumps(json_ret)
+
+	def search(self, sid, cid, args):
+		"""
+		search dataset given cid and keyword
+		"""
+		query = "asset.query :where \"cid starts with '" + cid + \
+				"' and mf-dicom-series has value and mtext contains literal ('" + args + \
+				"')\" :action get-meta :size infinity"
+
+		xmlstr = daris.DarisUtils.daris_runcommand(query, sid)
+		if (xmlstr == -1):
+			return self.jsonError('session_invalid') 
+		xmlstr = xmlstr.replace("daris:pssd-object","pssd-object")
+
+		#print xmlstr
+		members=[]
+		try:
+			doc = etree.XML(xmlstr.strip())
+			elements = doc.xpath('/result/asset')
+			for ele in elements:
+				member={}
+				member['type'] = ele.xpath('meta/pssd-object/type')[0].text
+				member['cid'] = ele.xpath('cid')[0].text
+				name = ele.xpath("meta/pssd-object/name")
+				if (name):
+					member['name'] = name[0].text
+				else:
+					member['name']=''
+				description = ele.xpath('meta/pssd-object/description')
+				if (description):
+					member['description'] = description[0].text
+				else:
+					member['description'] = ''   
+				datatype=ele.xpath('type')
+				if(datatype):
+					member['datatype']=datatype[0].text
+				else: 
+					member['datatype']=''
+				datasize=ele.xpath('content/size/@h')   
+				if(datasize):
+					member['datasize']=datasize[0]
+				else: 
+					member['datasize']=''      
+				members.append(member)
+		except etree.XMLSyntaxError:
+			print >> sys.stderr, 'XML parsing error' 
+			return self.jsonError('XML_parsing_error')
+            
+		json_ret = {}
+		json_ret['status'] = 'ok'
+		json_ret['result'] = members
+		return json.dumps(json_ret)

@@ -82,6 +82,14 @@ div#daris_div_tree {
 	width: 100%;
 }
 
+div#daris_div_search {
+	overflow-x: auto;
+    overflow-y: auto;
+    min-height: 200px;
+	max-height: 400px;
+	width: 100%;
+}
+
 div#daris_loading_status {
 	font-size: 13px;
 	float:left;

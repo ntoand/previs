@@ -162,4 +162,23 @@ function sendViewDataToClient(io, data) {
 	});
 }
 
+
+function searchDataset(io, data) {
+
+	var cmd = 'cd ' + scripts_dir + ' && python run_daris.py -t search -s ' + data.sid + ' -c ' + data.cid + ' -a ' + data.keyword;
+	console.log(cmd);
+	exec(cmd, function(err, stdout, stderr) 
+    {
+    	console.log(stdout);
+    	console.log(stderr);
+    	if(err)
+		{
+			io.emit('searchdataset', {status: 'error', result: 'cannot_search_dataset', detail: stderr});
+			return;
+		}
+		io.emit('searchdataset', {status: 'done', result: stdout})
+    });
+}
+
 module.exports.downloadData = downloadData;
+module.exports.searchDataset = searchDataset;

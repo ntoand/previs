@@ -248,6 +248,19 @@
             $.cookie("DARIS-SESSION") = undefined;
         }); // end daris_btnLogoff clicked
 
+        // ===== DARIS SEARCH =====
+        $("#daris_btnSearch").click(function(event){
+            if($("#daris_search_cid").val() == '' && $("#daris_search_keyword").val() == '') {
+                alert("Please input your query");
+                return;
+            } 
+            var daris_search_cid = $("#daris_search_cid").val();
+            var daris_search_keyword = $("#daris_search_keyword").val();
+            socket.emit('searchdataset', {task: "searchdataset", sid: $.cookie("DARIS-SESSION"), 
+                                          cid: daris_search_cid, keyword: daris_search_keyword });
+
+        }); // end daris_btnSearch clicked
+
         $("#btnGenerateCAVE2Data").click(function(event){
             alert("Will process and datasets and provide user a tag number");
         }); // end btnRunOnCAVE clicked
@@ -295,8 +308,25 @@
                     </div>
                 </div>
                 <div id="daris_search_tab" class="tab-pane fade">
+                    
                     <h4>DaRIS search</h4>
                     <p>Select datasets using DaRIS query</p>
+                    <form class="form-inline" role="form">
+                        <div class="form-group">
+                            <label>Starts with cid: </label>
+                            <input id="daris_search_cid" type="text" placeholder="1008.2.5" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label>Keyword:</label>
+                            <input id="daris_search_keyword" type="text" placeholder="ep2d_diff" class="form-control">
+                        </div>
+                        <button type="button" id="daris_btnSearch" class="btn btn-default"><span class="glyphicon glyphicon-search"></span> Search</button>
+                    </form>
+                  
+                    <div id=daris_div_search>
+
+                        
+                    </div>
                 </div>
             </div>
 

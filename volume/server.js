@@ -176,5 +176,10 @@ io.on('connection', function (socket) {
   		console.log(data);
   		mylocalupload.processUploadFile(io, data);
   	});
+
+  	socket.on('searchdataset', function(data) {
+  		console.log(data);
+  		mydaris.searchDataset(io, data);
+  	});
 });
 

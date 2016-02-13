@@ -63,6 +63,9 @@ def main(argv):
     elif (task == 'download'):
         print serv.download(sid, cid, args)
 
+    elif (task == 'search'):
+        print serv.search(sid, cid, args)
+
 # MAIN FUNCTION
 if __name__ == "__main__":
     main(sys.argv[1:])
