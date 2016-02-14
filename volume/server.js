@@ -2,35 +2,33 @@
 'use strict';
 
 // node: built-in
-var fs            = require('fs');               // filesystem access
-var os            = require('os');               // operating system access
-var path          = require('path');             // file path management
-var readline      = require('readline');         // to build an evaluation loop
-var url           = require('url');              // parses urls
-var exec          = require('child_process').exec;
-var express       = require('express');
-var app 		  = require('express')();
-var http 		  = require('http').Server(app);
-var io 			  = require('socket.io')(http);
-var formidable 	  = require('formidable')
-var bodyParser = require('body-parser');
+var http 		  = require('http');
+var socketio 	  = require('socket.io');
+var express 	  = require('express');
 
-var myutils	      = require('./src/node-utils');
+var path          = require('path');
+var exec          = require('child_process').exec;
+var formidable 	  = require('formidable');
+var bodyParser 	  = require('body-parser');
+
+var config 		  = require('./src/node-config').config;
 var mydaris		  = require('./src/node-daris');
 var mylocalupload = require('./src/node-localupload');
 
 // ===== INITIALISATION ======
-var scripts_dir = './src';
-var tiff_data_dir = './public/data/tiff/';
+var app = express();
+var server = http.createServer(app);
+var io = socketio.listen(server);
 
-app.use(express.static('public'));
+app.use(express.static(path.resolve(__dirname, config.public_dir)));
 app.use(bodyParser.json()); // support json encoded bodies
 app.use(bodyParser.urlencoded({ extended: true })); // support encoded bodies
 
-//app.listen(3000, function () {
-http.listen(3000, function(){
-	console.log('Listening on port 3000!');
+server.listen(process.env.PORT || config.port, process.env.IP || "0.0.0.0", function(){
+	var addr = server.address();
+  	console.log("previs server listening at", addr.address + ":" + addr.port);
 });
+
 
 // ===== REST SERVICES =======
 // ===== LOCAL UPLOAD  =======
@@ -41,7 +39,7 @@ app.post('/localupload', function (req, res) {
 		files = [],
 	  	fields = [];
 
-	  	form.uploadDir = tiff_data_dir;
+	  	form.uploadDir = config.tiff_data_dir;
 	  	form.encoding = 'utf-8';
 	  	form.multiples = false;
 	  	form.keepExtensions = true;
@@ -76,7 +74,7 @@ app.post('/rest/login', function (req, res) {
 	var password = req.body.password;
 	//console.log(domain + ' ' + user + ' ' + password);
 
-	var cmd = 'cd ' + scripts_dir + ' && python run_daris.py -t logon -a ' + domain + '/' + user + '/' + password;
+	var cmd = 'cd ' + config.scripts_dir + ' && python run_daris.py -t logon -a ' + domain + '/' + user + '/' + password;
     console.log(cmd);
     exec(cmd, function(err, stdout, stderr) 
     {
@@ -97,7 +95,7 @@ app.post('/rest/login', function (req, res) {
 app.get('/rest/logoff', function (req, res) {
 	var sid = req.query.sid;
 
-	var cmd = 'cd ' + scripts_dir + ' && python run_daris.py -t logoff -s' + sid;
+	var cmd = 'cd ' + config.scripts_dir + ' && python run_daris.py -t logoff -s' + sid;
     console.log(cmd);
     exec(cmd, function(err, stdout, stderr) 
     {
@@ -118,7 +116,7 @@ app.get('/rest/logoff', function (req, res) {
 app.get('/rest/projects', function (req, res) {
 	var sid = req.query.sid;
 
-	var cmd = 'cd ' + scripts_dir + ' && python run_daris.py -t projects -s ' + sid;
+	var cmd = 'cd ' + config.scripts_dir + ' && python run_daris.py -t projects -s ' + sid;
     console.log(cmd);
     exec(cmd, function(err, stdout, stderr) 
     {
@@ -141,7 +139,7 @@ app.get('/rest/members', function (req, res) {
 	var sid = req.query.sid;
 	console.log(cid);
 
-	var cmd = 'cd ' + scripts_dir + ' && python run_daris.py -t members -s ' + sid + ' -c ' + cid;
+	var cmd = 'cd ' + config.scripts_dir + ' && python run_daris.py -t members -s ' + sid + ' -c ' + cid;
     console.log(cmd);
     exec(cmd, function(err, stdout, stderr) 
     {

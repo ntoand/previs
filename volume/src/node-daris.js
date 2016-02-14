@@ -1,21 +1,19 @@
 // require variables to be declared
 'use strict';
 
-var fs 			  = require('fs');
-var path          = require('path');
-var exec          = require('child_process').exec;
+var fs 			= require('fs');
+var path        = require('path');
+var exec        = require('child_process').exec;
 
-var myutils 	  = require('./node-utils');
-
-var public_data_path = '/public/data/daris/';
-var scripts_dir = './src';
+var myutils 	= require('./node-utils');
+var config		= require('./node-config').config;  
 
 function downloadData(io, data){
 	//console.log('downloadData: ' + data);
 	var result_msg = 'download ok. Now convert to nifti';
-	var compdicomfile = path.dirname(process.mainModule.filename) + public_data_path + data.cid + '.zip';
+	var compdicomfile = config.daris_data_dir + data.cid + '.zip';
 	if(!myutils.fileExists(compdicomfile)) {
-		var cmd = 'cd ' + scripts_dir + ' && python run_daris.py -t download -s ' + data.sid + ' -c ' + data.cid + ' -a ' + compdicomfile;
+		var cmd = 'cd ' + config.scripts_dir + ' && python run_daris.py -t download -s ' + data.sid + ' -c ' + data.cid + ' -a ' + compdicomfile;
 		console.log(cmd);
 		exec(cmd, function(err, stdout, stderr) 
 	    {
@@ -40,9 +38,9 @@ function downloadData(io, data){
 
 function convertToNifti(io, data) {
 	var result_msg = 'convert to nii ok. Now convert to xwr';
-	var dirpath = path.dirname(process.mainModule.filename) + public_data_path + data.cid;
+	var dirpath = config.daris_data_dir + data.cid;
 	if(!myutils.fileExists(dirpath + '/0001.nii')) {
-		var cmd = 'cd ' + scripts_dir + ' && python dcm2nii.py -i ' + dirpath;
+		var cmd = 'cd ' + config.scripts_dir + ' && python dcm2nii.py -i ' + dirpath;
 		console.log(cmd);
 		exec(cmd, function(err, stdout, stderr) 
 	    {
@@ -66,7 +64,7 @@ function convertToNifti(io, data) {
 
 function convertToXRW(io, data) {
 	var result_msg = 'convert to xrw ok. Now convert to png';
-	var dirpath = path.dirname(process.mainModule.filename) + public_data_path + data.cid;
+	var dirpath = config.daris_data_dir + data.cid;
 	var niifile = dirpath + '/0001.nii';
 	var xrwfile = dirpath + '/0001.xrw';
 	if(!myutils.fileExists(xrwfile)) {
@@ -99,7 +97,7 @@ function convertToXRW(io, data) {
 
 function convertToPng(io, data) {
 	var result_msg = 'convert to png ok. Now prepare json file';
-	var dirpath = path.dirname(process.mainModule.filename) + public_data_path + data.cid;
+	var dirpath = config.daris_data_dir + data.cid;
 	var xrwfile = dirpath + '/0001.xrw';
 	var pngfile = dirpath + '/0001.png';
 
@@ -127,7 +125,7 @@ function convertToPng(io, data) {
 }
 
 function sendViewDataToClient(io, data) {
-	var dirpath = path.dirname(process.mainModule.filename) + public_data_path + data.cid;
+	var dirpath = config.daris_data_dir + data.cid;
 	var xrwfile = dirpath + '/0001.xrw';
 	var pngfile = dirpath + '/0001.png';
 	var jsonfile = dirpath + '/0001.json';
@@ -145,6 +143,11 @@ function sendViewDataToClient(io, data) {
 		var cmd = 'xrwinfo ' + xrwfile + ' | grep dimensions';
 		exec(cmd, function(err, stdout, stderr) 
 	    {
+    		if (err) {
+				io.emit('viewdataset', {status: 'error', cid: data.cid, result: 'cannot_run_xrwinfo'});
+				throw err;
+			} 
+				
 	    	stdout = myutils.trim(stdout).trim();
 	    	var res = stdout.split(" ");
 
@@ -165,7 +168,7 @@ function sendViewDataToClient(io, data) {
 
 function searchDataset(io, data) {
 
-	var cmd = 'cd ' + scripts_dir + ' && python run_daris.py -t search -s ' + data.sid + ' -c ' + data.cid + ' -a ' + data.keyword;
+	var cmd = 'cd ' + config.scripts_dir + ' && python run_daris.py -t search -s ' + data.sid + ' -c ' + data.cid + ' -a ' + data.keyword;
 	console.log(cmd);
 	exec(cmd, function(err, stdout, stderr) 
     {
