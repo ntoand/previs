@@ -77,16 +77,13 @@ div#daris_div_logoff {
 div#daris_div_tree {
 	overflow-x: auto;
     overflow-y: auto;
-    min-height: 200px;
+    min-height: 250px;
 	max-height: 400px;
 	width: 100%;
 }
 
 div#daris_div_search {
-	overflow-x: auto;
-    overflow-y: auto;
-    min-height: 200px;
-	max-height: 400px;
+	min-height: 250px;
 	width: 100%;
 }
 

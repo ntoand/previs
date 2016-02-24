@@ -17,19 +17,125 @@
     <!-- fancytree style -->
     <link href="lib/fancytree/skin-win8/ui.fancytree.min.css" rel="stylesheet" type="text/css">
     
-     <!-- jQuery library -->
+    <!-- jqgrid with boottrap -->
+    <link rel="stylesheet" type="text/css" media="screen" href="lib/jqgrid/css/ui.jqgrid-bootstrap.css" />
+
+</head>
+
+<body>
+    <div id="header"></div>
+    
+    <div class="container">
+        <h3>DaRIS</h3>
+        <div id=daris_div_login>  
+            <div class="row"> 
+            <div class="col-sm-4">    
+                <h4>DaRIS login</h4>      
+                <p><input type="text" id="daris_domain" value="mon-daris" placeholder="Domain" class="form-control"></p>
+                <p><input type="text" id="daris_user" value="dev" placeholder="User" class="form-control"></p>
+                <p><input type="password" id="daris_password" value="dev123" placeholder="Password" class="form-control"></p 
+                <p><label id=daris_loginfail>Authentication failed! Please try again.</label></p>
+                <button type="button" id="daris_btnLogin" class="btn btn-default">Login</button>
+            </div>
+            </div>
+        </div>
+        <div id=daris_div_logoff>
+            <label id=daris_labelLogoff>Logged in!</label>
+            <button type="button" id="daris_btnLogoff">Logoff</button>
+        </div>
+
+
+        <div id=daris_select_container>
+
+            <ul class="nav nav-tabs">
+                <li class="active"><a data-toggle="tab" href="#daris_tree_tab">Tree</a></li>
+                <li><a data-toggle="tab" href="#daris_search_tab">Search</a></li>
+            </ul>
+
+            <div class="tab-content">
+                <div id="daris_tree_tab" class="tab-pane fade in active">
+                    <div id=daris_div_tree>
+                        <div id=daris_tree></div>
+                    </div>
+                </div>
+                <div id="daris_search_tab" class="tab-pane fade">
+                    
+                    <h4>DaRIS search</h4>
+                    <p>Select datasets using DaRIS query</p>
+                    <form class="form-inline" role="form">
+                        <div class="form-group">
+                            <label>Starts with cid: </label>
+                            <input id="daris_search_cid" type="text" placeholder="1008.2.5" value="1008.2.5.1" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label>Keyword:</label>
+                            <input id="daris_search_keyword" type="text" placeholder="ep2d_diff" value="ep2d_diff" class="form-control">
+                        </div>
+                        <button type="button" id="daris_btnSearch" class="btn btn-default"><span class="glyphicon glyphicon-search"></span> Search</button>
+                    </form>
+                  
+                    <div id=daris_div_search>
+                        <h4>Datasets</h4>
+                        <table id="jqGrid_search"></table>
+                        <div id="jqGridPager_search"></div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="container">
+        <h3>Selected datasets</h3>
+        <div id="datasets_container">
+            <div id="datasets"></div>
+            <p></p>
+            <div><button type="button" id="btnGenerateCAVE2Data" class="btn btn-default">Generate CAVE2 data</button></div>
+        </div>
+    </div>
+
+	<div id="footer"></div>
+
+    <!-- SCRIPT -->
+    <!-- jQuery library -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
     <script src="//code.jquery.com/ui/1.11.4/jquery-ui.min.js" type="text/javascript"></script>
     <script src="lib/jquery/jquery.cookie.js" type="text/javascript"></script>
-
-	<!-- main scripts -->
-	<script type="text/javascript">
-
-	$(document).ready(function(){
-   		$('#header').load("header.html");
+    <!-- Bootstrap-->
+    <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+    <!-- fancy tree -->
+    <script src="lib/fancytree/jquery.fancytree-all.min.js" type="text/javascript"></script>
+    <!-- jqgrid -->
+    <script type="text/ecmascript" src="lib/jqgrid/js/i18n/grid.locale-en.js"></script>
+    <script type="text/ecmascript" src="lib/jqgrid/js/jquery.jqGrid.min.js"></script>
+    <!-- socket.io -->
+    <script src="https://cdn.socket.io/socket.io-1.4.3.js"></script>
+    
+    <script>
+        $('#header').load("header.html");
    		$('#footer').load("footer.html");
    		
+   		//init
+   		//$.jgrid.defaults.width = 780;
+		$.jgrid.defaults.responsive = true;
+		$.jgrid.defaults.styleUI = 'Bootstrap';
+   		
+   		//implement
    		var socket = io();
+   		
+   		//
+		var saved_datasets = [];
+   		
+   		var getColumnIndexByName = function (grid, columnName) {
+            var cm = grid.jqGrid('getGridParam', 'colModel'), i, l;
+            for (i = 0, l = cm.length; i < l; i += 1) {
+                if (cm[i].name === columnName) {
+                    return i; // return the index
+                }
+            }
+            return -1;
+        };
    		
         socket.on('viewdataset', function (data) {
             console.log(data);
@@ -51,6 +157,49 @@
                 lstatus.style.color = 'red';
                 lstatus.innerHTML = "Error: " + data.result;
                 alert(data.detail);
+            }
+        });
+        
+        socket.on('searchdataset', function(data) {
+           if (data.status === 'error') {
+               alert("Error");
+           }
+           else if (data.status === 'done') {
+               console.log(data.result);
+               var resultdata = $.parseJSON(data.result);
+               $("#jqGrid_search").jqGrid({
+                    datatype: "local",
+    				data: resultdata,
+                    height: 300,
+                    colModel: [
+                        //checkbox
+                        {
+                            name: 'enbl', index: 'enbl', width: 60, align: 'center',
+                            formatter: 'checkbox', editoptions: { value: '1:0' },
+                            formatoptions: { disabled: false },
+                        },
+                        { label: 'cid', name: 'cid', width: 140, key:true },
+                        { label: 'Name', name: 'name', width: 400 },
+                        { label: 'Description', name: 'description', width: 400 },
+                        { label: 'Size', name: 'datasize', width: 80 },
+                    ],
+                    viewrecords: true, // show the current page, data rang and total records on the toolbar
+                    caption: "Load jqGrid through Javascript Array",
+                    pager: "#jqGridPager_search",
+                    rowNum: 20,
+                    loadComplete: function () {
+                        var iCol = getColumnIndexByName($(this), 'enbl'), rows = this.rows, i, c = rows.length;
+                        for (i = 0; i < c; i += 1) {
+                            $(rows[i].cells[iCol]).click(function (e) {
+                                var id = $(e.target).closest('tr')[0].id, isChecked = $(e.target).is(':checked');
+                                var desc = $("#jqGrid_search").jqGrid ('getCell', id, 'name') + ' ('
+                                            +  $("#jqGrid_search").jqGrid ('getCell', id, 'datasize') + ')';
+                                saved_datasets.push({cid: id, title: desc});
+                                console.log(saved_datasets);
+                            });
+                        }
+                    }
+                });
             }
         });
         
@@ -255,99 +404,13 @@
             var daris_search_keyword = $("#daris_search_keyword").val();
             socket.emit('searchdataset', {task: "searchdataset", sid: $.cookie("DARIS-SESSION"), 
                                           cid: daris_search_cid, keyword: daris_search_keyword });
-
+                                          
         }); // end daris_btnSearch clicked
 
         $("#btnGenerateCAVE2Data").click(function(event){
-            alert("Will process and datasets and provide user a tag number");
+            alert("btnGenerateCAVE2Data clicked");
         }); // end btnRunOnCAVE clicked
-
-	});
-
-	</script>
-
-</head>
-
-<body>
-    <div id="header"></div>
-    
-    <div class="container">
-        <h3>DaRIS</h3>
-        <div id=daris_div_login>  
-            <div class="row"> 
-            <div class="col-sm-4">    
-                <h4>DaRIS login</h4>      
-                <p><input type="text" id="daris_domain" value="mon-daris" placeholder="Domain" class="form-control"></p>
-                <p><input type="text" id="daris_user" value="dev" placeholder="User" class="form-control"></p>
-                <p><input type="password" id="daris_password" value="dev123" placeholder="Password" class="form-control"></p 
-                <p><label id=daris_loginfail>Authentication failed! Please try again.</label></p>
-                <button type="button" id="daris_btnLogin" class="btn btn-default">Login</button>
-            </div>
-            </div>
-        </div>
-        <div id=daris_div_logoff>
-            <label id=daris_labelLogoff>Logged in!</label>
-            <button type="button" id="daris_btnLogoff">Logoff</button>
-        </div>
-
-
-        <div id=daris_select_container>
-
-            <ul class="nav nav-tabs">
-                <li class="active"><a data-toggle="tab" href="#daris_tree_tab">Tree</a></li>
-                <li><a data-toggle="tab" href="#daris_search_tab">Search</a></li>
-            </ul>
-
-            <div class="tab-content">
-                <div id="daris_tree_tab" class="tab-pane fade in active">
-                    <div id=daris_div_tree>
-                        <div id=daris_tree></div>
-                    </div>
-                </div>
-                <div id="daris_search_tab" class="tab-pane fade">
-                    
-                    <h4>DaRIS search</h4>
-                    <p>Select datasets using DaRIS query</p>
-                    <form class="form-inline" role="form">
-                        <div class="form-group">
-                            <label>Starts with cid: </label>
-                            <input id="daris_search_cid" type="text" placeholder="1008.2.5" class="form-control">
-                        </div>
-                        <div class="form-group">
-                            <label>Keyword:</label>
-                            <input id="daris_search_keyword" type="text" placeholder="ep2d_diff" class="form-control">
-                        </div>
-                        <button type="button" id="daris_btnSearch" class="btn btn-default"><span class="glyphicon glyphicon-search"></span> Search</button>
-                    </form>
-                  
-                    <div id=daris_div_search>
-
-                        
-                    </div>
-                </div>
-            </div>
-
-        </div>
-
-    </div>
-
-    <div class="container">
-        <h3>Selected datasets</h3>
-        <div id="datasets_container">
-            <div id="datasets"></div>
-            <p></p>
-            <div><button type="button" id="btnGenerateCAVE2Data" class="btn btn-default">Generate CAVE2 data</button></div>
-        </div>
-    </div>
-
-	<div id="footer"></div>
-
-
-    <!-- Bootstrap-->
-    <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
-    <!-- fancy tree -->
-    <script src="lib/fancytree/jquery.fancytree-all.min.js" type="text/javascript"></script>
-    <!-- socket.io -->
-    <script src="https://cdn.socket.io/socket.io-1.4.3.js"></script>
+        
+    </script>
     
 </body>

@@ -240,7 +240,4 @@ class DarisServices:
 			print >> sys.stderr, 'XML parsing error' 
 			return self.jsonError('XML_parsing_error')
             
-		json_ret = {}
-		json_ret['status'] = 'ok'
-		json_ret['result'] = members
-		return json.dumps(json_ret)
+		return json.dumps(members)
