@@ -136,7 +136,243 @@
             }
             return -1;
         };
+        
+        // find if dataset is in saved_datatsets
+        function findDataset(id) {
+            for (var i=0; i < saved_datasets.length; i++) {
+                if( saved_datasets[i].cid == id)
+                    return i;
+            }
+            return -1;
+        }
+        
+        // called when user clicks on checkbox of tree/grid
+        function processClickDataset(id, desc, isChecked) {
+            if(isChecked) {
+                if (findDataset(id) == -1) {
+                    saved_datasets.push({cid: id, title: desc}); //using unshift to add to the front
+                }
+            }
+            else {
+                var ind = findDataset(id);
+                if (ind != -1) {
+                    saved_datasets.splice(ind, 1);
+                    
+                    // uncheck tree item
+                    var tree = $("#daris_tree").fancytree("getTree");
+                    var node_to_deselect = tree.getNodeByKey(id);
+                    if(node_to_deselect)
+                        node_to_deselect.setSelected(false);
+                 
+                    // uncheck jsgrid
+                    $("#jqGrid_search").find('input[type=checkbox]').each(function() {
+                        if( $(this).is(':checked')) {
+                            var thisrowcid = $(this).closest('tr')[0].id;
+                            if(thisrowcid == id) {
+                                $(this).prop("checked", false);
+                            }
+                        }
+                    });
+                }
+            }
+            displaySelectedDatasets();
+        }
+        
+        // display selected datasets
+        function displaySelectedDatasets (){
+            
+            $("#datasets").html("");
+            
+            for (var i = 0; i < saved_datasets.length; i++) {
+                var row_div = document.createElement("div");
+                row_div.setAttribute("id", saved_datasets[i].cid + "_SEL");
+                
+                var x_button = document.createElement("button");
+                x_button.innerHTML = 'X';
+                x_button.setAttribute("id", "delete_button");
+                x_button.onclick = function() {
+                    var rowcid = $(this).parent().prop('id');
+                    rowcid = rowcid.substr(0, rowcid.length - 4);
+                    
+                    // remote the item from save_datasets
+                    saved_datasets.splice(findDataset(rowcid), 1);
+                    
+                    // remove row
+                    document.getElementById(rowcid+"_SEL").remove();
+                 
+                    // uncheck tree item
+                    var tree = $("#daris_tree").fancytree("getTree");
+                    var node_to_deselect = tree.getNodeByKey(rowcid);
+                    if(node_to_deselect)
+                        node_to_deselect.setSelected(false);
+                 
+                    // uncheck jsgrid
+                    $("#jqGrid_search").find('input[type=checkbox]').each(function() {
+                        if( $(this).is(':checked')) {
+                            var thisrowcid = $(this).closest('tr')[0].id;
+                            if(thisrowcid == rowcid) {
+                                $(this).prop("checked", false);
+                            }
+                        }
+                    });
+                };
+                
+                var view_button = document.createElement("button");
+                view_button.setAttribute("id", "view_button");
+                view_button.innerHTML = 'WEB';
+                view_button.onclick = function () {
+                    alert($(this).parent().attr('id'));
+                    /*
+                    console.log('view ' + node.key);
+                    socket.emit('viewdataset', {task: "view", sid: $.cookie("DARIS-SESSION"), cid: node.key});
+
+                    var lstatus = document.getElementById(node.key + "_status");
+                    var imgprocess = document.getElementById(node.key + "_img");
+                    lstatus.style.color = "blue";
+                    lstatus.innerHTML = "Working..." ;
+                    */
+                };
+                
+                var cave_button = document.createElement("button");
+                cave_button.setAttribute("id", "cave_button");
+                cave_button.innerHTML = 'CAVE';
+                cave_button.onclick = function () {
+                    alert($(this).parent().attr('id'));
+                    //alert("Will display this dataset on the CAVE (using LavaVR?)");
+                };
+                
+                var content_span = document.createElement("span");
+                content_span.setAttribute("id", "dataset");
+                content_span.innerHTML = saved_datasets[i].title;
+                
+                var process_img = document.createElement("img");
+                process_img.setAttribute("src", "data:image/gif;base64,R0lGODlhEAAQAPIAAP///wAAAMLCwkJCQgAAAGJiYoKCgpKSkiH+GkNyZWF0ZWQgd2l0aCBhamF4bG9hZC5pbmZvACH5BAAKAAAAIf8LTkVUU0NBUEUyLjADAQAAACwAAAAAEAAQAAADMwi63P4wyklrE2MIOggZnAdOmGYJRbExwroUmcG2LmDEwnHQLVsYOd2mBzkYDAdKa+dIAAAh+QQACgABACwAAAAAEAAQAAADNAi63P5OjCEgG4QMu7DmikRxQlFUYDEZIGBMRVsaqHwctXXf7WEYB4Ag1xjihkMZsiUkKhIAIfkEAAoAAgAsAAAAABAAEAAAAzYIujIjK8pByJDMlFYvBoVjHA70GU7xSUJhmKtwHPAKzLO9HMaoKwJZ7Rf8AYPDDzKpZBqfvwQAIfkEAAoAAwAsAAAAABAAEAAAAzMIumIlK8oyhpHsnFZfhYumCYUhDAQxRIdhHBGqRoKw0R8DYlJd8z0fMDgsGo/IpHI5TAAAIfkEAAoABAAsAAAAABAAEAAAAzIIunInK0rnZBTwGPNMgQwmdsNgXGJUlIWEuR5oWUIpz8pAEAMe6TwfwyYsGo/IpFKSAAAh+QQACgAFACwAAAAAEAAQAAADMwi6IMKQORfjdOe82p4wGccc4CEuQradylesojEMBgsUc2G7sDX3lQGBMLAJibufbSlKAAAh+QQACgAGACwAAAAAEAAQAAADMgi63P7wCRHZnFVdmgHu2nFwlWCI3WGc3TSWhUFGxTAUkGCbtgENBMJAEJsxgMLWzpEAACH5BAAKAAcALAAAAAAQABAAAAMyCLrc/jDKSatlQtScKdceCAjDII7HcQ4EMTCpyrCuUBjCYRgHVtqlAiB1YhiCnlsRkAAAOwAAAAAAAAAAAA==");
+                process_img.setAttribute("id", saved_datasets[i].cid + "_img");
+                process_img.setAttribute("class", "img_process");
+                
+                var status_label = document.createElement("label");
+                status_label.setAttribute("id", saved_datasets[i].cid + "_status");
+                status_label.setAttribute("class", "status_label");
+                status_label.innerHTML = "";
+                
+                row_div.appendChild(x_button); 
+                row_div.appendChild(view_button);
+                row_div.appendChild(cave_button);
+                row_div.appendChild(content_span);
+                row_div.appendChild(status_label);
+                row_div.appendChild(process_img);
+                $('#datasets').append(row_div);
+            }
+            
+            /*
+            if(node.selected == true)
+            {
+                var row_div = document.createElement("div");
+                row_div.setAttribute("id", node.key);
+                console.log(row_div);
+
+                var x_button = document.createElement("button");
+                x_button.innerHTML = 'X';
+                x_button.setAttribute("id", "delete_button");
+                x_button.onclick = function() { // Note this is a function
+                    row_div.remove();
+                    var node_to_deselect = data.tree.getNodeByKey(node.key);
+                    console.log(node_to_deselect);
+                    node_to_deselect.setSelected(false);
+                };
+
+                var view_button = document.createElement("button");
+                view_button.setAttribute("id", "view_button");
+                view_button.innerHTML = 'WEB';
+                view_button.onclick = function () {
+                    console.log('view ' + node.key);
+                    socket.emit('viewdataset', {task: "view", sid: $.cookie("DARIS-SESSION"), cid: node.key});
+
+                    var lstatus = document.getElementById(node.key + "_status");
+                    var imgprocess = document.getElementById(node.key + "_img");
+                    lstatus.style.color = "blue";
+                    lstatus.innerHTML = "Working..." ;
+                    
+                };
+
+                var cave_button = document.createElement("button");
+                cave_button.setAttribute("id", "cave_button");
+                cave_button.innerHTML = 'CAVE';
+                cave_button.onclick = function () {
+                    alert("Will display this dataset on the CAVE (using LavaVR?)");
+                };
+               
+                var content_span = document.createElement("span");
+                content_span.setAttribute("id", "dataset");
+                content_span.innerHTML = node.title;
+
+                var status_label = document.createElement("label");
+                status_label.setAttribute("id", node.key + "_status");
+                status_label.setAttribute("class", "status_label");
+                status_label.innerHTML = "";
+
+                var process_img = document.createElement("img");
+                process_img.setAttribute("src", "data:image/gif;base64,R0lGODlhEAAQAPIAAP///wAAAMLCwkJCQgAAAGJiYoKCgpKSkiH+GkNyZWF0ZWQgd2l0aCBhamF4bG9hZC5pbmZvACH5BAAKAAAAIf8LTkVUU0NBUEUyLjADAQAAACwAAAAAEAAQAAADMwi63P4wyklrE2MIOggZnAdOmGYJRbExwroUmcG2LmDEwnHQLVsYOd2mBzkYDAdKa+dIAAAh+QQACgABACwAAAAAEAAQAAADNAi63P5OjCEgG4QMu7DmikRxQlFUYDEZIGBMRVsaqHwctXXf7WEYB4Ag1xjihkMZsiUkKhIAIfkEAAoAAgAsAAAAABAAEAAAAzYIujIjK8pByJDMlFYvBoVjHA70GU7xSUJhmKtwHPAKzLO9HMaoKwJZ7Rf8AYPDDzKpZBqfvwQAIfkEAAoAAwAsAAAAABAAEAAAAzMIumIlK8oyhpHsnFZfhYumCYUhDAQxRIdhHBGqRoKw0R8DYlJd8z0fMDgsGo/IpHI5TAAAIfkEAAoABAAsAAAAABAAEAAAAzIIunInK0rnZBTwGPNMgQwmdsNgXGJUlIWEuR5oWUIpz8pAEAMe6TwfwyYsGo/IpFKSAAAh+QQACgAFACwAAAAAEAAQAAADMwi6IMKQORfjdOe82p4wGccc4CEuQradylesojEMBgsUc2G7sDX3lQGBMLAJibufbSlKAAAh+QQACgAGACwAAAAAEAAQAAADMgi63P7wCRHZnFVdmgHu2nFwlWCI3WGc3TSWhUFGxTAUkGCbtgENBMJAEJsxgMLWzpEAACH5BAAKAAcALAAAAAAQABAAAAMyCLrc/jDKSatlQtScKdceCAjDII7HcQ4EMTCpyrCuUBjCYRgHVtqlAiB1YhiCnlsRkAAAOwAAAAAAAAAAAA==");
+                process_img.setAttribute("id", node.key + "_img");
+                process_img.setAttribute("class", "img_process");
+
+                row_div.appendChild(x_button); 
+                row_div.appendChild(view_button);
+                //row_div.appendChild(cave_button);
+                row_div.appendChild(content_span);
+                row_div.appendChild(process_img);
+                row_div.appendChild(status_label);
+                $('#datasets').append(row_div);
+            }
+            else
+            {
+                console.log("Deselect " + node.key)
+                var row_div = document.getElementById(node.key);
+                console.log(row_div);
+                if(row_div)
+                    row_div.remove();
+            }
+            */
+        }
+        
+        // create search grid with empty data
+        function createSearchGrid(){
+            $("#jqGrid_search").jqGrid({
+                datatype: "local",
+				data: [],
+                height: 300,
+                colModel: [
+                    //checkbox
+                    {
+                        name: 'enbl', index: 'enbl', width: 60, align: 'center',
+                        formatter: 'checkbox', editoptions: { value: '1:0' },
+                        formatoptions: { disabled: false },
+                    },
+                    { label: 'cid', name: 'cid', width: 140, key:true },
+                    { label: 'Name', name: 'name', width: 400 },
+                    { label: 'Description', name: 'description', width: 400 },
+                    { label: 'Size', name: 'datasize', width: 80 },
+                ],
+                viewrecords: true, // show the current page, data rang and total records on the toolbar
+                caption: "Return datasets from DaRIS",
+                pager: "#jqGridPager_search",
+                rowNum: 20,
+                loadComplete: function () {
+                    var iCol = getColumnIndexByName($(this), 'enbl'), rows = this.rows, i, c = rows.length;
+                    for (i = 0; i < c; i += 1) {
+                        $(rows[i].cells[iCol]).click(function (e) {
+                            var id = $(e.target).closest('tr')[0].id, isChecked = $(e.target).is(':checked');
+                            var desc = "dataset: " + id + " | " + $("#jqGrid_search").jqGrid ('getCell', id, 'name') + ' | '
+                                        +  $("#jqGrid_search").jqGrid ('getCell', id, 'datasize');
+                            
+                            processClickDataset(id, desc, isChecked);
+                        });
+                    }
+                }
+            });
+        }
    		
+   		// ============ SOCKET communication =============
         socket.on('viewdataset', function (data) {
             console.log(data);
             var lstatus = document.getElementById(data.cid + "_status");
@@ -166,43 +402,25 @@
            }
            else if (data.status === 'done') {
                console.log(data.result);
+               jQuery('#jqGrid_search').jqGrid('clearGridData');
+               
                var resultdata = $.parseJSON(data.result);
-               $("#jqGrid_search").jqGrid({
-                    datatype: "local",
-    				data: resultdata,
-                    height: 300,
-                    colModel: [
-                        //checkbox
-                        {
-                            name: 'enbl', index: 'enbl', width: 60, align: 'center',
-                            formatter: 'checkbox', editoptions: { value: '1:0' },
-                            formatoptions: { disabled: false },
-                        },
-                        { label: 'cid', name: 'cid', width: 140, key:true },
-                        { label: 'Name', name: 'name', width: 400 },
-                        { label: 'Description', name: 'description', width: 400 },
-                        { label: 'Size', name: 'datasize', width: 80 },
-                    ],
-                    viewrecords: true, // show the current page, data rang and total records on the toolbar
-                    caption: "Load jqGrid through Javascript Array",
-                    pager: "#jqGridPager_search",
-                    rowNum: 20,
-                    loadComplete: function () {
-                        var iCol = getColumnIndexByName($(this), 'enbl'), rows = this.rows, i, c = rows.length;
-                        for (i = 0; i < c; i += 1) {
-                            $(rows[i].cells[iCol]).click(function (e) {
-                                var id = $(e.target).closest('tr')[0].id, isChecked = $(e.target).is(':checked');
-                                var desc = $("#jqGrid_search").jqGrid ('getCell', id, 'name') + ' ('
-                                            +  $("#jqGrid_search").jqGrid ('getCell', id, 'datasize') + ')';
-                                saved_datasets.push({cid: id, title: desc});
-                                console.log(saved_datasets);
-                            });
-                        }
+               
+               jQuery('#jqGrid_search').jqGrid('setGridParam', {data: resultdata});
+                
+               jQuery('#jqGrid_search').trigger('reloadGrid');
+               
+               // set checkbox for selected datasets
+               $("#jqGrid_search").find('input[type=checkbox]').each(function() {
+                    var thisrowcid = $(this).closest('tr')[0].id;
+                    if(findDataset(thisrowcid) != -1) {
+                        $(this).prop("checked", true);
                     }
                 });
             }
         });
         
+        // =======  DARIS tree ========
         // create DaRIS tree
         function darisTreeCreate()
         {
@@ -231,6 +449,13 @@
     
                     if( orgResponse.status === "ok" ) {
                         data.result = orgResponse.result;
+                        for(var i=0; i < data.result.length; i++) {
+                            var item = data.result[i];
+                            if(item.folder == false) {
+                                if(findDataset(item.key) != -1)
+                                    data.result[i].selected = true;
+                            }
+                        }
                     } else {
                         console.log(orgResponse.result);
                         // Signal error condition to tree loader
@@ -249,75 +474,8 @@
     
                 select: function(event, data) {
                     var node = data.node;
-                    if(node.selected == true)
-                    {
-                        var row_div = document.createElement("div");
-                        row_div.setAttribute("id", node.key);
-                        console.log(row_div);
-    
-                        var x_button = document.createElement("button");
-                        x_button.innerHTML = 'X';
-                        x_button.setAttribute("id", "delete_button");
-                        x_button.onclick = function() { // Note this is a function
-                            row_div.remove();
-                            var node_to_deselect = data.tree.getNodeByKey(node.key);
-                            console.log(node_to_deselect);
-                            node_to_deselect.setSelected(false);
-                        };
-    
-                        var view_button = document.createElement("button");
-                        view_button.setAttribute("id", "view_button");
-                        view_button.innerHTML = 'WEB';
-                        view_button.onclick = function () {
-                            console.log('view ' + node.key);
-                            socket.emit('viewdataset', {task: "view", sid: $.cookie("DARIS-SESSION"), cid: node.key});
-    
-                            var lstatus = document.getElementById(node.key + "_status");
-                            var imgprocess = document.getElementById(node.key + "_img");
-                            lstatus.style.color = "blue";
-                            lstatus.innerHTML = "Working..." ;
-                            
-                        };
-    
-                        /*
-                        var cave_button = document.createElement("button");
-                        cave_button.setAttribute("id", "cave_button");
-                        cave_button.innerHTML = 'CAVE';
-                        cave_button.onclick = function () {
-                            alert("Will display this dataset on the CAVE (using LavaVR?)");
-                        };
-                        */
-    
-                        var content_span = document.createElement("span");
-                        content_span.setAttribute("id", "dataset");
-                        content_span.innerHTML = node.title;
-    
-                        var status_label = document.createElement("label");
-                        status_label.setAttribute("id", node.key + "_status");
-                        status_label.setAttribute("class", "status_label");
-                        status_label.innerHTML = "";
-    
-                        var process_img = document.createElement("img");
-                        process_img.setAttribute("src", "data:image/gif;base64,R0lGODlhEAAQAPIAAP///wAAAMLCwkJCQgAAAGJiYoKCgpKSkiH+GkNyZWF0ZWQgd2l0aCBhamF4bG9hZC5pbmZvACH5BAAKAAAAIf8LTkVUU0NBUEUyLjADAQAAACwAAAAAEAAQAAADMwi63P4wyklrE2MIOggZnAdOmGYJRbExwroUmcG2LmDEwnHQLVsYOd2mBzkYDAdKa+dIAAAh+QQACgABACwAAAAAEAAQAAADNAi63P5OjCEgG4QMu7DmikRxQlFUYDEZIGBMRVsaqHwctXXf7WEYB4Ag1xjihkMZsiUkKhIAIfkEAAoAAgAsAAAAABAAEAAAAzYIujIjK8pByJDMlFYvBoVjHA70GU7xSUJhmKtwHPAKzLO9HMaoKwJZ7Rf8AYPDDzKpZBqfvwQAIfkEAAoAAwAsAAAAABAAEAAAAzMIumIlK8oyhpHsnFZfhYumCYUhDAQxRIdhHBGqRoKw0R8DYlJd8z0fMDgsGo/IpHI5TAAAIfkEAAoABAAsAAAAABAAEAAAAzIIunInK0rnZBTwGPNMgQwmdsNgXGJUlIWEuR5oWUIpz8pAEAMe6TwfwyYsGo/IpFKSAAAh+QQACgAFACwAAAAAEAAQAAADMwi6IMKQORfjdOe82p4wGccc4CEuQradylesojEMBgsUc2G7sDX3lQGBMLAJibufbSlKAAAh+QQACgAGACwAAAAAEAAQAAADMgi63P7wCRHZnFVdmgHu2nFwlWCI3WGc3TSWhUFGxTAUkGCbtgENBMJAEJsxgMLWzpEAACH5BAAKAAcALAAAAAAQABAAAAMyCLrc/jDKSatlQtScKdceCAjDII7HcQ4EMTCpyrCuUBjCYRgHVtqlAiB1YhiCnlsRkAAAOwAAAAAAAAAAAA==");
-                        process_img.setAttribute("id", node.key + "_img");
-                        process_img.setAttribute("class", "img_process");
-    
-                        row_div.appendChild(x_button); 
-                        row_div.appendChild(view_button);
-                        //row_div.appendChild(cave_button);
-                        row_div.appendChild(content_span);
-                        row_div.appendChild(process_img);
-                        row_div.appendChild(status_label);
-                        $('#datasets').append(row_div);
-                    }
-                    else
-                    {
-                        console.log("Deselect " + node.key)
-                        var row_div = document.getElementById(node.key);
-                        console.log(row_div);
-                        if(row_div)
-                            row_div.remove();
-                    }
+                    
+                    processClickDataset(node.key, node.title, node.selected);
                 }
             });
         }
@@ -410,6 +568,9 @@
         $("#btnGenerateCAVE2Data").click(function(event){
             alert("btnGenerateCAVE2Data clicked");
         }); // end btnRunOnCAVE clicked
+        
+        
+        createSearchGrid();
         
     </script>
     
