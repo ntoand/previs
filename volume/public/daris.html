@@ -221,24 +221,28 @@
                 view_button.setAttribute("id", "view_button");
                 view_button.innerHTML = 'WEB';
                 view_button.onclick = function () {
-                    alert($(this).parent().attr('id'));
-                    /*
-                    console.log('view ' + node.key);
-                    socket.emit('viewdataset', {task: "view", sid: $.cookie("DARIS-SESSION"), cid: node.key});
+                    var rowcid = $(this).parent().prop('id');
+                    rowcid = rowcid.substr(0, rowcid.length - 4);
+                    socket.emit('viewdataset', {task: "webview", sid: $.cookie("DARIS-SESSION"), cid: rowcid});
 
-                    var lstatus = document.getElementById(node.key + "_status");
-                    var imgprocess = document.getElementById(node.key + "_img");
+                    var lstatus = document.getElementById(rowcid + "_status");
+                    var imgprocess = document.getElementById(rowcid + "_img");
                     lstatus.style.color = "blue";
                     lstatus.innerHTML = "Working..." ;
-                    */
                 };
                 
                 var cave_button = document.createElement("button");
                 cave_button.setAttribute("id", "cave_button");
                 cave_button.innerHTML = 'CAVE';
                 cave_button.onclick = function () {
-                    alert($(this).parent().attr('id'));
-                    //alert("Will display this dataset on the CAVE (using LavaVR?)");
+                    var rowcid = $(this).parent().prop('id');
+                    rowcid = rowcid.substr(0, rowcid.length - 4);
+                    socket.emit('viewdataset', {task: "caveview", sid: $.cookie("DARIS-SESSION"), cid: rowcid});
+
+                    var lstatus = document.getElementById(rowcid + "_status");
+                    var imgprocess = document.getElementById(rowcid + "_img");
+                    lstatus.style.color = "blue";
+                    lstatus.innerHTML = "Working..." ;
                 };
                 
                 var content_span = document.createElement("span");
@@ -263,76 +267,6 @@
                 row_div.appendChild(process_img);
                 $('#datasets').append(row_div);
             }
-            
-            /*
-            if(node.selected == true)
-            {
-                var row_div = document.createElement("div");
-                row_div.setAttribute("id", node.key);
-                console.log(row_div);
-
-                var x_button = document.createElement("button");
-                x_button.innerHTML = 'X';
-                x_button.setAttribute("id", "delete_button");
-                x_button.onclick = function() { // Note this is a function
-                    row_div.remove();
-                    var node_to_deselect = data.tree.getNodeByKey(node.key);
-                    console.log(node_to_deselect);
-                    node_to_deselect.setSelected(false);
-                };
-
-                var view_button = document.createElement("button");
-                view_button.setAttribute("id", "view_button");
-                view_button.innerHTML = 'WEB';
-                view_button.onclick = function () {
-                    console.log('view ' + node.key);
-                    socket.emit('viewdataset', {task: "view", sid: $.cookie("DARIS-SESSION"), cid: node.key});
-
-                    var lstatus = document.getElementById(node.key + "_status");
-                    var imgprocess = document.getElementById(node.key + "_img");
-                    lstatus.style.color = "blue";
-                    lstatus.innerHTML = "Working..." ;
-                    
-                };
-
-                var cave_button = document.createElement("button");
-                cave_button.setAttribute("id", "cave_button");
-                cave_button.innerHTML = 'CAVE';
-                cave_button.onclick = function () {
-                    alert("Will display this dataset on the CAVE (using LavaVR?)");
-                };
-               
-                var content_span = document.createElement("span");
-                content_span.setAttribute("id", "dataset");
-                content_span.innerHTML = node.title;
-
-                var status_label = document.createElement("label");
-                status_label.setAttribute("id", node.key + "_status");
-                status_label.setAttribute("class", "status_label");
-                status_label.innerHTML = "";
-
-                var process_img = document.createElement("img");
-                process_img.setAttribute("src", "data:image/gif;base64,R0lGODlhEAAQAPIAAP///wAAAMLCwkJCQgAAAGJiYoKCgpKSkiH+GkNyZWF0ZWQgd2l0aCBhamF4bG9hZC5pbmZvACH5BAAKAAAAIf8LTkVUU0NBUEUyLjADAQAAACwAAAAAEAAQAAADMwi63P4wyklrE2MIOggZnAdOmGYJRbExwroUmcG2LmDEwnHQLVsYOd2mBzkYDAdKa+dIAAAh+QQACgABACwAAAAAEAAQAAADNAi63P5OjCEgG4QMu7DmikRxQlFUYDEZIGBMRVsaqHwctXXf7WEYB4Ag1xjihkMZsiUkKhIAIfkEAAoAAgAsAAAAABAAEAAAAzYIujIjK8pByJDMlFYvBoVjHA70GU7xSUJhmKtwHPAKzLO9HMaoKwJZ7Rf8AYPDDzKpZBqfvwQAIfkEAAoAAwAsAAAAABAAEAAAAzMIumIlK8oyhpHsnFZfhYumCYUhDAQxRIdhHBGqRoKw0R8DYlJd8z0fMDgsGo/IpHI5TAAAIfkEAAoABAAsAAAAABAAEAAAAzIIunInK0rnZBTwGPNMgQwmdsNgXGJUlIWEuR5oWUIpz8pAEAMe6TwfwyYsGo/IpFKSAAAh+QQACgAFACwAAAAAEAAQAAADMwi6IMKQORfjdOe82p4wGccc4CEuQradylesojEMBgsUc2G7sDX3lQGBMLAJibufbSlKAAAh+QQACgAGACwAAAAAEAAQAAADMgi63P7wCRHZnFVdmgHu2nFwlWCI3WGc3TSWhUFGxTAUkGCbtgENBMJAEJsxgMLWzpEAACH5BAAKAAcALAAAAAAQABAAAAMyCLrc/jDKSatlQtScKdceCAjDII7HcQ4EMTCpyrCuUBjCYRgHVtqlAiB1YhiCnlsRkAAAOwAAAAAAAAAAAA==");
-                process_img.setAttribute("id", node.key + "_img");
-                process_img.setAttribute("class", "img_process");
-
-                row_div.appendChild(x_button); 
-                row_div.appendChild(view_button);
-                //row_div.appendChild(cave_button);
-                row_div.appendChild(content_span);
-                row_div.appendChild(process_img);
-                row_div.appendChild(status_label);
-                $('#datasets').append(row_div);
-            }
-            else
-            {
-                console.log("Deselect " + node.key)
-                var row_div = document.getElementById(node.key);
-                console.log(row_div);
-                if(row_div)
-                    row_div.remove();
-            }
-            */
         }
         
         // create search grid with empty data
@@ -384,9 +318,16 @@
             }
             else if (data.status === 'done') {
                 imgprocess.style.visibility = 'hidden';
-                console.log('done, now open new page');
-                lstatus.innerHTML = '';
-                window.open('sharevol/index.html?data=' + data.result, target="_blank");
+                if(data.task == 'webview') {
+                    console.log('done, now open new page');
+                    lstatus.innerHTML = '';
+                    window.open('sharevol/index.html?data=' + data.json, target="_blank");
+                }
+                else if (data.task == 'caveview') {
+                    console.log('caveview'); 
+                    lstatus.style.color = 'blue';
+                    lstatus.innerHTML = 'Tag: <font color="red">' + data.tag + '</font> Please write down for later use';
+                }
             }
             else if (data.status === 'error') {
                 imgprocess.style.visibility = 'hidden';

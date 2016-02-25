@@ -4,11 +4,13 @@
 var fs 			= require('fs');
 var path        = require('path');
 var exec        = require('child_process').exec;
+var crypto 		= require('crypto');
 
 var myutils 	= require('./node-utils');
 var config		= require('./node-config').config;  
 
-function downloadData(io, data){
+//=============================
+function viewDataset(io, data){
 	//console.log('downloadData: ' + data);
 	var result_msg = 'download ok. Now convert to nifti';
 	var compdicomfile = config.daris_data_dir + data.cid + '.zip';
@@ -80,18 +82,15 @@ function convertToXRW(io, data) {
 				return;
 			}
 			io.emit('viewdataset', {status: 'working', cid: data.cid, result: result_msg});
-			if(data.task === 'view') {
-				convertToPng(io, data);
-			}
+			
+			convertToPng(io, data);
 
 	    });
 	}
 	else {
 		console.log("exist, can process xrw file now");
 		io.emit('viewdataset', {status: 'working', cid: data.cid, result: result_msg});
-		if(data.task === 'view') {
-			convertToPng(io, data);
-		}
+		convertToPng(io, data);
 	}
 }
 
@@ -100,7 +99,7 @@ function convertToPng(io, data) {
 	var dirpath = config.daris_data_dir + data.cid;
 	var xrwfile = dirpath + '/0001.xrw';
 	var pngfile = dirpath + '/0001.png';
-
+	
 	if(!myutils.fileExists(pngfile)) {
 		var cmd = 'xrw2pngmos -f ' + xrwfile + ' -o ' + pngfile;
 		console.log(cmd);
@@ -159,13 +158,50 @@ function sendViewDataToClient(io, data) {
 					io.emit('viewdataset', {status: 'error', cid: data.cid, result: 'cannot_generate_json'});
 					throw err;
 				} 
-				io.emit('viewdataset', {status: 'done', cid: data.cid, result: jsonurl});
+				console.log('sendViewDataToClient');
+				console.log(data);
+				if(data.task == 'caveview') {
+					//generete tag for later use
+					var found = 1;
+					var tag_str = '';
+					while (found == 1){
+						tag_str = crypto.randomBytes(3).toString('hex');
+						if(!myutils.fileExists(config.info_dir+'/'+tag_str+'.json')) {
+							found = 0;
+						}
+					};
+					console.log(tag_str);
+					
+					var tag_json = {};
+					tag_json.tag=tag_str;
+					tag_json.date=Date.now();
+					var volumes = [];
+					var volume = {};
+					volume.type='daris';
+					volume.json=jsonurl;
+					volumes.push(volume);
+					tag_json.volumes=volumes;
+	
+					fs.writeFile( config.info_dir+'/'+tag_str+'.json', JSON.stringify(tag_json, null, 4), function(err) {
+						if (err) {
+							io.emit('viewdataset', {status: 'error', result: 'cannot_generate_tag_json'});
+							throw err;
+						} 
+						io.emit('viewdataset', {status: 'done', cid:data.cid, task: data.task, 
+												  tag: tag_str, json: jsonurl});
+					});	
+					
+				}
+				else if( data.task == 'webview') {
+					io.emit('viewdataset', {status: 'done', cid: data.cid, task: data.task, json: jsonurl});
+				}
+				
 			});
 	    });		
 	});
 }
 
-
+// ===============================
 function searchDataset(io, data) {
 
 	var cmd = 'cd ' + config.scripts_dir + ' && python run_daris.py -t search -s ' + data.sid + ' -c ' + data.cid + ' -a ' + data.keyword;
@@ -183,5 +219,5 @@ function searchDataset(io, data) {
     });
 }
 
-module.exports.downloadData = downloadData;
+module.exports.viewDataset = viewDataset;
 module.exports.searchDataset = searchDataset;

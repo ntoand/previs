@@ -167,7 +167,7 @@ io.on('connection', function (socket) {
 
   	socket.on('viewdataset', function (data) {
   		console.log(data);
-  		mydaris.downloadData(io, data);
+  		mydaris.viewDataset(io, data);
   	});
 
   	socket.on('processuploadfile', function (data) {
