@@ -4,4 +4,4 @@ rm -rf ./daris/1008*
 
 rm -rf ./tiff/upload_*
 
-rm -rf ./info/*
+rm -rf ./info/*.json

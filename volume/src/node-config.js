@@ -2,6 +2,7 @@ var path = require('path');
 
 var config = {
     port: 3000,
+    cave2_port: 3003,
 	public_dir: 'public',
 	scripts_dir: './src',
 	tiff_data_dir: path.dirname(require.main.filename) +  '/public/data/tiff/',

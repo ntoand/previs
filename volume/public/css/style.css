@@ -39,15 +39,16 @@ label#daris_loginfail {
 button {
 	margin: 1px;
 }
-button#delete_button {
+
+.delete_button {
 	color: red;
 }
 
-button#view_button {
+.view_button {
 	color: green;
 }
 
-button#cave_button {
+.cave_button {
 	color: blue;
 }
 
@@ -111,4 +112,16 @@ div#local_upload_message {
 div#local_upload_result_container {
 	display:none;
 	padding: 10px;
+}
+
+div#grid_div {
+	min-height: 300px;
+}
+
+.result_label {
+	display: block;
+}
+
+.result_img {
+	width: 256px;
 }

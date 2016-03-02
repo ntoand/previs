@@ -179,5 +179,10 @@ io.on('connection', function (socket) {
   		console.log(data);
   		mydaris.searchDataset(io, data);
   	});
+  	
+  	socket.on('tagmulticaveview', function(data) {
+  		console.log(data);
+  		mydaris.getTagMultiCaveView(io, data);
+  	});
 });
 

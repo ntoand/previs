@@ -99,9 +99,11 @@ function convertToPng(io, data) {
 	var dirpath = config.daris_data_dir + data.cid;
 	var xrwfile = dirpath + '/0001.xrw';
 	var pngfile = dirpath + '/0001.png';
+	var thumpfile = dirpath + '/0001_thumb.png';
 	
 	if(!myutils.fileExists(pngfile)) {
-		var cmd = 'xrw2pngmos -f ' + xrwfile + ' -o ' + pngfile;
+		var cmd = 'cd ' + config.scripts_dir + ' && xrw2pngmos -f ' + xrwfile + ' -o ' + pngfile 
+			  + ' && convert ' + pngfile + ' -thumbnail 256 ' + thumpfile;
 		console.log(cmd);
 		exec(cmd, function(err, stdout, stderr) 
 	    {
@@ -144,7 +146,8 @@ function sendViewDataToClient(io, data) {
 	    {
     		if (err) {
 				io.emit('viewdataset', {status: 'error', cid: data.cid, result: 'cannot_run_xrwinfo'});
-				throw err;
+				//throw err;
+				return;
 			} 
 				
 	    	stdout = myutils.trim(stdout).trim();
@@ -156,7 +159,8 @@ function sendViewDataToClient(io, data) {
 			fs.writeFile( jsonfile, JSON.stringify(obj, null, 4), function(err) {
 				if (err) {
 					io.emit('viewdataset', {status: 'error', cid: data.cid, result: 'cannot_generate_json'});
-					throw err;
+					//throw err;
+					return;
 				} 
 				console.log('sendViewDataToClient');
 				console.log(data);
@@ -174,18 +178,16 @@ function sendViewDataToClient(io, data) {
 					
 					var tag_json = {};
 					tag_json.tag=tag_str;
+					tag_json.type="daris";
 					tag_json.date=Date.now();
-					var volumes = [];
-					var volume = {};
-					volume.type='daris';
-					volume.json=jsonurl;
-					volumes.push(volume);
-					tag_json.volumes=volumes;
-	
+					tag_json.cid = [data.cid];
+					tag_json.res = [obj.res];
+					
 					fs.writeFile( config.info_dir+'/'+tag_str+'.json', JSON.stringify(tag_json, null, 4), function(err) {
 						if (err) {
 							io.emit('viewdataset', {status: 'error', result: 'cannot_generate_tag_json'});
-							throw err;
+							//throw err;
+							return;
 						} 
 						io.emit('viewdataset', {status: 'done', cid:data.cid, task: data.task, 
 												  tag: tag_str, json: jsonurl});
@@ -195,10 +197,52 @@ function sendViewDataToClient(io, data) {
 				else if( data.task == 'webview') {
 					io.emit('viewdataset', {status: 'done', cid: data.cid, task: data.task, json: jsonurl});
 				}
-				
+				else if( data.task == 'multicaveview') {
+					io.emit('viewdataset', {status: 'done', cid: data.cid, task: data.task, json: jsonurl, res: obj.res });
+				}
+				else {
+					io.emit('viewdataset', {status: 'error', result: 'invalid_task'});
+				}
 			});
 	    });		
 	});
+}
+
+function getTagMultiCaveView(io, data) {
+	var found = 1;
+	var tag_str = '';
+	while (found == 1){
+		tag_str = crypto.randomBytes(3).toString('hex');
+		if(!myutils.fileExists(config.info_dir+'/'+tag_str+'.json')) {
+			found = 0;
+		}
+	};
+	console.log(tag_str);
+	
+	var datasets = data.datasets;
+	
+	var tag_json = {};
+	tag_json.tag=tag_str;
+	tag_json.type="daris";
+	tag_json.date=Date.now();
+	tag_json.datadir=config.daris_data_dir;
+	tag_json.url='data/daris/';
+	var cid = [], res = [];
+	for (var i=0, l=datasets.length; i < l; i++) {
+		cid.push(datasets[i].cid);
+		res.push(datasets[i].res);
+	}
+	tag_json.cid = cid;
+	tag_json.res = res;
+	
+	fs.writeFile( config.info_dir+'/'+tag_str+'.json', JSON.stringify(tag_json, null, 4), function(err) {
+		if (err) {
+			io.emit('tagmulticaveview', {status: 'error', result: 'cannot_generate_tag_json'});
+			//throw err;
+			return;
+		} 
+		io.emit('tagmulticaveview', {status: 'done', task: data.task, tag: tag_str });
+	});	
 }
 
 // ===============================
@@ -221,3 +265,4 @@ function searchDataset(io, data) {
 
 module.exports.viewDataset = viewDataset;
 module.exports.searchDataset = searchDataset;
+module.exports.getTagMultiCaveView = getTagMultiCaveView;

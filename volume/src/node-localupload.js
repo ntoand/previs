@@ -89,7 +89,8 @@ function sendViewDataToClient(io, data) {
 	fs.readFile(jsontemp, 'utf8', function (err, jsondata) {
 		if (err) {
 			io.emit('processuploadfile', {status: 'error', result: 'cannot_generate_json'});
-			throw err;
+			//throw err;
+			return;
 		} 
 		var obj = JSON.parse(jsondata);
 		obj.url = 'data/tiff/' + basename + '_result/vol.png';
@@ -99,7 +100,8 @@ function sendViewDataToClient(io, data) {
 	    {
     		if (err) {
 				io.emit('processuploadfile', {status: 'error', result: 'cannot_run_xrwinfo'});
-				throw err;
+				//throw err;
+				return;
 			} 
 	    	
 	    	stdout = myutils.trim(stdout).trim();
@@ -111,7 +113,8 @@ function sendViewDataToClient(io, data) {
 			fs.writeFile( jsonfile, JSON.stringify(obj, null, 4), function(err) {
 				if (err) {
 					io.emit('processuploadfile', {status: 'error', result: 'cannot_generate_json'});
-					throw err;
+					//throw err;
+					return;
 				} 
 				//generete tag for later use
 				var found = 1;
@@ -126,21 +129,23 @@ function sendViewDataToClient(io, data) {
 
 				var tag_json = {};
 				tag_json.tag=tag_str;
+				tag_json.type='localupload';
 				tag_json.date=Date.now();
 				var volumes = [];
 				var volume = {};
-				volume.type='localupload';
 				volume.json=jsonurl;
 				volume.thumb=thumburl;
 				volume.png=pngurl;
 				volume.xwr=xrwurl;
+				volume.res=obj.res;
 				volumes.push(volume);
 				tag_json.volumes=volumes;
 
 				fs.writeFile( config.info_dir+'/'+tag_str+'.json', JSON.stringify(tag_json, null, 4), function(err) {
 					if (err) {
 						io.emit('processuploadfile', {status: 'error', result: 'cannot_generate_tag_json'});
-						throw err;
+						//throw err;
+						return;
 					} 
 					io.emit('processuploadfile', {status: 'done', tag: tag_str, json: jsonurl, thumb: thumburl, 
 											  png: pngurl, xwr: xrwurl});

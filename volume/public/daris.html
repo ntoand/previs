@@ -91,7 +91,8 @@
         <div id="datasets_container">
             <div id="datasets"></div>
             <p></p>
-            <div><button type="button" id="btnGenerateCAVE2Data" class="btn btn-default">Generate CAVE2 data</button></div>
+            <div><button type="button" id="btnGenerateCAVE2Data" class="btn btn-default">Generate CAVE2 data for all datasets</button></div>
+            <p><label id="multicave_label"></label></p>
         </div>
     </div>
 
@@ -126,6 +127,7 @@
    		
    		//
 		var saved_datasets = [];
+		var num_processed_datasets = 0;
    		
    		var getColumnIndexByName = function (grid, columnName) {
             var cm = grid.jqGrid('getGridParam', 'colModel'), i, l;
@@ -189,7 +191,7 @@
                 
                 var x_button = document.createElement("button");
                 x_button.innerHTML = 'X';
-                x_button.setAttribute("id", "delete_button");
+                x_button.setAttribute("class", "delete_button");
                 x_button.onclick = function() {
                     var rowcid = $(this).parent().prop('id');
                     rowcid = rowcid.substr(0, rowcid.length - 4);
@@ -218,7 +220,7 @@
                 };
                 
                 var view_button = document.createElement("button");
-                view_button.setAttribute("id", "view_button");
+                view_button.setAttribute("class", "view_button");
                 view_button.innerHTML = 'WEB';
                 view_button.onclick = function () {
                     var rowcid = $(this).parent().prop('id');
@@ -232,7 +234,7 @@
                 };
                 
                 var cave_button = document.createElement("button");
-                cave_button.setAttribute("id", "cave_button");
+                cave_button.setAttribute("class", "cave_button");
                 cave_button.innerHTML = 'CAVE';
                 cave_button.onclick = function () {
                     var rowcid = $(this).parent().prop('id');
@@ -328,6 +330,22 @@
                     lstatus.style.color = 'blue';
                     lstatus.innerHTML = 'Tag: <font color="red">' + data.tag + '</font> Please write down for later use';
                 }
+                else if (data.task == 'multicaveview') {
+                    lstatus.style.color = 'blue';
+                    lstatus.innerHTML = 'done';
+                    
+                    saved_datasets[num_processed_datasets].res = data.res;
+                    
+                    num_processed_datasets += 1;
+                    if(num_processed_datasets < saved_datasets.length) {
+                        socket.emit('viewdataset', {task: "multicaveview", sid: $.cookie("DARIS-SESSION"), cid: saved_datasets[num_processed_datasets].cid });
+                    }
+                    else {
+                        console.log("processed all datasets successfully!");
+                        socket.emit('tagmulticaveview', { datasets: saved_datasets } )
+                    }
+                    
+                }
             }
             else if (data.status === 'error') {
                 imgprocess.style.visibility = 'hidden';
@@ -335,6 +353,11 @@
                 lstatus.innerHTML = "Error: " + data.result;
                 alert(data.detail);
             }
+        });
+        
+        socket.on('tagmulticaveview', function(data) {
+            var multicave_label = document.getElementById("multicave_label");
+            multicave_label.innerHTML = 'Tag: <font color="red">' + data.tag + '</font> Please write down for later use';
         });
         
         socket.on('searchdataset', function(data) {
@@ -507,7 +530,15 @@
         }); // end daris_btnSearch clicked
 
         $("#btnGenerateCAVE2Data").click(function(event){
-            alert("btnGenerateCAVE2Data clicked");
+            
+            num_processed_datasets = 0;
+            
+            if(saved_datasets.length == 0) {
+                alert("Please select datasets first");
+            }
+            
+            socket.emit('viewdataset', {task: "multicaveview", sid: $.cookie("DARIS-SESSION"), cid: saved_datasets[0].cid });
+            
         }); // end btnRunOnCAVE clicked
         
         
