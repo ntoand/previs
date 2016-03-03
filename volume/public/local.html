@@ -36,6 +36,7 @@
         </div>
 
         <div id="local_upload_result_container">
+            <!--
             <div class="row">
                 <a href="#" target="_blank" id="png_link"><img id="thumb_img" src=""/></a>
             </div>
@@ -44,11 +45,8 @@
             </div>
             <div class="row">
                 <a href="#" target="_blank" id="view_web"><h4>View vol with sharevol</h4></a>
-                <!--
-                <button id="download_xrw">Download xrw file</button>
-                <button id="download_png">Download png file</button>
-                -->
             </div>
+            -->
         </div>
     </div>    
 
@@ -103,8 +101,8 @@
         }
 
         socket.on('processuploadfile', function (data) {
-            lmessage = document.getElementById("message_label");
-            process_img = document.getElementById("process_img");
+            var lmessage = document.getElementById("message_label");
+            var process_img = document.getElementById("process_img");
             console.log(data);
             if(data.status === 'working') {   
                 process_img.style.visibility = 'visible';                      
@@ -116,12 +114,42 @@
                 lmessage.style.color = 'blue';
                 lmessage.innerHTML = '';
                 $("#local_upload_message").hide();
-                document.getElementById("thumb_img").src=data.thumb;
-                document.getElementById("png_link").href=data.png;
-                document.getElementById("tag_label").innerHTML = '<h4>Tag: <b><font color="red">' + data.tag + '</font></b> Please write down for later use</h4>';
-                document.getElementById("view_web").href='sharevol/index.html?data=' + data.json;
-                $("#local_upload_result_container").show();
-                //window.open('sharevol/index.html?data=' + data.result, target="_blank");
+                
+                var local_upload_result_container = document.getElementById("local_upload_result_container");
+                local_upload_result_container.innerHTML = "";
+                
+                var img_div = document.createElement("div");
+                var img_a = document.createElement("a");
+                img_a.href = data.png; img_a.target = "_blank";
+                var img = document.createElement("img");
+                img.setAttribute("class", "result_img");
+                img.src = data.thumb;
+                img_a.appendChild(img);
+                img_div.appendChild(img_a);
+                local_upload_result_container.appendChild(img_div);
+            
+                var tag_label = document.createElement("label");
+                tag_label.setAttribute("class", "result_label");
+                tag_label.innerHTML = '<h4>Tag: <b><font color="red">' + data.tag + '</font></b> Please write down for later use</h4>';
+                local_upload_result_container.appendChild(tag_label);
+                
+                var view_button = document.createElement("button");
+                view_button.setAttribute("class", "view_button");
+                view_button.setAttribute("id", data.json);
+                view_button.innerHTML = 'WEB';
+                view_button.onclick = function () {
+                    window.open('sharevol/index.html?data=' + $(this).prop('id'), target="_blank");
+                };
+                local_upload_result_container.appendChild(view_button);
+                
+                var setting_button = document.createElement("button");
+                setting_button.setAttribute("class", "setting_button");
+                setting_button.innerHTML = 'Setting';
+                setting_button.onclick = function () {
+                    alert("To import setting from sharevol");
+                };
+                local_upload_result_container.appendChild(setting_button);
+                
             }
             else if (data.status === 'error') {
                 lmessage.style.color = 'red';

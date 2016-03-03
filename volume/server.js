@@ -10,6 +10,7 @@ var path          = require('path');
 var exec          = require('child_process').exec;
 var formidable 	  = require('formidable');
 var bodyParser 	  = require('body-parser');
+var fs 			  = require('fs'); 
 
 var config 		  = require('./src/node-config').config;
 var mydaris		  = require('./src/node-daris');
@@ -184,5 +185,23 @@ io.on('connection', function (socket) {
   		console.log(data);
   		mydaris.getTagMultiCaveView(io, data);
   	});
+  	
+  	socket.on('processtag', function(data) {
+		console.log(data);
+		processTag(io, data);
+	});
 });
+
+function processTag(io, data) {
+	var jsonfile = config.info_dir + data.tag + '.json';
+	fs.readFile( jsonfile, 'utf8', function (err, jsondata) {
+		if (err) {
+			io.emit('processtag', { status: 'error', result: err });
+			//throw err;
+			return;
+		} 
+		var obj = JSON.parse(jsondata);
+		io.emit('processtag', { status: 'done', result: obj });
+	});
+}
 

@@ -52,6 +52,10 @@ button {
 	color: blue;
 }
 
+.setting_button {
+	color: black;
+}
+
 div#datasets
 {
 	padding:1px; 
@@ -110,7 +114,6 @@ div#local_upload_message {
 }
 
 div#local_upload_result_container {
-	display:none;
 	padding: 10px;
 }
 
