@@ -180,6 +180,8 @@ function sendViewDataToClient(io, data) {
 					tag_json.tag=tag_str;
 					tag_json.type="daris";
 					tag_json.date=Date.now();
+					tag_json.datadir=config.daris_data_dir;
+					tag_json.url='data/daris/';
 					tag_json.cid = [data.cid];
 					tag_json.res = [obj.res];
 					
