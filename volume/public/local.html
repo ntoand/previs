@@ -23,7 +23,7 @@
         <h3 class="section-heading">Upload Data</h3>
         <p> Formats Supported: </p>
         <ul>
-            <li> TIFF Image Stack (.zip file of an indexed TIFF image stack) </li>
+            <li> TIFF Image Stack (.zip file of an indexed TIFF image stack). Example data <a href="data/example/tiffstack-foot.zip">tiffstack-foot.zip</a> </li>
         </ul>
 
         <form id="upload_form" action="/localupload" enctype="multipart/form-data" method="post">
@@ -136,19 +136,11 @@
                 var view_button = document.createElement("button");
                 view_button.setAttribute("class", "view_button");
                 view_button.setAttribute("id", data.json);
-                view_button.innerHTML = 'WEB';
+                view_button.innerHTML = 'View';
                 view_button.onclick = function () {
-                    window.open('sharevol/index.html?data=' + $(this).prop('id'), target="_blank");
+                    window.open('sharevol/index.html?data=' + $(this).prop('id') + '&reset', target="_blank");
                 };
                 local_upload_result_container.appendChild(view_button);
-                
-                var setting_button = document.createElement("button");
-                setting_button.setAttribute("class", "setting_button");
-                setting_button.innerHTML = 'Setting';
-                setting_button.onclick = function () {
-                    alert("To import setting from sharevol");
-                };
-                local_upload_result_container.appendChild(setting_button);
                 
             }
             else if (data.status === 'error') {

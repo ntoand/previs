@@ -22,39 +22,57 @@
     <div class="container">
         <div class="jumbotron">
            <h2>A WebGL volume renderer and gateway to the Monash CAVE2</h2>
-	       <p>This is a service provided by MIVP to Monash University staff and affiliates. It provides a way to upload volumetric data, visualise the data on a web page, and then allows people to visualise the volume in CAVE2.</p>
+	       <p>This is a service provided by MIVP to Monash University staff and affiliates. It provides a way to upload volumetric data, visualise the data and change display settings on a web page, and then allows people to visualise the volume(s) in CAVE2.</p>
         </div>
     </div>
 
     <div class="container">
         <div class="row">
             <div class="col-sm-6"> 
-                <h3>Local upload</h3>
-                <p>You can upload volumetric data from you computer and view it with WebGL or on the CAVE2</p>
-                <p><img src="img/vol-single.png" alt="Volume single"></img></p>
+                <div class="panel panel-default">
+                    <div class="panel-heading">Example 1: Foot</div>
+                    <div class="panel-body" align="center">
+                        <p align="center"><img src="img/vol-foot.png" alt="Volume foot"></img></p>
+                        <p>Data: <a href="data/example/tiffstack-foot.zip">tiffstack-foot.zip</a> (image stack, 5MB)</p>
+                        <p><span class="glyphicon glyphicon-eye-open"></span><a href="sharevol/index.html?data=data/example/tiffstack-foot/vol.json&reset" target="_blank"> View on web</a></p>
+                    </div>
+                </div>
             </div>
             <div class="col-sm-6">
-                <h3>Using DaRIS</h3>
+                <div class="panel panel-default">
+                    <div class="panel-heading">Example 2: Brain(?)</div>
+                    <div class="panel-body" align="center">
+                        <p align="center"><img src="img/vol-brain.png" alt="Volume multi"></img></p>
+                        <p>Data: (David to provide)</p>
+                        <p><span class="glyphicon glyphicon-eye-open"></span> View on web</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+      
+        <div class="row">
+            <div class="col-sm-6"> 
+                <h3><a href="local.html">Local upload</a></h3>
+                <p>You can upload volumetric data from you computer and view it with WebGL or on the CAVE2</p>
+            </div>
+            <div class="col-sm-6">
+                <h3><a href="daris.html">Using DaRIS</a></h3>
                 <p>Select datasets from DaRIS. You can view each dataset directly with WebGL or view all on the CAVE2</p>
-                <p><img src="img/vol-multi.png" alt="Volume multi"></img></p>
             </div>
         </div>
         <div class="row">
             <div class="col-sm-6">
-                <h3>Check tag</h3>
-                <p>You can check and review volume with tag number</p>
-                <p>(img)</p>
+                <h3><a href="tag.html">Tag</a></h3>
+                <p>You can check and review volumes with a tag number. If you want to view the volumes on the CAVE, Please write down and bring it with you</p>
             </div>
             <div class="col-sm-6">
-                <h3>Import volume setting</h3>
-                <p>You can import your volume setting generated from sharevol</p>
-                <p>(img)</p>
+                <h3>Edit and save display settings</h3>
+                <p>You can save your preferred display settings by clicking the "save" button on the web viewer</p>
             </div>
         </div>
     </div>
 
 	<div id="footer"></div>
-	
 	
 	<!-- SCRIPT -->
 	<!-- jQuery library -->

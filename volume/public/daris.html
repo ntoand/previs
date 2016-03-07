@@ -221,7 +221,7 @@
                 
                 var view_button = document.createElement("button");
                 view_button.setAttribute("class", "view_button");
-                view_button.innerHTML = 'WEB';
+                view_button.innerHTML = 'Create tag & View';
                 view_button.onclick = function () {
                     var rowcid = $(this).parent().prop('id');
                     rowcid = rowcid.substr(0, rowcid.length - 4);
@@ -235,7 +235,7 @@
                 
                 var cave_button = document.createElement("button");
                 cave_button.setAttribute("class", "cave_button");
-                cave_button.innerHTML = 'CAVE';
+                cave_button.innerHTML = 'Create tag';
                 cave_button.onclick = function () {
                     var rowcid = $(this).parent().prop('id');
                     rowcid = rowcid.substr(0, rowcid.length - 4);
@@ -322,8 +322,9 @@
                 imgprocess.style.visibility = 'hidden';
                 if(data.task == 'webview') {
                     console.log('done, now open new page');
-                    lstatus.innerHTML = '';
-                    window.open('sharevol/index.html?data=' + data.json, target="_blank");
+                    window.open('sharevol/index.html?data=' + data.json + '&reset', target="_blank");
+                    lstatus.style.color = 'blue';
+                    lstatus.innerHTML = 'Tag: <font color="red">' + data.tag + '</font> Please write down for later use';
                 }
                 else if (data.task == 'caveview') {
                     console.log('caveview'); 
@@ -344,7 +345,6 @@
                         console.log("processed all datasets successfully!");
                         socket.emit('tagmulticaveview', { datasets: saved_datasets } )
                     }
-                    
                 }
             }
             else if (data.status === 'error') {

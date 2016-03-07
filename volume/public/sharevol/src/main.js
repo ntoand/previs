@@ -19,10 +19,12 @@ var props = {};
 var reset;
 var filename;
 var mobile;
+var socket = io();
+var jsonfile;
 
 function initPage() {
   window.onresize = autoResize;
-
+  
   //Create tool windows
   info = new Toolbox("info");
   info.show();
@@ -60,6 +62,10 @@ function initPage() {
     $('status').innerHTML = "Loading params...";
     ajaxReadFile(decodeURI(json), loadData, true);
   }
+  
+  jsonfile = json;
+  console.log(jsonfile);
+
 }
 
 function loadStoredData(key) {
@@ -116,8 +122,25 @@ function getData(compact, matrix) {
   return JSON.stringify(data, null, 2);
 }
 
+function saveDataJson() {
+  socket.emit('savedatajson', { file: jsonfile, json: getData() });
+}
+
+socket.on('savedatajson', function (data) {
+  if(data.status == "error") {
+    alert("Error: " + data.detail + " (you cannot save examples!)");
+  }
+  else if(data.status == "done") {
+    alert("Saved succesfully!");
+  }
+});
+
 function exportData() {
   window.open('data:text/json;base64,' + window.btoa(getData()));
+}
+
+function importData() {
+  alert("Import data");
 }
 
 function resetFromData(src) {
@@ -187,9 +210,11 @@ function imageLoaded(image) {
     if (props.server)
       gui.add({"Update" : function() {ajaxPost(props.server + "/update", "data=" + encodeURIComponent(getData(true, true)));}}, 'Update');
     gui.add({"Reset" : function() {resetFromData(reset);}}, 'Reset');
-    gui.add({"Restore" : function() {resetFromData(props);}}, 'Restore');
+    //gui.add({"Restore" : function() {resetFromData(props);}}, 'Restore');
+    gui.add({"Save" : function() {saveDataJson();}}, 'Save');
     gui.add({"Export" : function() {exportData();}}, 'Export');
-    gui.add({"loadFile" : function() {document.getElementById('fileupload').click();}}, 'loadFile'). name('Load Image file');
+    //gui.add({"Import" : function() {importData();}}, 'Import');
+    //gui.add({"loadFile" : function() {document.getElementById('fileupload').click();}}, 'loadFile'). name('Load Image file');
     gui.add({"ColourMaps" : function() {window.colourmaps.toggle();}}, 'ColourMaps');
 
     if (volume) volume.addGUI(gui);

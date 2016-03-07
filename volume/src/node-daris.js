@@ -164,7 +164,7 @@ function sendViewDataToClient(io, data) {
 				} 
 				console.log('sendViewDataToClient');
 				console.log(data);
-				if(data.task == 'caveview') {
+				if(data.task =='webview' || data.task == 'caveview') {
 					//generete tag for later use
 					var found = 1;
 					var tag_str = '';
@@ -195,9 +195,6 @@ function sendViewDataToClient(io, data) {
 												  tag: tag_str, json: jsonurl});
 					});	
 					
-				}
-				else if( data.task == 'webview') {
-					io.emit('viewdataset', {status: 'done', cid: data.cid, task: data.task, json: jsonurl});
 				}
 				else if( data.task == 'multicaveview') {
 					io.emit('viewdataset', {status: 'done', cid: data.cid, task: data.task, json: jsonurl, res: obj.res });

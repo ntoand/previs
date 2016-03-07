@@ -190,6 +190,11 @@ io.on('connection', function (socket) {
 		console.log(data);
 		processTag(io, data);
 	});
+	
+	socket.on('savedatajson', function(data) {
+		console.log(data);
+		saveDataJson(io, data);
+	});
 });
 
 function processTag(io, data) {
@@ -202,6 +207,20 @@ function processTag(io, data) {
 		} 
 		var obj = JSON.parse(jsondata);
 		io.emit('processtag', { status: 'done', result: obj });
+	});
+}
+
+function saveDataJson(io, data) {
+	var filename = config.public_dir + "/" + data.file;
+	//write
+	fs.writeFile( filename, data.json, function(err) {
+		if (err) {
+			console.log(err);
+			io.emit('savedatajson', {status: 'error', result: 'cannot_save_json', detail: err });
+			//throw err;
+			return;
+		} 
+		io.emit('savedatajson', { status: 'done', result: data.file });
 	});
 }
 
