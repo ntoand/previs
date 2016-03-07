@@ -56,12 +56,11 @@ def main(argv):
     subprocess.check_output(['find', input_dir, '-name', '*.dcm', '-type', 'f', '-delete'])
 
     # rename the first file to 0001.nii
-    count = 1
     for filename in os.listdir(input_dir):
         if filename.endswith(".nii"):
-            newname = '%04d.nii' % count
-            count = count + 1
+            newname = '%04d.nii' % 1
             os.rename(input_dir+'/'+filename, input_dir+'/'+newname)
+            break
 
     return 0
 
