@@ -365,8 +365,6 @@
                         socket.emit('tagmulticaveview', { datasets: saved_datasets } )
                     }
                 }
-                //enable buttons again
-                disableDatatasetButtons(data.cid, false);
             }
             else if (data.status === 'error') {
                 imgprocess.style.visibility = 'hidden';
@@ -374,11 +372,14 @@
                 lstatus.innerHTML = "Error: " + data.result;
                 alert(data.detail);
             }
+            //enable buttons again
+            disableDatatasetButtons(data.cid, false);
         });
         
         socket.on('tagmulticaveview', function(data) {
             var multicave_label = document.getElementById("multicave_label");
             multicave_label.innerHTML = 'Tag: <font color="red">' + data.tag + '</font> Please write down for later use';
+            document.getElementById("btnGenerateCAVE2Data").disabled = false;
         });
         
         socket.on('searchdataset', function(data) {
@@ -560,6 +561,7 @@
             
             socket.emit('viewdataset', {task: "multicaveview", sid: $.cookie("DARIS-SESSION"), cid: saved_datasets[0].cid });
             
+            document.getElementById("btnGenerateCAVE2Data").disabled = true;
             disableDatatasetButtons(saved_datasets[0].cid, true);
         }); // end btnRunOnCAVE clicked
         
