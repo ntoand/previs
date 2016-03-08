@@ -180,6 +180,19 @@
             displaySelectedDatasets();
         }
         
+        // enable/disable dataset buttons
+        function disableDatatasetButtons(cid, value) {
+            
+            var delete_button = document.getElementById(cid+"_delete_button");
+            delete_button.disabled = value;
+            
+            var view_button = document.getElementById(cid+"_view_button");
+            view_button.disabled = value;
+            
+            var cave_button = document.getElementById(cid+"_cave_button");
+            cave_button.disabled = value;
+        }
+        
         // display selected datasets
         function displaySelectedDatasets (){
             
@@ -192,6 +205,7 @@
                 var x_button = document.createElement("button");
                 x_button.innerHTML = 'X';
                 x_button.setAttribute("class", "delete_button");
+                x_button.setAttribute("id", saved_datasets[i].cid+"_delete_button");
                 x_button.onclick = function() {
                     var rowcid = $(this).parent().prop('id');
                     rowcid = rowcid.substr(0, rowcid.length - 4);
@@ -221,6 +235,7 @@
                 
                 var view_button = document.createElement("button");
                 view_button.setAttribute("class", "view_button");
+                view_button.setAttribute("id", saved_datasets[i].cid+"_view_button");
                 view_button.innerHTML = 'Create tag & View';
                 view_button.onclick = function () {
                     var rowcid = $(this).parent().prop('id');
@@ -231,10 +246,12 @@
                     var imgprocess = document.getElementById(rowcid + "_img");
                     lstatus.style.color = "blue";
                     lstatus.innerHTML = "Working..." ;
+                    disableDatatasetButtons(rowcid, true);
                 };
                 
                 var cave_button = document.createElement("button");
                 cave_button.setAttribute("class", "cave_button");
+                cave_button.setAttribute("id", saved_datasets[i].cid+"_cave_button");
                 cave_button.innerHTML = 'Create tag';
                 cave_button.onclick = function () {
                     var rowcid = $(this).parent().prop('id');
@@ -245,6 +262,7 @@
                     var imgprocess = document.getElementById(rowcid + "_img");
                     lstatus.style.color = "blue";
                     lstatus.innerHTML = "Working..." ;
+                    disableDatatasetButtons(rowcid, true);
                 };
                 
                 var content_span = document.createElement("span");
@@ -340,12 +358,15 @@
                     num_processed_datasets += 1;
                     if(num_processed_datasets < saved_datasets.length) {
                         socket.emit('viewdataset', {task: "multicaveview", sid: $.cookie("DARIS-SESSION"), cid: saved_datasets[num_processed_datasets].cid });
+                        disableDatatasetButtons(saved_datasets[num_processed_datasets].cid, true);
                     }
                     else {
                         console.log("processed all datasets successfully!");
                         socket.emit('tagmulticaveview', { datasets: saved_datasets } )
                     }
                 }
+                //enable buttons again
+                disableDatatasetButtons(data.cid, false);
             }
             else if (data.status === 'error') {
                 imgprocess.style.visibility = 'hidden';
@@ -539,6 +560,7 @@
             
             socket.emit('viewdataset', {task: "multicaveview", sid: $.cookie("DARIS-SESSION"), cid: saved_datasets[0].cid });
             
+            disableDatatasetButtons(saved_datasets[0].cid, true);
         }); // end btnRunOnCAVE clicked
         
         
