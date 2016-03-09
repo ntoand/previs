@@ -14,7 +14,8 @@
     "crypto": "0.0.3",
     "express": "^4.13.3",
     "formidable": "^1.0.17",
-    "socket.io": "^1.4.4"
+    "socket.io": "^1.4.4",
+    "sqlite3": "^3.1.1"
   },
   "devDependencies": {
     "grunt": "^0.4.5"

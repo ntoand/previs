@@ -8,6 +8,7 @@ var crypto 		= require('crypto');
 
 var myutils 	= require('./node-utils');
 var config		= require('./node-config').config;  
+var dbmanager   = require('./node-dbmanager');
 
 //=============================
 function viewDataset(io, data){
@@ -136,7 +137,8 @@ function sendViewDataToClient(io, data) {
 	fs.readFile(jsontemp, 'utf8', function (err, jsondata) {
 		if (err) {
 			io.emit('viewdataset', {status: 'error', cid: data.cid, result: 'cannot_generate_json'});
-			throw err;
+			//throw err;
+			return;
 		} 
 		var obj = JSON.parse(jsondata);
 		obj.url = 'data/daris/' + data.cid + '/0001.png';
@@ -154,55 +156,80 @@ function sendViewDataToClient(io, data) {
 	    	var res = stdout.split(" ");
 
 	    	obj.res = [res[2], res[3], res[4]];
-
-	    	//write
-			fs.writeFile( jsonfile, JSON.stringify(obj, null, 4), function(err) {
-				if (err) {
-					io.emit('viewdataset', {status: 'error', cid: data.cid, result: 'cannot_generate_json'});
-					//throw err;
-					return;
-				} 
-				console.log('sendViewDataToClient');
-				console.log(data);
-				if(data.task =='webview' || data.task == 'caveview') {
-					//generete tag for later use
-					var found = 1;
-					var tag_str = '';
-					while (found == 1){
-						tag_str = crypto.randomBytes(3).toString('hex');
+	    	
+	    	dbmanager.createTag(data.cid, function(err, tag_str) {
+	    		if(err) {
+	    			io.emit('viewdataset', {status: 'error', cid: data.cid, result: 'cannot_create_tag'});
+	    			return;
+	    		}
+	    		
+	    		if(myutils.fileExists(jsonfile)) {
+					if(data.task =='webview' || data.task == 'caveview') {
 						if(!myutils.fileExists(config.info_dir+'/'+tag_str+'.json')) {
-							found = 0;
+							var tag_json = {};
+							tag_json.tag=tag_str;
+							tag_json.type="daris";
+							tag_json.date=Date.now();
+							tag_json.datadir=config.daris_data_dir;
+							tag_json.url='data/daris/';
+							tag_json.cid = [data.cid];
+							tag_json.res = [obj.res];
+							
+							fs.writeFile( config.info_dir+'/'+tag_str+'.json', JSON.stringify(tag_json, null, 4), function(err) {
+								if (err) {
+									io.emit('viewdataset', {status: 'error', result: 'cannot_generate_tag_json'});
+									//throw err;
+									return;
+								} 
+							});	
+
 						}
-					};
-					console.log(tag_str);
-					
-					var tag_json = {};
-					tag_json.tag=tag_str;
-					tag_json.type="daris";
-					tag_json.date=Date.now();
-					tag_json.datadir=config.daris_data_dir;
-					tag_json.url='data/daris/';
-					tag_json.cid = [data.cid];
-					tag_json.res = [obj.res];
-					
-					fs.writeFile( config.info_dir+'/'+tag_str+'.json', JSON.stringify(tag_json, null, 4), function(err) {
+						io.emit('viewdataset', {status: 'done', cid:data.cid, task: data.task, tag: tag_str, json: jsonurl});
+					}
+					else if( data.task == 'multicaveview') {
+						io.emit('viewdataset', {status: 'done', cid: data.cid, task: data.task, json: jsonurl, res: obj.res });
+					}
+	    		}
+	    		else {
+	    			//write		
+					fs.writeFile( jsonfile, JSON.stringify(obj, null, 4), function(err) {
 						if (err) {
-							io.emit('viewdataset', {status: 'error', result: 'cannot_generate_tag_json'});
+							io.emit('viewdataset', {status: 'error', cid: data.cid, result: 'cannot_generate_json'});
 							//throw err;
 							return;
 						} 
-						io.emit('viewdataset', {status: 'done', cid:data.cid, task: data.task, 
-												  tag: tag_str, json: jsonurl});
-					});	
-					
-				}
-				else if( data.task == 'multicaveview') {
-					io.emit('viewdataset', {status: 'done', cid: data.cid, task: data.task, json: jsonurl, res: obj.res });
-				}
-				else {
-					io.emit('viewdataset', {status: 'error', result: 'invalid_task'});
-				}
-			});
+						console.log('sendViewDataToClient');
+						console.log(data);
+						if(data.task =='webview' || data.task == 'caveview') {
+							
+							var tag_json = {};
+							tag_json.tag=tag_str;
+							tag_json.type="daris";
+							tag_json.date=Date.now();
+							tag_json.datadir=config.daris_data_dir;
+							tag_json.url='data/daris/';
+							tag_json.cid = [data.cid];
+							tag_json.res = [obj.res];
+							
+							fs.writeFile( config.info_dir+'/'+tag_str+'.json', JSON.stringify(tag_json, null, 4), function(err) {
+								if (err) {
+									io.emit('viewdataset', {status: 'error', result: 'cannot_generate_tag_json'});
+									//throw err;
+									return;
+								} 
+								io.emit('viewdataset', {status: 'done', cid:data.cid, task: data.task, tag: tag_str, json: jsonurl});
+							});	
+							
+						}
+						else if( data.task == 'multicaveview') {
+							io.emit('viewdataset', {status: 'done', cid: data.cid, task: data.task, json: jsonurl, res: obj.res });
+						}
+						else {
+							io.emit('viewdataset', {status: 'error', result: 'invalid_task'});
+						}
+					});
+	    		} // else
+	    	});
 	    });		
 	});
 }
