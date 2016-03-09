@@ -129,7 +129,6 @@ function convertToPng(io, data) {
 function sendViewDataToClient(io, data) {
 	var dirpath = config.daris_data_dir + data.cid;
 	var xrwfile = dirpath + '/0001.xrw';
-	var pngfile = dirpath + '/0001.png';
 	var jsonfile = dirpath + '/0001.json';
 	var jsontemp = path.dirname(process.mainModule.filename) + '/src/template.json';
 	var jsonurl = 'data/daris/' + data.cid + '/0001.json';
@@ -163,24 +162,25 @@ function sendViewDataToClient(io, data) {
 	    			return;
 	    		}
 	    		
+	    		var tag_json = {};
+				tag_json.tag=tag_str;
+				tag_json.type="daris";
+				tag_json.date=Date.now();
+				tag_json.datadir=config.daris_data_dir;
+				tag_json.url='data/daris/';
+				tag_json.cid = [data.cid];
+				tag_json.res = [obj.res];
+	    		
 	    		if(myutils.fileExists(jsonfile)) {
 					if(data.task =='webview' || data.task == 'caveview') {
 						if(!myutils.fileExists(config.info_dir+'/'+tag_str+'.json')) {
-							var tag_json = {};
-							tag_json.tag=tag_str;
-							tag_json.type="daris";
-							tag_json.date=Date.now();
-							tag_json.datadir=config.daris_data_dir;
-							tag_json.url='data/daris/';
-							tag_json.cid = [data.cid];
-							tag_json.res = [obj.res];
 							
 							fs.writeFile( config.info_dir+'/'+tag_str+'.json', JSON.stringify(tag_json, null, 4), function(err) {
 								if (err) {
 									io.emit('viewdataset', {status: 'error', result: 'cannot_generate_tag_json'});
 									//throw err;
 									return;
-								} 
+								}
 							});	
 
 						}
@@ -201,15 +201,6 @@ function sendViewDataToClient(io, data) {
 						console.log('sendViewDataToClient');
 						console.log(data);
 						if(data.task =='webview' || data.task == 'caveview') {
-							
-							var tag_json = {};
-							tag_json.tag=tag_str;
-							tag_json.type="daris";
-							tag_json.date=Date.now();
-							tag_json.datadir=config.daris_data_dir;
-							tag_json.url='data/daris/';
-							tag_json.cid = [data.cid];
-							tag_json.res = [obj.res];
 							
 							fs.writeFile( config.info_dir+'/'+tag_str+'.json', JSON.stringify(tag_json, null, 4), function(err) {
 								if (err) {

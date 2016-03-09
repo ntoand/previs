@@ -7,10 +7,7 @@ function generateTag(callback) {
 	var dbname = './public/data/previs-volume.db';
 	var db = new sqlite3.Database(dbname);
 	var tag = crypto.randomBytes(3).toString('hex');
-	console.log("generateTag");
-	console.log(tag);
 	db.all('SELECT * FROM Tag WHERE tag="' + tag + '"', function(err, rows) {
-		console.log(rows);
 		if(rows.length > 0)
 			generateTag(callback);
 		else 
@@ -33,7 +30,6 @@ DBManager.prototype.createTag = function(data, callback) {
 	  		else {
 	  			console.log("createTag");
 	  			generateTag( function(err, tag) {
-	  				console.log(tag);
 	  				var stmt = db.prepare("INSERT INTO Tag VALUES (?, ?)");
 					stmt.run([tag, data]);
 					stmt.finalize();
