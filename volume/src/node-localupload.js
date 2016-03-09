@@ -136,7 +136,7 @@ function sendViewDataToClient(io, data) {
 				volume.json=jsonurl;
 				volume.thumb=thumburl;
 				volume.png=pngurl;
-				volume.xwr=xrwurl;
+				volume.xrw=xrwurl;
 				volume.res=obj.res;
 				volumes.push(volume);
 				tag_json.volumes=volumes;
@@ -148,7 +148,7 @@ function sendViewDataToClient(io, data) {
 						return;
 					} 
 					io.emit('processuploadfile', {status: 'done', tag: tag_str, json: jsonurl, thumb: thumburl, 
-											  png: pngurl, xwr: xrwurl});
+											  png: pngurl, xrw: xrwurl});
 				});	
 			});
 	    });		
