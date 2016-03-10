@@ -21,17 +21,18 @@ DBManager.prototype.createTag = function(data, callback) {
 	
 	db.serialize(function() {
 		// create Tag table if needed
-	  	db.run('CREATE TABLE if not exists Tag (tag TEXT,  data TEXT)');
+	  	db.run('CREATE TABLE if not exists Tag (tag TEXT,  data TEXT, date_added INTEGER)');
 	  	
 	  	db.all('SELECT * FROM Tag WHERE data="' + data + '"', function(err, rows) {
+	  		console.log(rows);
 	  		if(rows.length > 0) {
 	  			callback(null, rows[0].tag);
 	  		}
 	  		else {
 	  			console.log("createTag");
 	  			generateTag( function(err, tag) {
-	  				var stmt = db.prepare("INSERT INTO Tag VALUES (?, ?)");
-					stmt.run([tag, data]);
+	  				var stmt = db.prepare("INSERT INTO Tag VALUES (?, ?, ?)");
+					stmt.run([tag, data, Date.now()]);
 					stmt.finalize();
 					callback(null, tag);
 	  			});

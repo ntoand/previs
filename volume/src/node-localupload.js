@@ -8,6 +8,7 @@ var crypto 		= require('crypto');
 
 var myutils 	= require('./node-utils');
 var config		= require('./node-config').config; 
+var dbmanager   = require('./node-dbmanager');
 
 function processUploadFile(io, data) {
 	var filename = data.file;
@@ -117,39 +118,36 @@ function sendViewDataToClient(io, data) {
 					return;
 				} 
 				//generete tag for later use
-				var found = 1;
-				var tag_str = '';
-				while (found == 1){
-					tag_str = crypto.randomBytes(3).toString('hex');
-					if(!myutils.fileExists(config.info_dir+'/'+tag_str+'.json')) {
-						found = 0;
-					}
-				};
-				console.log(tag_str);
-
-				var tag_json = {};
-				tag_json.tag=tag_str;
-				tag_json.type='localupload';
-				tag_json.date=Date.now();
-				var volumes = [];
-				var volume = {};
-				volume.json=jsonurl;
-				volume.thumb=thumburl;
-				volume.png=pngurl;
-				volume.xrw=xrwurl;
-				volume.res=obj.res;
-				volumes.push(volume);
-				tag_json.volumes=volumes;
-
-				fs.writeFile( config.info_dir+'/'+tag_str+'.json', JSON.stringify(tag_json, null, 4), function(err) {
-					if (err) {
-						io.emit('processuploadfile', {status: 'error', result: 'cannot_generate_tag_json'});
-						//throw err;
-						return;
-					} 
-					io.emit('processuploadfile', {status: 'done', tag: tag_str, json: jsonurl, thumb: thumburl, 
-											  png: pngurl, xrw: xrwurl});
-				});	
+				dbmanager.createTag(data.cid, function(err, tag_str) {
+					if(err) {
+	    				io.emit('processuploadfile', {status: 'error', cid: data.cid, result: 'cannot_create_tag'});
+	    				return;
+	    			}
+	    		
+					var tag_json = {};
+					tag_json.tag=tag_str;
+					tag_json.type='localupload';
+					tag_json.date=Date.now();
+					var volumes = [];
+					var volume = {};
+					volume.json=jsonurl;
+					volume.thumb=thumburl;
+					volume.png=pngurl;
+					volume.xrw=xrwurl;
+					volume.res=obj.res;
+					volumes.push(volume);
+					tag_json.volumes=volumes;
+	
+					fs.writeFile( config.info_dir+'/'+tag_str+'.json', JSON.stringify(tag_json, null, 4), function(err) {
+						if (err) {
+							io.emit('processuploadfile', {status: 'error', result: 'cannot_generate_tag_json'});
+							//throw err;
+							return;
+						} 
+						io.emit('processuploadfile', {status: 'done', tag: tag_str, json: jsonurl, thumb: thumburl, 
+												  png: pngurl, xrw: xrwurl});
+					});	
+				});
 			});
 	    });		
 	});
