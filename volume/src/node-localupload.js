@@ -4,7 +4,6 @@
 var fs 			= require('fs');
 var path        = require('path');
 var exec 		= require('child_process').exec;
-var crypto 		= require('crypto');
 
 var myutils 	= require('./node-utils');
 var config		= require('./node-config').config; 
@@ -118,7 +117,7 @@ function sendViewDataToClient(io, data) {
 					return;
 				} 
 				//generete tag for later use
-				dbmanager.createTag(data.cid, function(err, tag_str) {
+				dbmanager.createTag(data.file, function(err, tag_str) {
 					if(err) {
 	    				io.emit('processuploadfile', {status: 'error', cid: data.cid, result: 'cannot_create_tag'});
 	    				return;
