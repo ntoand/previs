@@ -139,10 +139,6 @@ function exportData() {
   window.open('data:text/json;base64,' + window.btoa(getData()));
 }
 
-function importData() {
-  alert("Import data");
-}
-
 function resetFromData(src) {
   //Restore data from saved props
   if (src.volume && volume) {
@@ -213,7 +209,7 @@ function imageLoaded(image) {
     //gui.add({"Restore" : function() {resetFromData(props);}}, 'Restore');
     gui.add({"Save" : function() {saveDataJson();}}, 'Save');
     gui.add({"Export" : function() {exportData();}}, 'Export');
-    //gui.add({"Import" : function() {importData();}}, 'Import');
+    gui.add({"Import" : function() {document.getElementById('fileupload').click();}}, 'Import'). name('Import');
     //gui.add({"loadFile" : function() {document.getElementById('fileupload').click();}}, 'loadFile'). name('Load Image file');
     gui.add({"ColourMaps" : function() {window.colourmaps.toggle();}}, 'ColourMaps');
 
@@ -228,8 +224,37 @@ function imageLoaded(image) {
 /////////////////////////////////////////////////////////////////////////
 //File upload handling
 function fileSelected(files) {
-  filesProcess(files);
+  //filesProcess(files);
+  //console.log(files);
+  
+  if (!window.File || !window.FileReader || !window.FileList || !window.Blob) {
+    alert('The File APIs are not fully supported by your browser.');
+    return;
+  }
+  
+  var f = files[0]; 
+          
+  if (f) {
+      var r = new FileReader();
+      r.onload = function(e) { 
+        var contents = e.target.result;
+        
+        props = JSON.parse(contents);
+        props.url = reset.url;
+        props.res = reset.res || [256, 256, 256];
+        props.scale = reset.scale || [1.0, 1.0, 1.0];
+        console.log(props);
+        volume.load(props.volume);
+        slicer.load(props.slicer);
+
+      }
+      r.readAsText(f);
+  } else { 
+      alert("Failed to load file");
+  }
 }
+
+/*
 function filesProcess(files, callback) {
   window.URL = window.webkitURL || window.URL; // Vendor prefixed in Chrome.
   for (var i = 0; i < files.length; i++) {
@@ -238,6 +263,7 @@ function filesProcess(files, callback) {
     loadTexture();
   }
 }
+*/
 
 function autoResize() {
   if (volume) {
