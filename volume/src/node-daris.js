@@ -240,7 +240,8 @@ function getTagMultiCaveView(io, data) {
 	
 	var tag_json = {};
 	tag_json.tag=tag_str;
-	tag_json.type="daris";
+	tag_json.type="volume";
+	tag_json.source="daris";
 	tag_json.date=Date.now();
 	tag_json.datadir=config.daris_data_dir;
 	tag_json.url='data/daris/';

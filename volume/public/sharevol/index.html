@@ -536,21 +536,18 @@ html, body {
 
 .toolbox {
   visibility: hidden; z-index: 20;
-  background: rgba(255,255,255,0.5); 
+  background: #bba; 
   color: #000; 
-  cursor: move; 
   padding: 7px 10px 11px 10px; 
   position: absolute; 
   border-radius: 5px; border: 1px solid #444; 
   min-width: 300px;
   max-height: 400px;
+  text-align: center;
 }
 .scroll {
   overflow-y: auto;
   max-height: 330px;
-}
-.toolbox div,table,td,tr {
-  cursor: move; 
 }
 
 .toolbox * {cursor: auto;}
@@ -573,7 +570,6 @@ html, body {
 
 <div id="hidden" style="display: none">
   <canvas id="gradient" width="2048" height="1"></canvas>
-  <input name="file" id="fileupload" type="file" onchange="fileSelected(this.files)" >
 </div>
 
 <div class="toolbox" id="info"><div>

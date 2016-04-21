@@ -40,7 +40,7 @@ app.post('/localupload', function (req, res) {
 		files = [],
 	  	fields = [];
 
-	  	form.uploadDir = config.tiff_data_dir;
+	  	form.uploadDir = config.local_data_dir;
 	  	form.encoding = 'utf-8';
 	  	form.multiples = false;
 	  	form.keepExtensions = true;
