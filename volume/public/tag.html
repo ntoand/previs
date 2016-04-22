@@ -59,11 +59,12 @@
    		var socket = io();
    		
         $("#tag_btnGo").click(function(event){
-            if($("#input_tag").val() == '') {
+            var input_tag = $("#input_tag").val().trim();
+            if(input_tag == '') {
                 alert("Please input your query");
                 return;
             } 
-            var input_tag = $("#input_tag").val();
+            
             console.log(input_tag);
            
             socket.emit("processtag", { tag: input_tag });
@@ -154,8 +155,8 @@
                  $("#grid_div").masonry({
                     // options
                     itemSelector : '.grid-item',
-                    columnWidth : 280,
-                    gutter: 20
+                    columnWidth : 280
+                    //gutter: 20
                 });
             });
         }

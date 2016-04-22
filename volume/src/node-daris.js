@@ -140,7 +140,7 @@ function sendViewDataToClient(io, data) {
 			return;
 		} 
 		var obj = JSON.parse(jsondata);
-		obj.url = 'data/daris/' + data.cid + '/0001.png';
+		obj.objects[0].volume.url = 'data/daris/' + data.cid + '/0001.png';
 
 		var cmd = 'xrwinfo ' + xrwfile + ' | grep dimensions';
 		exec(cmd, function(err, stdout, stderr) 
@@ -154,7 +154,7 @@ function sendViewDataToClient(io, data) {
 	    	stdout = myutils.trim(stdout).trim();
 	    	var res = stdout.split(" ");
 
-	    	obj.res = [res[2], res[3], res[4]];
+	    	obj.objects[0].volume.res = [res[2], res[3], res[4]];
 	    	
 	    	dbmanager.createTag(data.cid, function(err, tag_str) {
 	    		if(err) {
@@ -169,7 +169,7 @@ function sendViewDataToClient(io, data) {
 				tag_json.datadir=config.daris_data_dir;
 				tag_json.url='data/daris/';
 				tag_json.cid = [data.cid];
-				tag_json.res = [obj.res];
+				tag_json.res = [data.res];
 	    		
 	    		if(myutils.fileExists(jsonfile)) {
 					if(data.task =='webview' || data.task == 'caveview') {
@@ -187,7 +187,7 @@ function sendViewDataToClient(io, data) {
 						io.emit('viewdataset', {status: 'done', cid:data.cid, task: data.task, tag: tag_str, json: jsonurl});
 					}
 					else if( data.task == 'multicaveview') {
-						io.emit('viewdataset', {status: 'done', cid: data.cid, task: data.task, json: jsonurl, res: obj.res });
+						io.emit('viewdataset', {status: 'done', cid: data.cid, task: data.task, json: jsonurl, res: obj.objects[0].volume.res });
 					}
 	    		}
 	    		else {
@@ -213,7 +213,7 @@ function sendViewDataToClient(io, data) {
 							
 						}
 						else if( data.task == 'multicaveview') {
-							io.emit('viewdataset', {status: 'done', cid: data.cid, task: data.task, json: jsonurl, res: obj.res });
+							io.emit('viewdataset', {status: 'done', cid: data.cid, task: data.task, json: jsonurl, res: obj.objects[0].volume.res });
 						}
 						else {
 							io.emit('viewdataset', {status: 'error', result: 'invalid_task'});

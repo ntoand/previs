@@ -193,6 +193,11 @@
             cave_button.disabled = value;
         }
         
+        function disableGenerateCAVE2Button(value) {
+            var generate_cave2 = document.getElementById("btnGenerateCAVE2Data");
+            generate_cave2.disabled = value;
+        }
+        
         // display selected datasets
         function displaySelectedDatasets (){
             
@@ -371,6 +376,7 @@
                 lstatus.style.color = 'red';
                 lstatus.innerHTML = "Error: " + data.result;
                 alert(data.detail);
+                disableGenerateCAVE2Button(false);
             }
             //enable buttons again
             disableDatatasetButtons(data.cid, false);
@@ -561,8 +567,8 @@
             
             socket.emit('viewdataset', {task: "multicaveview", sid: $.cookie("DARIS-SESSION"), cid: saved_datasets[0].cid });
             
-            document.getElementById("btnGenerateCAVE2Data").disabled = true;
             disableDatatasetButtons(saved_datasets[0].cid, true);
+            disableGenerateCAVE2Button(true);
         }); // end btnRunOnCAVE clicked
         
         
