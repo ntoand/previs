@@ -90,7 +90,7 @@
                 
                 var type_label = document.createElement("label");
                 type_label.setAttribute("class", "result_label");
-                type_label.innerHTML = "Type: " + data.result.type;
+                type_label.innerHTML = "Type: " + data.result.type + " (" + data.result.source + ")";
                 
                 var d = new Date(data.result.date);
                 var date_label = document.createElement("label");
@@ -101,11 +101,14 @@
                 result_div.appendChild(type_label); 
                 result_div.appendChild(date_label);
                 
-                if(data.result.type === "localupload") {
+                if(data.result.type === "volume" && data.result.source === "localupload") {
                     generateLocalUploadGrid(data.result.volumes);
                 }
-                else if(data.result.type === "daris") {
+                else if(data.result.type === "volume" &&  data.result.source === "daris") {
                     generateDarisGrid(data.result);
+                }
+                else {
+                    console.log("invalid data type");
                 }
             }
         });

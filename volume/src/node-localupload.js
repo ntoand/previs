@@ -60,8 +60,7 @@ function convertToPNG(io, data) {
 			  + ' && convert ' + result_dir + '/vol.png -thumbnail 256 ' + result_dir + '/vol_thumb.png';
 	console.log(cmd);
 
-	exec(cmd, function(err, stdout, stderr) 
-    {
+	exec(cmd, function(err, stdout, stderr) {
     	console.log(stdout);
     	console.log(stderr);
     	if(err)
@@ -96,8 +95,7 @@ function sendViewDataToClient(io, data) {
 		obj.objects[0].volume.url = 'data/local/' + basename + '_result/vol.png';
 
 		var cmd = 'xrwinfo ' + xrwfile + ' | grep dimensions';
-		exec(cmd, function(err, stdout, stderr) 
-	    {
+		exec(cmd, function(err, stdout, stderr) {
     		if (err) {
 				io.emit('processuploadfile', {status: 'error', result: 'cannot_run_xrwinfo'});
 				//throw err;
@@ -128,13 +126,14 @@ function sendViewDataToClient(io, data) {
 					tag_json.type='volume'
 					tag_json.source='localupload';
 					tag_json.date=Date.now();
+						
 					var volumes = [];
 					var volume = {};
 					volume.json=jsonurl;
 					volume.thumb=thumburl;
 					volume.png=pngurl;
 					volume.xrw=xrwurl;
-					volume.res=obj.res;
+					volume.res=obj.objects[0].volume.res;
 					volumes.push(volume);
 					tag_json.volumes=volumes;
 	
