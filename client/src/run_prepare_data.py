@@ -130,6 +130,7 @@ def main(argv):
                 vol_ele["thumb"] = vol_thumb_filename
                 vol_ele["dir"] = vol_dir
                 vol_ele["res"] = data["volumes"][ii]["res"]
+                vol_ele["name"] = ""
                 local_json["volumes"].append(vol_ele)
 
                 with open(vol_dir + "/init.script", "wt") as f:
@@ -165,6 +166,7 @@ def main(argv):
                 vol_ele["thumb"] = vol_thumb_filename
                 vol_ele["dir"] = vol_dir
                 vol_ele["res"] = data["res"][ii]
+                vol_ele["name"] = cid
                 local_json["volumes"].append(vol_ele)
 
                 with open(vol_dir + "/init.script", "wt") as f:

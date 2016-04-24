@@ -17,6 +17,7 @@ function loadSetting() {
 
 function saveSetting() {
   setting.server = document.getElementById('setting-server').value;
+  setting.local_data_dir = document.getElementById('setting-local-data-dir').value;
   fs.writeFile( "setting.json", JSON.stringify(setting, null, 4), function(err) {
     if (err) {
       showMessage("Error! Check err msg in console");
@@ -41,12 +42,16 @@ function toogleDebug() {
   require('remote').getCurrentWindow().toggleDevTools();
 }
 
-function checkSubmit(e)
+function searchKeyPress(e)
 {
-   if(e && e.keyCode == 13)
-   {
-      processTag();
-   }
+    // look for window.event in case event isn't passed in
+    e = e || window.event;
+    if (e.keyCode == 13)
+    {
+        document.getElementById('btnSearch').click();
+        return false;
+    }
+    return true;
 }
 
 function showMessage(msg) {
@@ -65,6 +70,8 @@ function processTag() {
     showMessage("invalid tag format (must be 6-character long)");
     return;
   }
+  var spinner = document.getElementById('spinnerTop');
+  spinner.style.display = 'block';
   var exec = require('child_process').exec;
   var cmd = 'cd ./src && python run_prepare_data.py -t ' + tag + ' -s ' + setting.server +
             ' -d ' + setting.local_data_dir;
@@ -75,6 +82,7 @@ function processTag() {
     if(err){
       showMessage("Error! Check err msg in console");
       console.log(err);
+      spinner.style.display = 'none';
       return;
     }
     showMessage("Data preparation -- Done");
@@ -85,6 +93,7 @@ function processTag() {
       if (err) {
         showMessage("Error! Check err msg in console");
         console.log(err);
+        spinner.style.display = 'none';
         return;
       } 
       vols_info = JSON.parse(jsondata);
@@ -100,10 +109,18 @@ function processTag() {
       for (i=0,l=vols_info.volumes.length; i < l; i++) {
         vol = vols_info.volumes[i];
 
+        var vol_name = '';
+        if(vols_info.source == 'daris') {
+          vol_name = vol.name;
+        }
+        else {
+          vol_name = 'Volume ' + (i+1).toString();
+        }
+
         vols_content += '<div class="mdl-cell mdl-cell--4-col-tablet">' + 
                         ' <div class="vol-card mdl-card mdl-shadow--2dp">' +
                         '   <div class="mdl-card__title">' + 
-                        '     <h2 class="mdl-card__title-text">Volume ' + (i+1).toString() + '</h2>' +
+                        '     <h2 class="mdl-card__title-text">' + vol_name + '</h2>' +
                         '   </div>' +
                         '   <div class="mdl-card__media">' +
                         '     <img src="' + vol.thumb + '" alt="" />' +
@@ -126,6 +143,7 @@ function processTag() {
       }
       //console.log(vols_content);
       document.getElementById("volumes").innerHTML = vols_content;
+      spinner.style.display = 'none';
 
     }); //fs.readFile
 

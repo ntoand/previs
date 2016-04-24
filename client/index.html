@@ -18,13 +18,14 @@
           <form id="tag-form" action="#">
             <nav class="mdl-navigation">
             <input class="mdl-textfield__input" type="text" maxlength=150 placeholder="Enter your tag" id="tag-input" 
-                    onKeyPress="return checkSubmit(event)">
-            <label class="mdl-button mdl-js-button mdl-button--icon" for="search-field" 
+                    onkeypress="return searchKeyPress(event);">
+            <label class="mdl-button mdl-js-button mdl-button--icon" for="search-field" id="btnSearch" 
                    onClick="processTag()">
               <i class="material-icons">search</i>
             </label>
             </nav>
           </form>
+          <div class="mdl-spinner mdl-js-spinner is-active" id="spinnerTop"></div>
           <div class="android-header-spacer mdl-layout-spacer"></div>
           <label class="mdl-button mdl-js-button mdl-button--icon"><i class="material-icons"
                   onClick="location.reload()">refresh</i></label>
