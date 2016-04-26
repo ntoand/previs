@@ -377,7 +377,12 @@
                 imgprocess.style.visibility = 'hidden';
                 lstatus.style.color = 'red';
                 lstatus.innerHTML = "Error: " + data.result;
-                alert(data.detail);
+                BootstrapDialog.show({
+                    title: 'Error',
+                    message: data.detail,
+                    type: BootstrapDialog.TYPE_DANGER
+                });
+                //alert(data.detail);
                 disableGenerateCAVE2Button(false);
             }
             //enable buttons again
@@ -392,7 +397,12 @@
         
         socket.on('searchdataset', function(data) {
            if (data.status === 'error') {
-               alert("Error");
+               BootstrapDialog.show({
+                    title: 'Error',
+                    message: data.detail,
+                    type: BootstrapDialog.TYPE_DANGER
+                });
+               //alert("Error");
            }
            else if (data.status === 'done') {
                console.log(data.result);
@@ -549,7 +559,12 @@
         // ===== DARIS SEARCH =====
         $("#daris_btnSearch").click(function(event){
             if($("#daris_search_cid").val() == '' && $("#daris_search_keyword").val() == '') {
-                alert("Please input your query");
+                BootstrapDialog.show({
+                    title: 'Error!',
+                    message: 'Please input your query',
+                    type: BootstrapDialog.TYPE_DANGER
+                });
+                //alert("Please input your query");
                 return;
             } 
             var daris_search_cid = $("#daris_search_cid").val();
@@ -564,7 +579,12 @@
             num_processed_datasets = 0;
             
             if(saved_datasets.length == 0) {
-                alert("Please select datasets first");
+                BootstrapDialog.show({
+                    title: 'Error!',
+                    message: 'Please select datasets first',
+                    type: BootstrapDialog.TYPE_DANGER
+                });
+                //alert("Please select datasets first");
             }
             
             socket.emit('viewdataset', {task: "multicaveview", sid: $.cookie("DARIS-SESSION"), cid: saved_datasets[0].cid });
