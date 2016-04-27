@@ -203,13 +203,16 @@ function saveDataJson() {
 
 socket.on('savedatajson', function (data) {
   if(data.status == "error") {
-    alert("Error: " + data.detail + " (you cannot save examples!)");
+    //alert("Error: " + data.detail + " ()");
+    $('status').innerHTML = "Fail to save. You cannot save examples!";
+    info.show();
+    setTimeout(hideMessage, 3000);
   }
   else if(data.status == "done") {
     //alert("Saved succesfully!");
-    $('status').innerHTML = "Saved succesfully!";
+    $('status').innerHTML = "Saved successfully!";
     info.show();
-    setTimeout(hideMessage, 1500);
+    setTimeout(hideMessage, 2000);
   }
 });
 

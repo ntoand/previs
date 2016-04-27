@@ -2,13 +2,9 @@ var path = require('path');
 var gulp = require('gulp');
 
 var concat = require('gulp-concat');
-//var size = require('gulp-size');
-//var rename = require('gulp-rename');
 var uglify = require('gulp-uglify');
 var gutil = require('gulp-util');
-//var through = require('through');
-//var os = require('os');
-//var File = gutil.File;
+var rename = require('gulp-rename');
 
 var paths = {
 	sharevol : [
@@ -18,7 +14,12 @@ var paths = {
 	    "public/sharevol/src/slicer.js",
 	    "public/sharevol/src/volume.js",
 	    "public/sharevol/src/main.js"
-	    ]
+	    ],
+	separate_scripts: [
+		"public/js/local.js",
+		"public/js/daris.js",
+		"public/js/tag.js"
+		]
 };
 
 gulp.task('scripts.sharevol', function() {
@@ -27,4 +28,11 @@ gulp.task('scripts.sharevol', function() {
         .pipe(gulp.dest('public/sharevol'))
         .pipe(uglify())
         .pipe(gulp.dest('public/sharevol'))
+});
+
+gulp.task('scripts', function() {
+    gulp.src(paths.separate_scripts)
+    	.pipe(uglify())
+    	.pipe(rename({suffix: '.min'}))
+        .pipe(gulp.dest('public/js'))
 });
