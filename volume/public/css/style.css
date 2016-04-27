@@ -18,6 +18,10 @@ p {
   min-height: 600px;
 }
 
+#upload_filename {
+  padding: 5px 0px 5px 0px;
+}
+
 .img_process {
 	margin-left: 10px;
 	visibility: hidden;
