@@ -56,10 +56,14 @@ app.post('/localupload', function (req, res) {
 	    	console.log(file.path);
 	    	files.push([field, file]);
 	  	})
+	  	.on('error', function(err) {
+    		console.log('An error has occured: \n' + err);
+    		res.json({status: 'error', detail: err});
+  		})
 	  	.on('end', function() {
 	    	console.log('-> upload done');
 	    	var filebase = path.parse(files[0][1].path).base;
-	    	res.redirect('local.html?file=' + filebase);
+	    	res.json({status: 'done', file: filebase});
 	    });
 
 	form.parse(req);
