@@ -14,6 +14,10 @@ p {
 	font-family: Arimo, Helvetica, sans-serif;
 }
 
+.main-div {
+  min-height: 600px;
+}
+
 .img_process {
 	margin-left: 10px;
 	visibility: hidden;
