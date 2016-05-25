@@ -24,16 +24,19 @@
         <h3 class="section-heading">Upload Data</h3>
         <p> Formats Supported: </p>
         <ul>
-            <li> TIFF Image Stack (.zip file of an indexed TIFF image stack). Example data <a href="data/example/tiffstack-foot.zip">tiffstack-foot.zip</a> </li>
+            <li> TIFF Image Stack (.zip file of an indexed TIFF image stack). 
+            <a href="#" id="tiffstack_help"> Help <span class="glyphicon glyphicon-question-sign"></span> </a> </li>
         </ul>
         
         <button type="button" id="btnUploadFile" class="btn btn-default">Upload File</button>
         <input id="upload-input" type="file" name="uploads"></br>
-        <label id="upload_filename">File selected: </label></br>
-        <div class="progress" style="width: 300px">
-            <div class="progress-bar" role="progressbar"></div>
+        <div id='local_file_upload_info'>
+            <label id="upload_filename">File selected: </label></br>
+            <div class="progress" style="width: 300px">
+                <div class="progress-bar" role="progressbar"></div>
+            </div>
         </div>
-            
+        
         <div id="local_upload_message">
             <img id="process_img" src="data:image/gif;base64,R0lGODlhEAAQAPIAAP///wAAAMLCwkJCQgAAAGJiYoKCgpKSkiH+GkNyZWF0ZWQgd2l0aCBhamF4bG9hZC5pbmZvACH5BAAKAAAAIf8LTkVUU0NBUEUyLjADAQAAACwAAAAAEAAQAAADMwi63P4wyklrE2MIOggZnAdOmGYJRbExwroUmcG2LmDEwnHQLVsYOd2mBzkYDAdKa+dIAAAh+QQACgABACwAAAAAEAAQAAADNAi63P5OjCEgG4QMu7DmikRxQlFUYDEZIGBMRVsaqHwctXXf7WEYB4Ag1xjihkMZsiUkKhIAIfkEAAoAAgAsAAAAABAAEAAAAzYIujIjK8pByJDMlFYvBoVjHA70GU7xSUJhmKtwHPAKzLO9HMaoKwJZ7Rf8AYPDDzKpZBqfvwQAIfkEAAoAAwAsAAAAABAAEAAAAzMIumIlK8oyhpHsnFZfhYumCYUhDAQxRIdhHBGqRoKw0R8DYlJd8z0fMDgsGo/IpHI5TAAAIfkEAAoABAAsAAAAABAAEAAAAzIIunInK0rnZBTwGPNMgQwmdsNgXGJUlIWEuR5oWUIpz8pAEAMe6TwfwyYsGo/IpFKSAAAh+QQACgAFACwAAAAAEAAQAAADMwi6IMKQORfjdOe82p4wGccc4CEuQradylesojEMBgsUc2G7sDX3lQGBMLAJibufbSlKAAAh+QQACgAGACwAAAAAEAAQAAADMgi63P7wCRHZnFVdmgHu2nFwlWCI3WGc3TSWhUFGxTAUkGCbtgENBMJAEJsxgMLWzpEAACH5BAAKAAcALAAAAAAQABAAAAMyCLrc/jDKSatlQtScKdceCAjDII7HcQ4EMTCpyrCuUBjCYRgHVtqlAiB1YhiCnlsRkAAAOwAAAAAAAAAAAA=="/>
             <label id="message_label">Uploading... please wait!</label>

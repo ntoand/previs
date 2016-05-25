@@ -15,7 +15,7 @@ MAX_FILESIZE = 150 * 1024 * 1024
 
 def help():
 	print 'Usage: tiff2tga.py [-h] -i input_file -o output_dir'
- 	print 'Example: tiff2tg1.py -i /path/to/tiffs.zip -o /path/to/data'
+ 	print 'Example: tiff2tga.py -i /path/to/tiffs.zip -o /path/to/data'
 
 def jsonError(errstr):
         json_ret = {}

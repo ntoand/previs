@@ -19,8 +19,6 @@ var state = {};
 var reset;
 var filename;
 var mobile;
-var socket = io();
-var jsonfile;
 
 function initPage() {
   window.onresize = autoResize;
@@ -29,6 +27,19 @@ function initPage() {
   info = new Popup("info");
   info.show();
   colourmaps = new Popup("colourmap", 400, 200);
+
+  try {
+    if (!window.WebGLRenderingContext)
+      throw "No browser WebGL support";
+    var canvas = document.createElement('canvas');
+    var ctx = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+    if (!ctx)
+      throw "No WebGL context available";
+    canvas = ctx = null;
+  } catch (e) {
+    $('status').innerHTML = "Sorry, ShareVol requires a <a href='http://get.webgl.org'>WebGL</a> capable browser!";
+    return;
+  }
 
   //Yes it's user agent sniffing, but we need to attempt to detect mobile devices so we don't over-stress their gpu...
   mobile = (screen.width <= 760 || /Android|webOS|iPhone|iPad|iPod|BlackBerry/i.test(navigator.userAgent));
@@ -43,8 +54,6 @@ function initPage() {
 
   $('status').innerHTML = "Loading params...";
   ajaxReadFile(decodeURI(json), loadData, true);
-  
-  jsonfile = json;
 }
 
 function loadStoredData(key) {
@@ -151,6 +160,7 @@ function getData(compact, matrix) {
   if (volume) {
     var vdat = volume.get(matrix);
     var object = state.objects[0];
+    object.saturation = vdat.properties.saturation;
     object.brightness = vdat.properties.brightness;
     object.contrast = vdat.properties.contrast;
     object.zmin = vdat.properties.zmin;
@@ -195,29 +205,6 @@ function getData(compact, matrix) {
   if (compact) return JSON.stringify(state);
   //Otherwise return indented json string
   return JSON.stringify(state, null, 2);
-}
-
-function saveDataJson() {
-  socket.emit('savedatajson', { file: jsonfile, json: getData() });
-}
-
-socket.on('savedatajson', function (data) {
-  if(data.status == "error") {
-    //alert("Error: " + data.detail + " ()");
-    $('status').innerHTML = "Fail to save. You cannot save examples!";
-    info.show();
-    setTimeout(hideMessage, 3000);
-  }
-  else if(data.status == "done") {
-    //alert("Saved succesfully!");
-    $('status').innerHTML = "Saved successfully!";
-    info.show();
-    setTimeout(hideMessage, 2000);
-  }
-});
-
-function hideMessage() {
-  info.hide();
 }
 
 function exportData() {
@@ -278,8 +265,9 @@ function imageLoaded(image) {
 
   //Update colours (and draw objects)
   colours.read(state.colourmaps[0].colours);
+  //Copy the global background colour
+  colours.palette.background = new Colour(state.properties.background);
   colours.update();
-  updateColourmap();
 
   info.hide();  //Status
 
@@ -293,13 +281,21 @@ function imageLoaded(image) {
     var gui = new dat.GUI();
     if (state.properties.server)
       gui.add({"Update" : function() {ajaxPost(state.properties.server + "/update", "data=" + encodeURIComponent(getData(true, true)));}}, 'Update');
-    
+    /* LOCALSTORAGE DISABLED
+    gui.add({"Reset" : function() {resetFromData(reset);}}, 'Reset');*/
     gui.add({"Restore" : function() {resetFromData(state);}}, 'Restore');
-    gui.add({"Save" : function() {saveDataJson();}}, 'Save');
     gui.add({"Export" : function() {exportData();}}, 'Export');
-    //gui.add({"Import" : function() {document.getElementById('fileupload').click();}}, 'Import'). name('Import');
     //gui.add({"loadFile" : function() {document.getElementById('fileupload').click();}}, 'loadFile'). name('Load Image file');
     gui.add({"ColourMaps" : function() {window.colourmaps.toggle();}}, 'ColourMaps');
+
+    var f = gui.addFolder('Views');
+    var ir2 = 1.0 / Math.sqrt(2.0);
+    f.add({"XY" : function() {volume.rotate = quat4.create([0, 0, 0, 1]);}}, 'XY');
+    f.add({"YX" : function() {volume.rotate = quat4.create([0, 1, 0, 0]);}}, 'YX');
+    f.add({"XZ" : function() {volume.rotate = quat4.create([ir2, 0, 0, -ir2]);}}, 'XZ');
+    f.add({"ZX" : function() {volume.rotate = quat4.create([ir2, 0, 0, ir2]);}}, 'ZX');
+    f.add({"YZ" : function() {volume.rotate = quat4.create([0, -ir2, 0, -ir2]);}}, 'YZ');
+    f.add({"ZY" : function() {volume.rotate = quat4.create([0, -ir2, 0, ir2]);}}, 'ZY');
 
     if (volume) volume.addGUI(gui);
     if (slicer) slicer.addGUI(gui);
@@ -316,12 +312,6 @@ function autoResize() {
     volume.height = 0; //volume.canvas.height = window.innerHeight;
     volume.draw();
   }
-}
-
-function setColourMap(filename) {
-  var data = readURL("colourmaps/" + filename);
-  colours.read(data);
-  updateColourmap();
 }
 
 function updateColourmap() {
