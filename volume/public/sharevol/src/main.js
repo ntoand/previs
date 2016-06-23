@@ -20,6 +20,11 @@ var reset;
 var filename;
 var mobile;
 
+// previs - begin
+var socket = io();
+var jsonfile;
+// previs - end
+
 function initPage() {
   window.onresize = autoResize;
 
@@ -54,6 +59,8 @@ function initPage() {
 
   $('status').innerHTML = "Loading params...";
   ajaxReadFile(decodeURI(json), loadData, true);
+  
+  jsonfile = json;
 }
 
 function loadStoredData(key) {
@@ -207,6 +214,31 @@ function getData(compact, matrix) {
   return JSON.stringify(state, null, 2);
 }
 
+// previs - begin
+function saveDataJson() {
+  socket.emit('savedatajson', { file: jsonfile, json: getData() });
+}
+
+socket.on('savedatajson', function (data) {
+  if(data.status == "error") {
+    //alert("Error: " + data.detail + " ()");
+    $('status').innerHTML = "Fail to save. You cannot save examples!";
+    info.show();
+    setTimeout(hideMessage, 3000);
+  }
+  else if(data.status == "done") {
+    //alert("Saved succesfully!");
+    $('status').innerHTML = "Saved successfully!";
+    info.show();
+    setTimeout(hideMessage, 2000);
+  }
+});
+
+function hideMessage() {
+  info.hide();
+}
+// previs - end
+
 function exportData() {
   window.open('data:text/json;base64,' + window.btoa(getData()));
 }
@@ -255,7 +287,9 @@ function imageLoaded(image) {
 
   //Create the volume viewer
   if (state.objects[0].volume) {
-    volume = new Volume(state.objects[0], image, mobile);
+    interactive = true;
+    if (mobile || state.properties.interactive == false) interactive = false;
+    volume = new Volume(state.objects[0], image, interactive);
     volume.slicer = slicer; //For axis position
   }
 
@@ -284,6 +318,7 @@ function imageLoaded(image) {
     /* LOCALSTORAGE DISABLED
     gui.add({"Reset" : function() {resetFromData(reset);}}, 'Reset');*/
     gui.add({"Restore" : function() {resetFromData(state);}}, 'Restore');
+    gui.add({"Save" : function() {saveDataJson();}}, 'Save');
     gui.add({"Export" : function() {exportData();}}, 'Export');
     //gui.add({"loadFile" : function() {document.getElementById('fileupload').click();}}, 'loadFile'). name('Load Image file');
     gui.add({"ColourMaps" : function() {window.colourmaps.toggle();}}, 'ColourMaps');
