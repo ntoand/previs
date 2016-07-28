@@ -4,7 +4,7 @@
 #  This can be used with a zip/gzip file
 #  Usage: make_lavaVu_initscript.py -i [Folder name | zip file]
 #
-# michael dot eager at monash dot edu
+# Michael Eager
 
 # Copyright 2016 Michael Eager (michael.eager@monash.edu)
 #

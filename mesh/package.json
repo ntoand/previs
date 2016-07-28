@@ -7,7 +7,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node server.js"
   },
-  "author": "Michael Eager and Toan Nguyen",
+  "author": "Michael Eager (Copy of Toan Nguyen's sharevol)",
   "license": "TBA",
   "dependencies": {
     "body-parser": "^1.14.2",

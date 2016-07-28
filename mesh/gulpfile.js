@@ -22,12 +22,12 @@ var paths = {
 		]
 };
 
-gulp.task('scripts.sharemesh', function() {
+gulp.task('scripts.mesh', function() {
     gulp.src(paths.sharemesh)
-        .pipe(concat('sharemesh.js'))
-        .pipe(gulp.dest('public/sharemesh'))
+        .pipe(concat('mesh.js'))
+        .pipe(gulp.dest('public/mesh'))
         .pipe(uglify())
-        .pipe(gulp.dest('public/sharemesh'))
+        .pipe(gulp.dest('public/mesh'))
 });
 
 gulp.task('scripts', function() {

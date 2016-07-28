@@ -162,6 +162,31 @@ app.get('/rest/members', function (req, res) {
     });
 });
 
+//! Make model tok file
+app.get('/rest/members', function (req, res) {
+	  var cid = req.query.cid;
+	  var sid = req.query.sid;
+	  console.log(cid);
+
+	  var cmd = 'cd ' + config.scripts_dir + ' && python .py -t members -s ' + sid + ' -c ' + cid;
+    console.log(cmd);
+    exec(cmd, function(err, stdout, stderr) 
+         {
+    	       console.log(stdout);
+    	       console.log(stderr);
+    	       if(err)
+		         {
+			           console.log(err);
+			           res.setHeader('Content-Type', 'application/json');
+    		         res.send(JSON.stringify({ error: "Cannot get members" }, null, 4));
+			           return;
+		         }
+		         res.setHeader('Content-Type', 'application/json');
+    	       res.send(stdout);
+         });
+});
+
+
 // ===== SOCKET IO ===========
 io.on('connection', function (socket) {
 	console.log("A client connected!");

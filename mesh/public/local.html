@@ -6,7 +6,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
-	<title>Monash MIVP Cave2 Volume Renderer</title>
+	<title>Monash MIVP Cave2 Mesh Viewer</title>
 
     <!-- Bootstrap style-->
     <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
@@ -21,10 +21,18 @@
     <div id="header"></div>
 
     <div class="container main-div">
-        <h3 class="section-heading">Upload Data</h3>
+        <h3 class="section-heading">Upload your meshes</h3>
+        <!-- Geography icon by Icons8 -->
+        <img class="icon icons8-Geography" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAYAAAAeP4ixAAAEa0lEQVRoQ92ajbUMQRCF60WACHgRIAJEgAgQASJABIgAESACRIAIEAEi4Hx76u6p7e2fmtl53tg+553Zt9PTXbdu1e2a7j2xI2knC+K4aGY3zOyamd30cXXVNB/9A9cvZvbJzH4tYcOhQDD+tpk9cgBzbALQCzN7fwiouUAA8NAB8LnW8DYGvvWbd70/rNUazND/5RxAc4AA4KmZCcBXN4CQ4t5vN/i1W/vHr5rrvve/4EbDCIxe9X4AYnwApdsUIFfcuxhMw+MY9d3M7gTP3zIz5QL9SiB8R+58CEy9MzPGB7wYAyAsMv6wZYFg6Ctn4Yd7kMlpMPPNrw/cmDhxDQj3cQJjwsBpCCfmIsQu+3eMqbmagDJANCGDvHEQUWmYlJCCoVKlWozIIJiDAcKI8FLDOYx7z7+oOWgH1AhICYL/YyMcYIOGV2th0GKEZwjTz53nCbUUmB6QGPctj2gimCpBCnAPCH00RsmKno/OJGeqYdYCgqfxFBQ/cxUp4zPmRouNUWhxX6yWuRLnQ8WeeM5crzHfAgIIaGeRgplak6eQXylZrd+IEZ5BoZDfXi4on+gLmGGOCD3qhIGtEgKKWdVHiZgBIqf0HEcEAAI1e+xisAVTMhJDqkHEKr7eC8MSiKR0FdYOjNjJ3Qgkm7yMr/BrKU20IRNa9JcTW+KiMaviEIGwID3vLGzRuGx+ZFSrlNlenqivEn+bnxGIlKqp1QGJ+pZ11VzV4jnVX1VVKgbWGrftKyCE1U+vXFtl+ZxwmcLIlL6yl2cuoayxtKaAy9CqsmK0fgh4NkfiesI6gbd7TeG1iSABySZaDIFWkVhOPgWIjMuErARnIw4CMmUAxfJ5A9mxQ0CoYJG1jCcyq/DcfJIaZgRHQKi4TwVkCv07lCZWzn8ydgkkYdcqu5wcLZCNJg98vpbQim+nW0ZIGMrj/zHZed24UsrvFLU4b/lVmbKx4+gWxB10gxxRiZIp7qbUT/RVMTq7RNkrwgZgpqwNZ9G3WTTGgi2TJ9osyIhDFohW6kwxurfxUXuxou7CwF477xcr9o0BXn2xgi5kmF3y3j4VANfwqsuuP2vJZt07ys0HgEVWVllUuVE7bNQYiWFDmCGDa9qgQ54Jp+EGnViQKvUSX8oxWk8yqqX1o7drqQSvqlpvExsDSfzeJnZGHEZAVPzthUuIbYkLfViQ944vDj1W0Lv+ao8V5Ix4NsE5BtTHdtYHPezs6Nylu1k+OrHC6BIMiVY7emvlUy+0FPe1ozd2PVMgWqpVk12KShghZwARDyijZM85DC1zIx68cg8wixyGChhhxIA6D4cBDF/yeJpQ0oEq6gSoRY+nI0tsdqMisKNik6RnzeF0F8YIv94PBggbmCSkkN74ExBYYHzGTLdMjtQGwwgm50+Ayn4whjEKC7xL/9oRNs8CgP78jfYN9myaC0QDAUgGKuTSXvSOvKrCHoAnA9BkhwKJRgMKb8efOfFZjOFxbUzrZ05cZxsfJ18SyFQmFu3/F8fegkIaMbyCAAAAAElFTkSuQmCC" width="50" height="50">
+
+
+        <!-- Grid icon by Icons8 -->
+        <img class="icon icons8-Grid" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAYAAAAeP4ixAAAA1UlEQVRoQ+2a2Q2DQBBDTUfpANEBraaDdEBJQYvCEQnCHe1Yj+/9GI89a4+WQiZfYYJDUyCNpEcwYC9JVap5CuQdDERfbodhDsgWufWgszkLkA+vMLIwj4cli7SQ1u87HmlZz0g0g190dhsg2ZjcSke/LgbrGYGRq2MH0sotdsAIjNwUBM9Ky8bZbYBgiBji2AE2RNJvbuYJIzByU5yxfh8houDsOHvXAd4QUxcOh7s9W9+eszg7zv5HZ7dZdcM7e/pBpQyG4impHswkWPGz5W6ZhxA4W7TNwDPriCIBAAAAAElFTkSuQmCC" width="50" height="50">
+        <!-- Spiderweb icon by Icons8 -->
+        <img class="icon icons8-Spiderweb" src="data:image/png;base64,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" width="50" height="50">
         <p> Formats Supported: </p>
         <ul>
-            <li> TIFF Image Stack (.zip file of an indexed TIFF image stack). Example data <a href="data/example/tiffstack-foot.zip">tiffstack-foot.zip</a> </li>
+            <li> OBJ Image Stack (.zip file of directories containing Wavefront-OBJ files). Example data <a href="data/example/heart-bp3.0.zip">heart-bp3.0.zip</a> </li>
         </ul>
         
         <button type="button" id="btnUploadFile" class="btn btn-default">Upload File</button>
@@ -40,7 +48,135 @@
         </div>
         <div id="local_upload_result_container">
         </div>
-    </div>    
+
+
+        <div id="drop_zone">Drop files here</div>
+        <output id="list"></output>
+
+        <script>
+         function handleFileSelect(evt) {
+             evt.stopPropagation();
+             evt.preventDefault();
+
+             var files = evt.dataTransfer.files; // FileList object.
+
+             // files is a FileList of File objects. List some properties.
+             var output = [];
+             for (var i = 0, f; f = files[i]; i++) {
+                 output.push('<li><strong>', escape(f.name), '</strong> (', f.type || 'n/a', ') - ',
+                             f.size, ' bytes, last modified: ',
+                             f.lastModifiedDate ? f.lastModifiedDate.toLocaleDateString() : 'n/a',
+                             '</li>');
+             }
+             document.getElementById('list').innerHTML = '<ul>' + output.join('') + '</ul>';
+         }
+
+         function handleDragOver(evt) {
+             evt.stopPropagation();
+             evt.preventDefault();
+             evt.dataTransfer.dropEffect = 'copy'; // Explicitly show this is a copy.
+         }
+
+         // Setup the dnd listeners.
+         var dropZone = document.getElementById('drop_zone');
+         dropZone.addEventListener('dragover', handleDragOver, false);
+         dropZone.addEventListener('drop', handleFileSelect, false);
+        </script>
+
+
+
+        <div class="container">
+            <div class="clearfix">
+                <div class="pull-left">
+                    <h1>jQuery File Upload Demo</h1>
+                    <h2 class="lead">Basic Plus UI version</h2>
+                </div>
+                <p class="pull-right">
+                    <script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+                    <ins class="adsbygoogle"
+                         style="display:inline-block;width:320px;height:100px"
+                         data-ad-client="ca-pub-4004031949998028"
+                         data-ad-slot="8543690390"></ins>
+                    <script>
+                     (adsbygoogle = window.adsbygoogle || []).push({});
+                    </script>
+                </p>
+            </div>
+            <ul class="nav nav-tabs">
+                <li><a href="basic.html">Basic</a></li>
+                <li><a href="basic-plus.html">Basic Plus</a></li>
+                <li class="active"><a href="index.html">Basic Plus UI</a></li>
+                <li><a href="angularjs.html">AngularJS</a></li>
+                <li><a href="jquery-ui.html">jQuery UI</a></li>
+            </ul>
+            <br>
+            <blockquote>
+                <p>File Upload widget with multiple file selection, drag&amp;drop support, progress bars, validation and preview images, audio and video for jQuery.<br>
+                    Supports cross-domain, chunked and resumable file uploads and client-side image resizing.<br>
+                    Works with any server-side platform (PHP, Python, Ruby on Rails, Java, Node.js, Go etc.) that supports standard HTML form file uploads.</p>
+            </blockquote>
+            <br>
+            <!-- The file upload form used as target for the file upload widget -->
+            <form id="fileupload" action="//jquery-file-upload.appspot.com/" method="POST" enctype="multipart/form-data">
+                <!-- Redirect browsers with JavaScript disabled to the origin page -->
+                <noscript><input type="hidden" name="redirect" value="https://blueimp.github.io/jQuery-File-Upload/"></noscript>
+                <!-- The fileupload-buttonbar contains buttons to add/delete files and start/cancel the upload -->
+                <div class="row fileupload-buttonbar">
+                    <div class="col-lg-7">
+                        <!-- The fileinput-button span is used to style the file input field as button -->
+                        <span class="btn btn-success fileinput-button">
+                            <i class="glyphicon glyphicon-plus"></i>
+                            <span>Add files...</span>
+                            <input type="file" name="files[]" multiple>
+                        </span>
+                        <button type="submit" class="btn btn-primary start">
+                            <i class="glyphicon glyphicon-upload"></i>
+                            <span>Start upload</span>
+                        </button>
+                        <button type="reset" class="btn btn-warning cancel">
+                            <i class="glyphicon glyphicon-ban-circle"></i>
+                            <span>Cancel upload</span>
+                        </button>
+                        <button type="button" class="btn btn-danger delete">
+                            <i class="glyphicon glyphicon-trash"></i>
+                            <span>Delete</span>
+                        </button>
+                        <input type="checkbox" class="toggle">
+                        <!-- The global file processing state -->
+                        <span class="fileupload-process"></span>
+                    </div>
+                    <!-- The global progress state -->
+                    <div class="col-lg-5 fileupload-progress fade">
+                        <!-- The global progress bar -->
+                        <div class="progress progress-striped active" role="progressbar" aria-valuemin="0" aria-valuemax="100">
+                            <div class="progress-bar progress-bar-success" style="width:0%;"></div>
+                        </div>
+                        <!-- The extended global progress state -->
+                        <div class="progress-extended">&nbsp;</div>
+                    </div>
+                </div>
+                <!-- The table listing the files available for upload/download -->
+                <table role="presentation" class="table table-striped"><tbody class="files"></tbody></table>
+            </form>
+        </div>
+
+
+
+<div id="qcontent-1">             “Man cannot discover new oceans unless he has the courage to lose sight of the shore.”
+             ― André Gide</div>
+<div id="qcontent-2">             “Equipped with his five senses, man explores the universe around him and calls the adventure Science.”
+             ― Edwin Hubble</div>
+<div id="qcontent-3">             "Some humans would do anything to see if it was possible to do it. If you put a large switch in some cave somewhere, with a sign on it saying 'End-of-the-World Switch. PLEASE DO NOT TOUCH', the paint wouldn't even have time to dry."
+             — Terry Pratchett</div>
+
+<div id="qcontent-4">             "The real voyage of discovery consists not in seeking new landscapes, but in having new eyes."
+             — Marcel Proust</div>
+
+     
+
+
+
+    </div>
 
 	<div id="footer"></div>
 	
@@ -50,12 +186,35 @@
     <!-- Bootstrap-->
     <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap3-dialog/1.34.9/js/bootstrap-dialog.min.js"></script>
-    <script>
-        $('#header').load("header.html");
-   		$('#footer').load("footer.html");
-    </script>
+    
     <!-- socket.io -->
     <script src="https://cdn.socket.io/socket.io-1.4.3.js"></script>
     <script src="js/local.min.js"></script>
+    <a href="https://icons8.com">Icon pack by Icons8</a>
+    <script>
+     $('#header').load("header.html");
+   	 
+
+    </script>
+    <script>
     
+   	 $('#footer').load("footer.html");
+
+    </script>
+        <script>
+         var divs = $('div[id^="qcontent-"]').hide(),
+             i = 0;
+
+         (function cycle() { 
+
+             divs.eq(i).fadeIn(400)
+                 .delay(9000)
+                 .fadeOut(400, cycle);
+
+             i = ++i % divs.length;
+
+         })();
+
+        </script>
+  
 </body>

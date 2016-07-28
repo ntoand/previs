@@ -4,7 +4,7 @@ var crypto = require('crypto');
 var DBManager = function () {};
 
 function generateTag(callback) {
-	var dbname = './public/data/previs-volume.db';
+	var dbname = './public/data/previs-meshes.db';
 	var db = new sqlite3.Database(dbname);
 	var tag = crypto.randomBytes(3).toString('hex');
 	db.all('SELECT * FROM Tag WHERE tag="' + tag + '"', function(err, rows) {
@@ -16,7 +16,7 @@ function generateTag(callback) {
 }
 
 DBManager.prototype.createTag = function(data, callback) {
-	var dbname = './public/data/previs-volume.db';
+	var dbname = './public/data/previs-meshes.db';
 	var db = new sqlite3.Database(dbname);
 	
 	db.serialize(function() {

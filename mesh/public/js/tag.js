@@ -1,3 +1,6 @@
+/*!
+  Copy of Toan Nyugen's tag.js in sharevol
+  */
 //implement
 var socket = io();
    
