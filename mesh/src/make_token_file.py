@@ -102,14 +102,14 @@ qualitative_brew = np.array([	hex_to_rgb('#a6cee3'),
 	                            hex_to_rgb('#b15928')]);
 
 
-cmap=crayons;
+cmap=crayons_cmap;
+num_colours=len(cmap);
 
 
-
-def CreateModelTokFile(args):
+def CreateModelTokFile(args, model_token_filename):
     print 'Creating model.tok file'
-    model_token_filename = os.path.join(args.input,'model.tok')
-
+    
+    print model_token_filename
 
     tmp_file = open(model_token_filename, 'w')
     tmp_file.write('''title_frag:%s
@@ -125,22 +125,22 @@ views:Dorsal:0,0,240:-40,0,0:1,0,0
 views:Ventral:0,0,-240:-40,0,0:-1,0,0
 grps:All:Z:true
 ''' % (title,caption))
-    grps=[args.input]
+    grps=['Root folder']
     glabel=["a"]
-    opacity=1.0
+    opacity=0.8
     gindex=0
     for subdir in files:
         print subdir
-        if os.path.isdir(os.path.join(args.input,subdir)):
+        if os.path.isdir(os.path.join(args.output,subdir)):
             grps.append(subdir)
             print subdir
             tmp_file.write('''grps:%s:%s:true\n''' % (subdir,glabel[gindex]))
             glabel.append(chr(ord(glabel[gindex]) + 1))
             gindex=gindex+1
     gindex=-1
-    print 'Objects'
+    print 'Sub directory objects'
     for element in files:
-        if os.path.isfile(os.path.join(args.input,element)) and element.endswith('.obj'):
+        if os.path.isfile(os.path.join(args.output,element)) and element.endswith('.obj'):
             print element + ' is a file '
             #format:  objs:<object name>:<group label>:<filename>:R:G:B:A
             tmp_file.write('''objs:%s:%s:%s:%.2f:%.2f:%.2f:%.2f\n''' %
@@ -148,22 +148,23 @@ grps:All:Z:true
                             'Z', element,cmap[0,0],
                             cmap[0,1],cmap[0,2],
                             opacity))
-        if os.path.isdir( os.path.join(args.input,element)):
+        if os.path.isdir( os.path.join(args.output,element)):
             gindex=gindex+1
             print element + ' is a directory '
-            subfiles = os.listdir(os.path.join(args.input,element))
+            subfiles = os.listdir(os.path.join(args.output,element))
             for subelement in subfiles:
-                if os.path.isfile(os.path.join(args.input,element,subelement)) and subelement.endswith('.obj'):
+                if os.path.isfile(os.path.join(args.output,element,subelement)) and subelement.endswith('.obj'):
                     print subelement
                     #format:  objs:<object name>:<group label>:<filename>:R:G:B:A
                     tmp_file.write('''objs:%s:%s:%s:%.2f:%.2f:%.2f:%.2f\n''' %
                            (element+'  '+subelement[:-4],
                             glabel[gindex], os.path.join(element,subelement),
-                            cmap[gindex%cmap.shape(0),0],
-                            cmap[gindex%cmap.shape(0),1], cmap[gindex%cmap.shape(0),2],
+                            cmap[gindex%num_colours,0],
+                            cmap[gindex%num_colours,1],
+                            cmap[gindex%num_colours,2],
                             opacity))
-    tmp_file.close()
-
+    tmp_file.close
+   
 
 if __name__ == "__main__":
 
@@ -172,6 +173,8 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(usage='''make_token_file.py -i <zipfile>|<directory>  ''',                                     description='''Create Websurfer model.tok file from obj files.  Load a zip or directory (-i <file>) that contains OBJ  files.    ''' )
     parser.add_argument(
         '-i', '--input', help='''Input directory or file name. Must be a directory containing obj files, or a subdirectory with obj files, or a zip file with similar properties ''', required=True)
+    parser.add_argument(
+        '-o', '--output', help='''Output directory''', required=True)
     parser.add_argument(        '-v', '--verbose', help='Verbose.', action="store_true")
     args = parser.parse_args()
     if args.verbose:
@@ -182,18 +185,25 @@ if __name__ == "__main__":
         sys.exit(1)
 
 
-    if  os.path.isfile(args.input) and os.path.endswidth('.zip'):
-        with zipfile.Zipfile(args.input,'r') as inputzip:
+    if  os.path.isfile(args.input) and args.input.endswith('.zip'):
+        with zipfile.ZipFile(args.input,'r') as inputzip:
+            if not os.path.isdir(args.output):
+                os.mkdir(args.output)
+
             inputzip.printdir()
-            inputzip.extractall()
+            inputzip.extractall(args.output)
             inputzip.close()
-        args.input = os.path.dirname(args.input)
-    if not os.path.isdir(args.input):
+    else: 
+        print 'Error: Zip \'' + args.input+ '\' does not exist.'
+        sys.exit(1)
+
+    
+    if not os.path.isdir(args.output):
         print 'Error: Folder \'' + args.input+ '\' does not exist.'
         sys.exit(1)
 
     # Ready to go
-    files = os.listdir(args.input)
+    files = os.listdir(args.output)
     if args.verbose:
         print files
 
@@ -204,11 +214,11 @@ if __name__ == "__main__":
             caption = comments.read()
         comments.close()
     else:
-        title = 'Mesh viewer for CAVE2 - ' + args.input
+        title = 'Mesh viewer for CAVE2 - ' + args.output
         caption = ""
-
+    model_token_filename = os.path.join(args.output,'model.tok')
     if 'model.tok' not in files:
-        model_token_filename = CreateModelTokFile(args)
+        CreateModelTokFile(args, model_token_filename)
 
     tmp_file = open(model_token_filename, 'r')
     tmp = tmp_file.read()
