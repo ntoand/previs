@@ -15,6 +15,8 @@ var fs 			  = require('fs');
 var config 		  = require('./src/node-config').config;
 var mydaris		  = require('./src/node-daris');
 var mylocalupload = require('./src/node-localupload');
+var mylocalOBJupload = require('./src/node-objman');
+
 
 // ===== INITIALISATION ======
 var app = express();
@@ -163,12 +165,13 @@ app.get('/rest/members', function (req, res) {
 });
 
 //! Make model tok file
-app.get('/rest/members', function (req, res) {
+/*
+app.get('/rest/maketok', function (req, res) {
 	  var cid = req.query.cid;
 	  var sid = req.query.sid;
 	  console.log(cid);
 
-	  var cmd = 'cd ' + config.scripts_dir + ' && python .py -t members -s ' + sid + ' -c ' + cid;
+	  var cmd = 'cd ' + config.scripts_dir + ' && python make_token_file.py ';
     console.log(cmd);
     exec(cmd, function(err, stdout, stderr) 
          {
@@ -185,7 +188,7 @@ app.get('/rest/members', function (req, res) {
     	       res.send(stdout);
          });
 });
-
+*/
 
 // ===== SOCKET IO ===========
 io.on('connection', function (socket) {
@@ -204,7 +207,10 @@ io.on('connection', function (socket) {
   		console.log(data);
   		mylocalupload.processUploadFile(io, data);
   	});
-
+  	socket.on('processOBJuploadfile', function (data) {
+  		console.log(data);
+  		mylocalOBJupload.processUploadObjFile(io, data);
+  	});
   	socket.on('searchdataset', function(data) {
   		console.log(data);
   		mydaris.searchDataset(io, data);
