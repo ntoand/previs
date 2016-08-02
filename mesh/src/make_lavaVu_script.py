@@ -126,7 +126,7 @@ if __name__ == "__main__":
 
     # Parse command line arguments and validate img directory
 
-    parser = argparse.ArgumentParser(usage='''make_token_file.py -i <zipfile>|<directory>  ''',                                     description='''Create Websurfer model.tok file from obj files.  Load a zip or directory (-i <file>) that contains OBJ  files.    ''' )
+    parser = argparse.ArgumentParser(usage='''make_lavaVu_script.py -i <zipfile>|<directory>  ''',                                     description='''Create Websurfer model.tok file from obj files.  Load a zip or directory (-i <file>) that contains OBJ  files.    ''' )
     parser.add_argument(
         '-i', '--input', help='''Input directory or file name. Must be a directory containing obj files, or a subdirectory with obj files, or a zip file with similar properties ''', required=True)
     parser.add_argument(        '-v', '--verbose', help='Verbose.', action="store_true")
@@ -139,7 +139,7 @@ if __name__ == "__main__":
         sys.exit(1)
 
     objdir=""
-    if  os.path.isfile(args.input) and os.path.endswidth('.zip'):
+    if os.path.isfile(args.input) and args.input.endswidth('.zip'):
         with zipfile.Zipfile(args.input,'r') as inputzip:
             objdir = inputzip.printdir()
             inputzip.extractall()
