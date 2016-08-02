@@ -6,6 +6,28 @@ $('#btnUploadFile').on('click', function (){
     $('.progress-bar').width('0%');
 });
 
+$('#objzip_help').on('click', function(event) {
+     event.preventDefault();
+
+            var msg_content =   '<div>'+
+                '<p>Example data <a href="data/example/heart-bp3.0.zip">heart-bp3.0.zip</a></p>' +
+                '<p><b>How to prepare data:</b><li>Create a directory to store OBJ files</li>' +
+                '<li>Create subdirectories for groups with appropriate names. Only a depth of one will be recognised as a group.</li>' +
+                '<li>Copy obj files to the group folders.</li>' +
+                '<li>[Optional] Create a comment.txt file in the main directory with the first line being the title, and th remainder will be the summary.</li>' +
+                '<li>Compress the directory into a zip file</li></p>' +
+                ' <p>Please contact us if you need any help to prepare your data</p>' +
+                         '</div>'
+
+    BootstrapDialog.show({
+        title: 'OBJ zipped folder(s)',
+        message: msg_content,
+    });
+});
+
+
+
+
 $('#upload-input').on('change', function(){
     var files = $(this).get(0).files;
     
@@ -39,7 +61,7 @@ $('#upload-input').on('change', function(){
                 lmessage.innerHTML = "Uploaded successfully! Now working... ";
                 process_img = document.getElementById("process_img");
                 process_img.style.visibility = 'visible';  
-                socket.emit('processuploadfile', {task: "process", file: data.file});
+                socket.emit('processOBJuploadfile', {task: "process", file: data.file});
             },
             xhr: function() {
                 // create an XMLHttpRequest
@@ -55,7 +77,7 @@ $('#upload-input').on('change', function(){
                     
                     // update the Bootstrap progress bar with the new percentage
                     $('.progress-bar').text(percentComplete + '%');
-                    $('.progress-bar').width(percentComplete + '%');
+                    $('.progress-bar').widSaveTranslatedObjth(percentComplete + '%');
                     
                     // once the upload reaches 100%, set the progress bar text to done
                     if (percentComplete === 100) {
@@ -71,7 +93,7 @@ $('#upload-input').on('change', function(){
     }
 });
 
-socket.on('processuploadfile', function (data) {
+socket.on('processOBJuploadfile', function (data) {
     var lmessage = document.getElementById("message_label");
     var process_img = document.getElementById("process_img");
     console.log(data);
@@ -109,7 +131,7 @@ socket.on('processuploadfile', function (data) {
         view_button.setAttribute("id", data.json);
         view_button.innerHTML = 'View';
         view_button.onclick = function () {
-            window.open('sharevol/index.html?data=' + $(this).prop('id') + '&reset', target="_blank");
+            window.open('mesh/index.html?data=' + $(this).prop('id') + '&reset', target="_blank");
         };
         local_upload_result_container.appendChild(view_button);
         
