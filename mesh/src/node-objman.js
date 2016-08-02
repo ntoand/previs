@@ -12,36 +12,43 @@ var exec        = require('child_process').exec;
 var crypto 		= require('crypto');
 
 var myutils 	= require('./node-utils');
-var config		= require('./node-config').config;  
+var config		= require('./node-config').config;
 var dbmanager   = require('./node-dbmanager');
 
 
 
-function processObjZipFile(io, data) {
+function processUploadObjFile(io, data) {
+  var basename = path.basename(data.file, '.zip');
 	var filename = data.file;
 	var zipfile = config.local_data_dir + filename;
-	var cmd = 'cd ' + config.scripts_dir + ' && python make_model_tok.py -i ' + zipfile + ' -o ' + config.local_data_dir;
-	console.log(cmd);
+	var result_dir = config.local_data_dir + basename + '_result';
+
+	var cmd = 'cd ' + config.scripts_dir + ' && python make_token_file.py -i ' + zipfile + ' -o ' + result_dir;
+
+	  console.log(cmd);
 	exec(cmd, function(err, stdout, stderr) 
     {
     	console.log(stdout);
     	console.log(stderr);
     	if(err)
 		{
-			io.emit('processuploadfile', {status: 'error', result: 'cannot unpack zip and/or create Websurfer model.tok file', detail: stderr});
+			io.emit('processOBJuploadfile', {status: 'error', result: 'cannot unpack zip and/or create Websurfer model.tok file', detail: stderr});
 			return;
 		}
-		io.emit('processuploadfile', {status: 'working', result: 'creation on model.tok ok. Now create init.script'})
+		io.emit('processOBJuploadfile', {status: 'working', result: 'creating on model.tok ok. Now createing LavaVu init.script'})
 		    createLavaVuInitScript(io, data);
-        sendViewDataToClient(io, data);
+        
     });
 }
 
 function createLavaVuInitScript(io, data) {
+    var basename = path.basename(data.file, '.zip');
 	  var result_msg = 'LavaVu init script created';
-	var filename = data.file;
-	var zipfile = config.local_data_dir + filename;
-	var cmd = 'cd ' + config.scripts_dir + '&& cd ' + config.local_data_dir + ' && python make_lavaVu_script.py -i ./ ';
+	  var filename = data.file;
+	  var zipfile = config.local_data_dir + filename;
+    var result_dir = config.local_data_dir + basename + '_result';
+	  var cmd = 'cd ' + config.scripts_dir +' && python make_lavaVu_script.py -i ' + result_dir;
+
 	console.log(cmd);
 	exec(cmd, function(err, stdout, stderr) 
     {
@@ -49,289 +56,112 @@ function createLavaVuInitScript(io, data) {
     	console.log(stderr);
     	if(err)
 		{
-			io.emit('processuploadfile', {status: 'error', result: 'cannot create LavaVu init.script file', detail: stderr});
+			io.emit('processOBJuploadfile', {status: 'error', result: 'cannot create LavaVu init.script file', detail: stderr});
 			return;
 		}
-		io.emit('processuploadfile', {status: 'working', result: 'creation on model.tok ok. Now create init.script'})
-		createLavaVuInitScript(io, data);
-
+		    io.emit('processOBJuploadfile', {status: 'working', result: ' init.script created. Creating JSON file'})
+        centreObjects(io, data);
     });
-    
 }
 
+function centreObjects(io, data) {
+    var basename = path.basename(data.file, '.zip');
+	  var result_msg = 'Centred objects to origin!';
+	  var filename = data.file;
+	  var zipfile = config.local_data_dir + filename;
+    var result_dir = config.local_data_dir + basename + '_result';
+	  var cmd = 'cd ' + config.scripts_dir +' && centre_objs ' + result_dir;
 
-
-//=============================
-function viewDataset(io, data){
-	//console.log('downloadData: ' + data);
-	var result_msg = 'download ok. Now create modle.tok';
-	var compdicomfile = config.daris_data_dir + data.cid + '.zip';
-	if(!myutils.fileExists(compdicomfile)) {
-		var cmd = 'cd ' + config.scripts_dir + ' && python run_daris.py -t download -s ' + data.sid + ' -c ' + data.cid + ' -a ' + compdicomfile;
-		console.log(cmd);
-		exec(cmd, function(err, stdout, stderr) 
-	    {
-	    	console.log(stdout);
-	    	console.log(stderr);
-	    	if(err)
-			{
-				io.emit('viewdataset', {status: 'error', cid: data.cid, result: 'cannot_download_file'});
-				return;
-			}
-			io.emit('viewdataset', {status: 'working', cid: data.cid, result: result_msg})
-			convertToNifti(io, data);
-
-	    });
-	}
-	else {
-		console.log("exist, can process zip file now");
-		io.emit('viewdataset', {status: 'working', cid: data.cid, result: result_msg})
-		convertToNifti(io, data);
-	}
+	  console.log(cmd);
+	  exec(cmd, function(err, stdout, stderr) 
+         {
+    	       console.log(stdout);
+    	       console.log(stderr);
+    	       if(err)
+		         {
+			           io.emit('processOBJuploadfile', {status: 'error', result: 'cannot centre OBJ files.', detail: stderr});
+			           return;
+		         }
+		         io.emit('processOBJuploadfile', {status: 'working', result: ' All obj files centred. Creating JSON file.'})
+             sendViewDataToClient(io, data);
+         });
 }
 
-function convertToNifti(io, data) {
-	var result_msg = 'convert to nii ok. Now convert to xwr';
-	var dirpath = config.daris_data_dir + data.cid;
-	if(!myutils.fileExists(dirpath + '/0001.nii')) {
-		var cmd = 'cd ' + config.scripts_dir + ' && python dcm2nii.py -i ' + dirpath;
-		console.log(cmd);
-		exec(cmd, function(err, stdout, stderr) 
-	    {
-	    	console.log(stdout);
-	    	console.log(stderr);
-	    	if(err)
-			{
-				io.emit('viewdataset', {status: 'error', cid: data.cid, result: 'cannot_convert_to_nii'});
-				return;
-			}
-			io.emit('viewdataset', {status: 'working', cid: data.cid, result: result_msg})
-			convertToXRW(io, data);
-	    });
-	}
-	else {
-		console.log("exist, can process nii file now");
-		io.emit('viewdataset', {status: 'working', cid: data.cid, result: result_msg})
-		convertToXRW(io, data);
-	}
-}
-
-function convertToXRW(io, data) {
-	var result_msg = 'convert to xrw ok. Now convert to png';
-	var dirpath = config.daris_data_dir + data.cid;
-	var niifile = dirpath + '/0001.nii';
-	var xrwfile = dirpath + '/0001.xrw';
-	if(!myutils.fileExists(xrwfile)) {
-		var cmd = 'nifti2xrw -f ' + niifile + ' -o ' + xrwfile;
-		console.log(cmd);
-		exec(cmd, function(err, stdout, stderr) 
-	    {
-	    	console.log(stdout);
-	    	console.log(stderr);
-	    	if(err)
-			{
-				io.emit('viewdataset', {status: 'error', cid: data.cid, result: 'cannot_convert_to_xrw', detail: stderr});
-				return;
-			}
-			io.emit('viewdataset', {status: 'working', cid: data.cid, result: result_msg});
-			
-			convertToPng(io, data);
-
-	    });
-	}
-	else {
-		console.log("exist, can process xrw file now");
-		io.emit('viewdataset', {status: 'working', cid: data.cid, result: result_msg});
-		convertToPng(io, data);
-	}
-}
-
-function convertToPng(io, data) {
-	var result_msg = 'convert to png ok. Now prepare json file';
-	var dirpath = config.daris_data_dir + data.cid;
-	var xrwfile = dirpath + '/0001.xrw';
-	var pngfile = dirpath + '/0001.png';
-	var thumpfile = dirpath + '/0001_thumb.png';
-	
-	if(!myutils.fileExists(pngfile)) {
-		var cmd = 'cd ' + config.scripts_dir + ' && xrw2pngmos -f ' + xrwfile + ' -o ' + pngfile 
-			  + ' && convert ' + pngfile + ' -thumbnail 256 ' + thumpfile;
-		console.log(cmd);
-		exec(cmd, function(err, stdout, stderr) 
-	    {
-	    	console.log(stdout);
-	    	console.log(stderr);
-	    	if(err)
-			{
-				io.emit('viewdataset', {status: 'error', cid: data.cid, result: 'cannot_convert_to_png'});
-				return;
-			}
-			io.emit('viewdataset', {status: 'working', cid: data.cid, result: result_msg});
-			sendViewDataToClient(io, data);
-	    });
-	}
-	else {
-		console.log("exist, can process png file now");
-		io.emit('viewdataset', {status: 'working', cid: data.cid, result: result_msg});
-		sendViewDataToClient(io, data);
-	}
-}
 
 function sendViewDataToClient(io, data) {
-	var dirpath = config.daris_data_dir + data.cid;
-	var xrwfile = dirpath + '/0001.xrw';
-	var jsonfile = dirpath + '/0001.json';
-	var jsontemp = path.dirname(process.mainModule.filename) + '/src/template.json';
-	var jsonurl = 'data/daris/' + data.cid + '/0001.json';
+	var basename = path.basename(data.file, '.zip');
+	var result_path = config.local_data_dir + basename + '_result/';
+	var modeltok = result_path + '/model.tok';
+	var jsonfile = result_path +  '/mesh.json';
+	var jsontemp = path.dirname(process.mainModule.filename) + '/src/meshtemplate.json';
+	var jsonurl = 'data/local/' + basename + '_result/mesh.json';
+	var thumburl = 'img/dodecahedron.png';
+//	var pngurl = 'data/local/' + basename + '_result/vol.png';
+//	var xrwurl = 'data/local/' + basename + '_result/vol.xrw';
 
 	fs.readFile(jsontemp, 'utf8', function (err, jsondata) {
 		if (err) {
-			io.emit('viewdataset', {status: 'error', cid: data.cid, result: 'cannot_generate_json'});
+			io.emit('processuploadfile', {status: 'error', result: 'cannot_read_template_json'});
 			//throw err;
 			return;
 		} 
 		var obj = JSON.parse(jsondata);
-		obj.objects[0].volume.url = 'data/daris/' + data.cid + '/0001.png';
-
+		obj.objects[0].mesh.url = 'data/local/' + basename + '_result/';
+/*
 		var cmd = 'xrwinfo ' + xrwfile + ' | grep dimensions';
-		exec(cmd, function(err, stdout, stderr) 
-	    {
+		exec(cmd, function(err, stdout, stderr) {
     		if (err) {
-				io.emit('viewdataset', {status: 'error', cid: data.cid, result: 'cannot_run_xrwinfo'});
+				io.emit('processuploadfile', {status: 'error', result: 'cannot_run_xrwinfo'});
 				//throw err;
 				return;
-			} 
-				
+			}
 	    	stdout = myutils.trim(stdout).trim();
 	    	var res = stdout.split(" ");
 
 	    	obj.objects[0].volume.res = [res[2], res[3], res[4]];
-	    	
-	    	dbmanager.createTag(data.cid, function(err, tag_str) {
-	    		if(err) {
-	    			io.emit('viewdataset', {status: 'error', cid: data.cid, result: 'cannot_create_tag'});
-	    			return;
-	    		}
-	    		
-	    		var tag_json = {};
-				tag_json.tag=tag_str;
-				tag_json.type="daris";
-				tag_json.date=Date.now();
-				tag_json.datadir=config.daris_data_dir;
-				tag_json.url='data/daris/';
-				tag_json.cid = [data.cid];
-				tag_json.res = [data.res];
-	    		
-	    		if(myutils.fileExists(jsonfile)) {
-					if(data.task =='webview' || data.task == 'caveview') {
-						if(!myutils.fileExists(config.info_dir+'/'+tag_str+'.json')) {
-							
-							fs.writeFile( config.info_dir+'/'+tag_str+'.json', JSON.stringify(tag_json, null, 4), function(err) {
-								if (err) {
-									io.emit('viewdataset', {status: 'error', result: 'cannot_generate_tag_json'});
-									//throw err;
-									return;
-								}
-							});	
+*/
 
-						}
-						io.emit('viewdataset', {status: 'done', cid:data.cid, task: data.task, tag: tag_str, json: jsonurl});
-					}
-					else if( data.task == 'multicaveview') {
-						io.emit('viewdataset', {status: 'done', cid: data.cid, task: data.task, json: jsonurl, res: obj.objects[0].volume.res });
-					}
-	    		}
-	    		else {
-	    			//write		
-					fs.writeFile( jsonfile, JSON.stringify(obj, null, 4), function(err) {
+	    	//write
+			fs.writeFile( jsonfile, JSON.stringify(obj, null, 4), function(err) {
+				if (err) {
+					io.emit('processuploadfile', {status: 'error', result: 'cannot_generate_json'});
+					//throw err;
+					return;
+				} 
+				//generete tag for later use
+				dbmanager.createTag(data.file, function(err, tag_str) {
+					if(err) {
+	    				io.emit('processuploadfile', {status: 'error', cid: data.cid, result: 'cannot_create_tag'});
+	    				return;
+	    			}
+
+					var tag_json = {};
+					tag_json.tag=tag_str;
+					tag_json.type='mesh'
+					tag_json.source='localOBJupload';
+					tag_json.date=Date.now();
+
+					var meshes = [];
+					var mesh = {};
+					mesh.json=jsonurl;
+					mesh.thumb=thumburl;
+					mesh.objdir=pngurl;
+
+					meshes.push(mesh);
+					tag_json.meshes=meshes;
+
+					fs.writeFile( config.info_dir+'/'+tag_str+'.json', JSON.stringify(tag_json, null, 4), function(err) {
 						if (err) {
-							io.emit('viewdataset', {status: 'error', cid: data.cid, result: 'cannot_generate_json'});
+							io.emit('processOBJuploadfile', {status: 'error', result: 'cannot_generate_tag_json'});
 							//throw err;
 							return;
 						} 
-						console.log('sendViewDataToClient');
-						console.log(data);
-						if(data.task =='webview' || data.task == 'caveview') {
-							
-							fs.writeFile( config.info_dir+'/'+tag_str+'.json', JSON.stringify(tag_json, null, 4), function(err) {
-								if (err) {
-									io.emit('viewdataset', {status: 'error', result: 'cannot_generate_tag_json'});
-									//throw err;
-									return;
-								} 
-								io.emit('viewdataset', {status: 'done', cid:data.cid, task: data.task, tag: tag_str, json: jsonurl});
-							});	
-							
-						}
-						else if( data.task == 'multicaveview') {
-							io.emit('viewdataset', {status: 'done', cid: data.cid, task: data.task, json: jsonurl, res: obj.objects[0].volume.res });
-						}
-						else {
-							io.emit('viewdataset', {status: 'error', result: 'invalid_task'});
-						}
-					});
-	    		} // else
-	    	});
-	    });		
-	});
+						io.emit('processOBJuploadfile', {status: 'done', tag: tag_str, json: jsonurl, thumb: thumburl});
+					}); //writeFile	
+				});  //dbmanager
+			});   //fs.writeFile
+	    });		//fs.readFIle
+	
 }
 
-function getTagMultiCaveView(io, data) {
-	var found = 1;
-	var tag_str = '';
-	while (found == 1){
-		tag_str = crypto.randomBytes(3).toString('hex');
-		if(!myutils.fileExists(config.info_dir+'/'+tag_str+'.json')) {
-			found = 0;
-		}
-	};
-	console.log(tag_str);
-	
-	var datasets = data.datasets;
-	
-	var tag_json = {};
-	tag_json.tag=tag_str;
-	tag_json.type="volume";
-	tag_json.source="daris";
-	tag_json.date=Date.now();
-	tag_json.datadir=config.daris_data_dir;
-	tag_json.url='data/daris/';
-	var cid = [], res = [];
-	for (var i=0, l=datasets.length; i < l; i++) {
-		cid.push(datasets[i].cid);
-		res.push(datasets[i].res);
-	}
-	tag_json.cid = cid;
-	tag_json.res = res;
-	
-	fs.writeFile( config.info_dir+'/'+tag_str+'.json', JSON.stringify(tag_json, null, 4), function(err) {
-		if (err) {
-			io.emit('tagmulticaveview', {status: 'error', result: 'cannot_generate_tag_json'});
-			//throw err;
-			return;
-		} 
-		io.emit('tagmulticaveview', {status: 'done', task: data.task, tag: tag_str });
-	});	
-}
-
-// ===============================
-function searchDataset(io, data) {
-
-	var cmd = 'cd ' + config.scripts_dir + ' && python run_daris.py -t search -s ' + data.sid + ' -c ' + data.cid + ' -a ' + data.keyword;
-	console.log(cmd);
-	exec(cmd, function(err, stdout, stderr) 
-    {
-    	console.log(stdout);
-    	console.log(stderr);
-    	if(err)
-		{
-			io.emit('searchdataset', {status: 'error', result: 'cannot_search_dataset', detail: stderr});
-			return;
-		}
-		io.emit('searchdataset', {status: 'done', result: stdout})
-    });
-}
-
-module.exports.viewDataset = viewDataset;
-module.exports.searchDataset = searchDataset;
-module.exports.getTagMultiCaveView = getTagMultiCaveView;
+module.exports.processUploadObjFile = processUploadObjFile;
