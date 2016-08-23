@@ -67,9 +67,9 @@ def main(argv):
         raise NameError("Wrong arguments")
         #sys.exit(-1)
 
-    if ~server.endswith('/'):
+    if not server.endswith('/'):
         server += '/'
-    if ~local_data_dir.endswith('/'):
+    if not local_data_dir.endswith('/'):
         local_data_dir += '/'
 
     print "Tag: " + input_tag
@@ -90,9 +90,9 @@ def main(argv):
     #parse json file
     with open(tag_json_filename) as tag_json_file:    
         data = json.load(tag_json_file)
-        #download vol_json
-        vol_type = data["type"]
-        print "Type: " + vol_type
+        # download dataset_json
+        dataset_type = data["type"]
+        print "Type: " + data["type"]
         source = data["source"]
 
         local_json = {}
@@ -100,78 +100,120 @@ def main(argv):
         local_json["type"] = data["type"]
         local_json["source"] = data["source"]
         local_json["date"] = data["date"]
-        local_json["volumes"] = []
         
-        if(vol_type == "volume" and source == "localupload"):    
+        if(dataset_type == "volume" and source == "localupload"):    
+            local_json["volumes"] = []
+
             vols = data["volumes"]
             for ii in range(len(vols)):
                 print "Volume: " + str(ii)
 
-                vol_dir = tag_dir + "/vol" + str(ii) + "/"
-                if not os.path.exists(vol_dir):
-                    os.makedirs(vol_dir)
+                dataset_dir = tag_dir + "/vol" + str(ii) + "/"
+                if not os.path.exists(dataset_dir):
+                    os.makedirs(dataset_dir)
 
-                vol_thumb_filename = vol_dir + "vol1_thumb.png"
-                vol_thumb = data["volumes"][ii]["thumb"]
-                print "Download " + vol_thumb + " file..."
-                downloadfile(server + vol_thumb, vol_thumb_filename)
+                dataset_thumb_filename = dataset_dir + "vol1_thumb.png"
+                dataset_thumb = data["volumes"][ii]["thumb"]
+                print "Download " + dataset_thumb + " file..."
+                downloadfile(server + dataset_thumb, dataset_thumb_filename)
 
-                vol_json_filename = vol_dir + "vol1.json"
-                vol_json = data["volumes"][ii]["json"]
-                print "Download " + vol_json + " file..."
-                downloadfile(server + vol_json, vol_json_filename)
+                dataset_json_filename = dataset_dir + "vol1.json"
+                dataset_json = data["volumes"][ii]["json"]
+                print "Download " + dataset_json + " file..."
+                downloadfile(server + dataset_json, dataset_json_filename)
 
-                vol_xrw_filename = vol_dir + "vol1.xrw"
-                vol_xrw = data["volumes"][ii]["xrw"]
-                print "Download " + vol_xrw + " file..."
-                downloadfile(server + vol_xrw, vol_xrw_filename)
+                dataset_xrw_filename = dataset_dir + "vol1.xrw"
+                dataset_xrw = data["volumes"][ii]["xrw"]
+                print "Download " + dataset_xrw + " file..."
+                downloadfile(server + dataset_xrw, dataset_xrw_filename)
 
-                vol_ele = {}
-                vol_ele["thumb"] = vol_thumb_filename
-                vol_ele["dir"] = vol_dir
-                vol_ele["res"] = data["volumes"][ii]["res"]
-                vol_ele["name"] = ""
-                local_json["volumes"].append(vol_ele)
+                dataset_ele = {}
+                dataset_ele["thumb"] = dataset_thumb_filename
+                dataset_ele["dir"] = dataset_dir
+                dataset_ele["res"] = data["volumes"][ii]["res"]
+                dataset_ele["name"] = ""
+                local_json["volumes"].append(dataset_ele)
 
-                with open(vol_dir + "/init.script", "wt") as f:
-                    f.write("file " + vol_xrw_filename + "\n")
-                    f.write("file " + vol_json_filename)
+                with open(dataset_dir + "/init.script", "wt") as f:
+                    f.write("file " + dataset_xrw_filename + "\n")
+                    f.write("file " + dataset_json_filename)
 
-        elif (vol_type == "volume" and source == "daris"):
+        elif (dataset_type == "volume" and source == "daris"):
             cids = data["cid"]
             for ii in range(len(cids)):
                 print "Volume: " + str(ii) 
                 cid = cids[ii]
 
-                vol_dir = tag_dir + '/vol' + str(ii) + "/"
-                if not os.path.exists(vol_dir):
-                    os.makedirs(vol_dir)
+                dataset_dir = tag_dir + '/vol' + str(ii) + "/"
+                if not os.path.exists(dataset_dir):
+                    os.makedirs(dataset_dir)
 
-                vol_thumb_filename = vol_dir + cid + "_thumb.png"
-                vol_thumb = "data/daris/" + cid + "/0001_thumb.png"
-                print "Download " + vol_thumb + " file..."
-                downloadfile(server + vol_thumb, vol_thumb_filename)
+                dataset_thumb_filename = dataset_dir + cid + "_thumb.png"
+                dataset_thumb = "data/daris/" + cid + "/0001_thumb.png"
+                print "Download " + dataset_thumb + " file..."
+                downloadfile(server + dataset_thumb, dataset_thumb_filename)
 
-                vol_json_filename = vol_dir + cid + ".json"
-                vol_json = "data/daris/" + cid + "/0001.json"
-                print "Download " + vol_json + " file..."
-                downloadfile(server + vol_json, vol_json_filename)
+                dataset_json_filename = dataset_dir + cid + ".json"
+                dataset_json = "data/daris/" + cid + "/0001.json"
+                print "Download " + dataset_json + " file..."
+                downloadfile(server + dataset_json, dataset_json_filename)
 
-                vol_xrw_filename = vol_dir + cid + ".xrw"
-                vol_xrw = "data/daris/" + cid + "/0001.xrw"
-                print "Download " + vol_xrw + " file..."
-                downloadfile(server + vol_xrw, vol_xrw_filename)
+                dataset_xrw_filename = dataset_dir + cid + ".xrw"
+                dataset_xrw = "data/daris/" + cid + "/0001.xrw"
+                print "Download " + dataset_xrw + " file..."
+                downloadfile(server + dataset_xrw, dataset_xrw_filename)
 
-                vol_ele = {}
-                vol_ele["thumb"] = vol_thumb_filename
-                vol_ele["dir"] = vol_dir
-                vol_ele["res"] = data["res"][ii]
-                vol_ele["name"] = cid
-                local_json["volumes"].append(vol_ele)
+                dataset_ele = {}
+                dataset_ele["thumb"] = dataset_thumb_filename
+                dataset_ele["dir"] = dataset_dir
+                dataset_ele["res"] = data["res"][ii]
+                dataset_ele["name"] = cid
+                local_json["volumes"].append(dataset_ele)
 
-                with open(vol_dir + "/init.script", "wt") as f:
-                    f.write("file " + vol_xrw_filename + "\n")
-                    f.write("file " + vol_json_filename)
+                with open(dataset_dir + "/init.script", "wt") as f:
+                    f.write("file " + dataset_xrw_filename + "\n")
+                    f.write("file " + dataset_json_filename)
+
+        if(dataset_type == "mesh" and source == "localupload"):    
+            local_json["meshes"] = []
+            if not os.path.isfile(os.path.join(mesh_dir, "init.script")):
+                
+
+            meshObjs = data["meshes"]
+            for ii in range(len(meshObj)):
+                print "Mesh object: " + str(ii)
+
+                mesh_dir = tag_dir + "/mesh" + str(ii) + "/"
+                if not os.path.exists(mesh_dir):
+                    os.makedirs(mesh_dir)
+
+                mesh_thumb_filename = mesh_dir + "mesh1_thumb.png"
+                mesh_thumb = data["meshes"][ii]["thumb"]
+                print "Download " + mesh_thumb + " file..."
+                downloadfile(server + mesh_thumb, mesh_thumb_filename)
+
+                mesh_json_filename = mesh_dir + "mesh.json"
+                mesh_json = data["meshes"][ii]["json"]
+                print "Download " + mesh_json + " file..."
+                downloadfile(server + mesh_json, mesh_json_filename)
+
+                #TODO
+                #mesh_obj_filename = mesh_dir + "vol1.xrw"
+                #mesh_obj = data["meshes"][ii]["obj"]
+                #print "Download " + mesh_obj + " file..."
+                #downloadfile(server + mesh_obj, mesh_obj_filename)
+
+                mesh_ele = {}
+                mesh_ele["thumb"] = mesh_thumb_filename
+                mesh_ele["dir"] = mesh_dir
+                mesh_ele["res"] = data["meshes"][ii]["res"]
+                mesh_ele["name"] = ""
+                local_json["meshes"].append(mesh_ele)
+
+                if not os.path.isfile(os.path.join(mesh_dir, "init.script")):
+                    with open(dataset_dir + "/init.script", "wt") as f:
+                        f.write("file " + mesh_obj_filename + "\n")
+                        f.write("file " + mesh_json_filename)
 
         else:
             raise NameError("Invalid type")
