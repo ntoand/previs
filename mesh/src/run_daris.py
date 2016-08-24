@@ -18,18 +18,20 @@ else:
     #user = 'toand'
     #passwd = 'test123'
 
+
 def main(argv):
     try:
-        opts, args = getopt.getopt(argv,"t:s:c:a:",["task=","sid=","cid=", "args="])
+        opts, args = getopt.getopt(
+            argv, "t:s:c:a:", ["task=", "sid=", "cid=", "args="])
     except getopt.GetoptError:
-        #help()
+        # help()
         sys.exit(-1)
 
     sid = ''
     args = ''
     for opt, arg in opts:
         if opt == '-h':
-            #help()
+            # help()
             print 'help'
             sys.exit()
         elif opt in ("-t", "--task"):
@@ -43,21 +45,21 @@ def main(argv):
 
     serv = dis.DarisServices(server, port)
     if(task == 'logon'):
-        #print '\nConnect to DaRIS'
+        # print '\nConnect to DaRIS'
         print serv.connect(args)
 
     if(task == 'logoff'):
         print serv.disconnect(sid)
 
     elif (task == 'projects'):
-        #print '\nGet projects'
+        # print '\nGet projects'
         print serv.getProjects(sid)
 
     elif (task == 'members'):
         print serv.getMembers(sid, cid)
 
     elif (task == 'logoff'):
-        #print '\nDisconnect'
+        # print '\nDisconnect'
         print serv.disconnect(sid)
 
     elif (task == 'download'):

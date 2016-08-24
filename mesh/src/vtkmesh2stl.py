@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 
 
-# from https://gist.githubusercontent.com/thewtex/8263132/raw/079eca1603ed750d1707516ef51eed33e4934b44/vtk-unstructuredgrid-to-stl.py
+# from
+# https://gist.githubusercontent.com/thewtex/8263132/raw/079eca1603ed750d1707516ef51eed33e4934b44/vtk-unstructuredgrid-to-stl.py
 """Convert PolyData in .vtk files to STL files."""
 
 import sys
