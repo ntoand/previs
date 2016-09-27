@@ -6,6 +6,9 @@ $('#btnUploadFile').on('click', function (){
     $('.progress-bar').width('0%');
 });
 
+
+
+
 $('#objzip_help').on('click', function(event) {
      event.preventDefault();
 
@@ -109,7 +112,7 @@ socket.on('processOBJuploadfile', function (data) {
         $("#local_upload_message").hide();
         
         var local_upload_result_container = document.getElementById("local_upload_result_container");
-        local_upload_result_container.innerHTML = "";
+        local_upload_result_container.innerHTML = "<b>No preview</b>";
         
         var img_div = document.createElement("div");
         var img_a = document.createElement("a");
@@ -130,8 +133,12 @@ socket.on('processOBJuploadfile', function (data) {
         view_button.setAttribute("class", "view_button");
         view_button.setAttribute("id", data.json);
         view_button.innerHTML = 'View';
+
         view_button.onclick = function () {
-            window.open('mesh/index.html?data=' + $(this).prop('id') + '&reset', target="_blank");
+            var model = $(this).prop('id')
+            var pos1 = model.indexOf("data/local/");
+            var pos2 = model.indexOf("//mesh.json");
+            window.open('websurfer/index.html?model=' + model.slice(pos1,pos2) + '', target="_blank");
         };
         local_upload_result_container.appendChild(view_button);
         
