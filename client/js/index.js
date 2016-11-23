@@ -12,12 +12,16 @@ function loadSetting() {
     console.log(setting);
     document.getElementById('setting-server').value = setting.server;
     document.getElementById('setting-local-data-dir').value = setting.local_data_dir;
+    document.getElementById('setting-local-desktop').value = setting.desktop;
+    document.getElementById('setting-local-cave2').value = setting.cave2;
   });
 }
 
 function saveSetting() {
   setting.server = document.getElementById('setting-server').value;
   setting.local_data_dir = document.getElementById('setting-local-data-dir').value;
+  setting.desktop = document.getElementById('setting-local-desktop').value;
+  setting.cave2 = document.getElementById('setting-local-cave2').value;
   fs.writeFile( "setting.json", JSON.stringify(setting, null, 4), function(err) {
     if (err) {
       showMessage("Error! Check err msg in console");
@@ -169,7 +173,7 @@ function runDesktop(vol_index) {
   console.log(vol_index);
   var vol = vols_info.volumes[vol_index];
   if (vol) {
-    var cmd = 'cd ' + vol.dir + ' && LavaVu';
+    var cmd = 'cd ' + vol.dir + ' && ' + setting.desktop;
     runCommand(cmd)
   }
   else {
@@ -179,6 +183,14 @@ function runDesktop(vol_index) {
 
 function runCAVE2(vol_index) {
   console.log(vol_index);
+  var vol = vols_info.volumes[vol_index];
+  if (vol) {
+    var cmd = 'cd ' + vol.dir + ' && ' + setting.cave2;
+    runCommand(cmd)
+  }
+  else {
+    showMessage("Cannot find volume data");
+  }
 }
 
 // main

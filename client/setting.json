@@ -1,4 +1,6 @@
 {
     "server": "http://mivp-dws1.erc.monash.edu:3000",
-    "local_data_dir": "C:\\Users\\Nguyen\\Downloads\\previs"
+    "local_data_dir": "/Users/toand/Downloads/previs",
+    "desktop": "LavaVu",
+    "cave2": "LavaVR"
 }
