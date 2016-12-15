@@ -29,17 +29,17 @@
 """
 
 import os
-import subprocess
+# import subprocess
 import sys
 import glob
-import re
+# import re
 import numpy as np
 import argparse
-import logging
+# import logging
 import zipfile
 import tarfile
 
-#import seaborn as sns
+# import seaborn as sns
 
 # cmap = np.array([[0,    0.4470 ,   0.7410],
 #         [0.8500,    0.3250 ,   0.0980],
@@ -126,10 +126,14 @@ if __name__ == "__main__":
 
     # Parse command line arguments and validate img directory
 
-    parser = argparse.ArgumentParser(usage='''make_lavaVu_script.py -i <zipfile>|<directory>  ''',
-                                     description='''Create Websurfer model.tok file from obj files.  Load a zip or directory (-i <file>) that contains OBJ  files.    ''' )
+    parser = argparse.ArgumentParser(
+        usage='''make_lavaVu_script.py -i <zipfile>|<directory>  ''',
+        description='''Create Websurfer model.tok file from obj files.
+        Load a zip or directory (-i <file>) that contains OBJ  files.''')
     parser.add_argument(
-        '-i', '--input', help='''Input directory or file name. Must be a directory containing obj files, or a subdirectory with obj files, or a zip file with similar properties ''', required=True)
+        '-i', '--input', help='''Input directory or file name. Must be a
+        directory containing obj files, or a subdirectory with obj files,
+        or a zip file with similar properties ''', required=True)
     parser.add_argument('-v', '--verbose', help='Verbose.',
                         action="store_true")
     args = parser.parse_args()
@@ -184,7 +188,7 @@ if __name__ == "__main__":
 trisplit=1
 swapyz=true
 
-''' )
+''')
         grps = [args.input]  # top level obj files go in
         glabel = ["a"]
         opacity = 0.4
@@ -194,7 +198,8 @@ swapyz=true
             if os.path.isdir(os.path.join(args.input, subdir)):
                 grps.append(subdir)
                 print 'Found directory', subdir
-                #tmp_file.write('''grps:%s:%s:true\n''' % (subdir,glabel[gindex]))
+                # tmp_file.write('''grps:%s:%s:true\n''' %
+                # (subdir,glabel[gindex]))
                 glabel.append(chr(ord(glabel[gindex]) + 1))
                 gindex = gindex + 1
         nsubdirs = gindex
@@ -203,7 +208,8 @@ swapyz=true
 
         if glob.glob(args.input + '/*.obj'):
             for element in files:
-                if os.path.isfile(os.path.join(args.input, element)) and element.endswith('.obj'):
+                if os.path.isfile(os.path.join(args.input, element)) and \
+                   element.endswith('.obj'):
                     print element + ' is a file '
                     # format:  file <filename>\n
                     tmp_file.write('file "%s"\n' % element)
@@ -260,11 +266,11 @@ opacity=0.5
         tmp_file.write('''
 # translation 0 0 -120
 rotation 0 1 0 0
-
-border off
-axis off
+# boundingbox -1 -1 -1 1 1 1
+border on
+axis on
 list objects
-''' )
+''')
 
         tmp_file.close()
 
