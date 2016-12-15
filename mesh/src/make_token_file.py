@@ -29,15 +29,15 @@ Model tok files are generated using older formats for websurfer
 """
 
 import os
-import subprocess
+# import subprocess
 import sys
-import re
+# import re
 import numpy as np
 import argparse
-import logging
+# import logging
 import zipfile
 
-#import seaborn as sns
+# import seaborn as sns
 
 xkcd_cmap = np.array([[0,    0.4470,   0.7410],
                       [0.8500,    0.3250,   0.0980],
@@ -52,7 +52,9 @@ def hex_to_rgb(value):
     value = value.lstrip('#')
     lv = len(value)
     rgb = tuple(int(value[i:i + lv // 3], 16) for i in range(0, lv, lv // 3))
-    return np.array([float(rgb[0]) / 256.0,    float(rgb[1]) / 256.0, float(rgb[2]) / 256.0])
+    return np.array([float(rgb[0]) / 256.0,
+                     float(rgb[1]) / 256.0,
+                     float(rgb[2]) / float(256.)])
 
 
 crayons_cmap = np.array([
@@ -106,6 +108,10 @@ qualitative_brew = np.array([	hex_to_rgb('#a6cee3'),
 cmap = crayons_cmap
 num_colours = len(cmap)
 
+def FirstPassCheck(args):
+    print 'Verifying files'
+
+
 
 def CreateModelTokFile(args, model_token_filename):
     print 'Creating model.tok file'
@@ -156,7 +162,8 @@ grps:All:Z:true
     gindex = -1
     print 'Sub directory objects'
     for element in files:
-        if os.path.isfile(os.path.join(args.output, element)) and element.endswith('.obj'):
+        if os.path.isfile(os.path.join(args.output, element)) and \
+           element.endswith('.obj'):
             print element + ' is a file '
             # format:  objs:<object name>:<group label>:<filename>:R:G:B:A
             tok_file.write('''objs:%s:%s:%s:%.2f:%.2f:%.2f:%.2f\n''' %
@@ -169,7 +176,9 @@ grps:All:Z:true
             print element + ' is a directory '
             subfiles = os.listdir(os.path.join(args.output, element))
             for subelement in subfiles:
-                if os.path.isfile(os.path.join(args.output, element, subelement)) and subelement.endswith('.obj'):
+                if os.path.isfile(os.path.join(args.output,
+                                               element, subelement)) and \
+                   subelement.endswith('.obj'):
                     print subelement
                     # format:  objs:<object name>:<group
                     # label>:<filename>:R:G:B:A
@@ -190,41 +199,68 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(
         usage='''make_token_file.py -i <zipfile>|<directory>  ''',
-        description='''Create Websurfer model.tok file from obj files.  Load a zip or directory (-i <file>) that contains OBJ  files.    ''' )
-    parser.add_argument(
-        '-i', '--input', help='''Input directory or file name. Must be a directory containing obj files, or a subdirectory with obj files, or a zip file with similar properties ''', required=True)
- parser.add_argument(
-        '-i', '--input', help='''Input directory or file name. Must be a directory containing obj files, or a subdirectory with obj files, or a zip file with similar properties ''', required=True)
-    parser.add_argument(
-        '-o', '--output', help='''Output directory''', required=True)
-    parser.add_argument('-v', '--verbose', help='Verbose.',
-                        action="store_true")
+        description='''Create Websurfer model.tok file from obj files.
+        Load a zip or directory (-i <file>) that contains OBJ  files.''')
+    parser.add_argument('-i', '--input',
+                        help='''Input directory or file name. Must be a
+                        directory containing obj files, or a subdirectory with
+                        obj files, or a zip file with similar properties ''',
+                        required=True)
+    parser.add_argument('-o', '--output',
+                        help='''Output directory''', required=True)
+    parser.add_argument('-v', '--verbose',
+                        help='Verbose.', action="store_true")
     args = parser.parse_args()
     if args.verbose:
         print "Arguments:", args
 
+    if not os.path.isdir(args.output):
+        try:
+            os.mkdir(args.output)
+        except IOError as e:
+            print ("I/O error({0}): {1}").format(e.errno, e.strerror)
+        # print()rint 'Error: Folder \'' + args.output + '\' does not exist.'
+        # sys.exit(1)
+
     if os.path.isfile(args.input) and args.input.endswith('.zip'):
         with zipfile.ZipFile(args.input, 'r') as inputzip:
-            if not os.path.isdir(args.output):
-                os.mkdir(args.output)
-
             inputzip.printdir()
             inputzip.extractall(args.output)
             inputzip.close()
+    elif os.path.isfile(args.input) and args.input.endswith('.obj'):
+        try:
+            os.mkdir('OBJdir')
+        except IOError as e:
+            print ("I/O error({0}): {1} ").format(e.errno, e.strerror)
+        except:
+            print "Unexpected error:", sys.exc_info()[0]
+            raise
+        try:
+            os.rename(args.input, os.path.join(
+                os.path.dirname(args.input),
+                'OBJdir',
+                os.path.basename(args.input))+'.obj')
+        except IOError as e:
+            print ("I/O error({0}): {1} ").format(e.errno, e.strerror)
+        except:
+            print "Unexpected error:", sys.exc_info()[0]
+            raise
+        args.input = os.path.join(
+            os.path.dirname(args.input),
+            'OBJdir')
+
     else:
         print 'Error: Zip \'' + args.input + '\' does not exist.'
         sys.exit(1)
 
-    if not os.path.isdir(args.output):
-        print 'Error: Folder \'' + args.input + '\' does not exist.'
-        sys.exit(1)
-
     model_token_filename = os.path.join(args.output, 'model.tok')
     print model_token_filename
+
     if not os.path.isfile(model_token_filename):
         CreateModelTokFile(args, model_token_filename)
 
-    tok_file = open(model_token_filename, 'r')
-    tmp = tok_file.read()
-    print tmp
-    tok_file.close()
+    if args.verbose:
+        tok_file = open(model_token_filename, 'r')
+        tmp = tok_file.read()
+        print tmp
+        tok_file.close()
