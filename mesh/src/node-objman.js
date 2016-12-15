@@ -36,8 +36,31 @@ function processUploadObjFile(io, data) {
 			           return;
 		         }
 		         io.emit('processOBJuploadfile', {status: 'working', result: 'creating on model.tok ok. Now createing LavaVu init.script'})
-		         createLavaVuInitScript(io, data);
+		         validateObjectsandMaterials(io, data);
              
+         });
+}
+
+function validateObjectsandMaterials(io, data) {
+    var basename = path.basename(data.file, '.zip');
+	  var result_msg = 'Uploaded ';
+	  var filename = data.file;
+	  var zipfile = config.local_data_dir + filename;
+    var result_dir = config.local_data_dir + basename + '_result';
+	  var cmd = 'if test ${PIP_REQUIRE_VIRTUALENV+defined}; then PIP_REQUIRE_VIRTUALENV="";fi;cd ' + config.scripts_dir +' && python check_objects_and_materials.py -i ' + result_dir;
+
+	  console.log(cmd);
+	  exec(cmd, function(err, stdout, stderr) 
+         {
+    	       console.log(stdout);
+    	       console.log(stderr);
+    	       if(err)
+		         {
+			           io.emit('processOBJuploadfile', {status: 'error', result: 'cannot create LavaVu init.script file', detail: stderr});
+			           return;
+		         }
+		         io.emit('processOBJuploadfile', {status: 'working', result: ' init.script created. Centering OBJ files.'})
+             centreObjects(io, data);
          });
 }
 
@@ -84,7 +107,7 @@ function centreObjects(io, data) {
 		         }
 
 		         io.emit('processOBJuploadfile', {status: 'working', result: ' All obj files centred. Creating JSON file.'})
-             console.log('Finished centering objects\n')
+             console.log('Finished centering objects.')
              sendViewDataToClient2(io, data);
          });
 }
@@ -97,10 +120,10 @@ function sendViewDataToClient2(io, data) {
 	  var jsonfile = result_path +  '/mesh.json';
 	  var jsontemp = path.dirname(process.mainModule.filename) + '/src/meshtemplate.json';
 	  var jsonurl = result_path + '/mesh.json';
-	  var thumburl = 'img/cow.png';
+	  var thumburl = 'img/knot.png';
     //	var pngurl = 'data/local/' + basename + '_result/vol.png';
     //	var xrwurl = 'data/local/' + basename + '_result/vol.xrw';
-    console.log('In sendViewDataToClient.\n')
+    console.log('In sendViewDataToClient.')
 	  fs.readFile(jsontemp, 'utf8', function (err, jsondata) {
 		    if (err) {
 			      io.emit('processuploadfile', {status: 'error', result: 'cannot_read_template_json'});
