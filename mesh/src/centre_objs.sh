@@ -29,13 +29,14 @@ function error_exit(){
 
 E_BADDIR=85    # No such directory.
 E_BADARGS=65   # Wrong number of arguments passed to script.
-ARGS=1         # Script requires only 1 argument but can recieve 2 for '-q'.
+ARGS=1         # Script requires only 1 argument but can recieve 2 for quiet '-q'.
 QUIET=0
 obj_dir=""
 
+
 if [ $# -lt "$ARGS" ] || [ $# -gt "2" ]
 then
-    echo "Usage: $(basename $0) path/to/obj/root/dir"
+    echo "Usage: $PROGNAME [-q] path/to/obj/dir"
     exit $E_BADARGS
 fi
 
@@ -47,34 +48,43 @@ else
 fi
 
 if [ ! -d "${obj_dir}" ]; then
-    echo "Directory \"$obj_dir\" does not exist."
+    echo "Directory ${obj_dir} does not exist."
     exit $E_BADDIR
 fi
 
 # Delete any trailing slash
 obj_dir="${obj_dir%/}"
 
+if [ -z ${S2PATH+x} ]; then
+    echo "BoundingBox: 0 0 0 0 0 0" > "${obj_dir}"/boundingbox.txt
+    error_exit "S2PATH is not set. Cannot run objcentre."
+fi
+
+if [ ! -x objcentre ]; then
+    echo "BoundingBox: 0 0 0 0 0 0" > "${obj_dir}"/boundingbox.txt
+    error_exit "objcentre is not in PATH.  Ensure that S2PATH is in PATH environment variable."
+fi
+
+
 
 set +e  # Disable error in case objcentre fails
-
+        # Hard work - allow bad return 
 QARGS=""
 [ "$QUIET" = "1" ] && QARGS="-q"
-
-# Hard work - allow bad return 
 
 bb=$( find "${obj_dir}" -type f -name '*.obj' | xargs -t objcentre ${QARGS} )
 # Review and clean up
 if [ "$?" -ne 0 ]; then
     set -e
     echo "ObjCentre failed rolling back any -orig files with empty"
-    for orig in $(find ${obj_dir} -type f -name '*-orig.obj');do
+    for orig in $( find ${obj_dir} -type f -name '*-orig.obj' );do
         centred_file="${orig//-orig/}"
         # if newly created obj is empty, move the original back
         if [ -s "${centred_file}" ];then
             if [ -f "${orig}" ];then
                 rm -f "${orig}"
             else
-                error_exit " objcentre and rollback orig failed."
+                error_exit "objcentre and rollback orig failed."
             fi
         else
 
