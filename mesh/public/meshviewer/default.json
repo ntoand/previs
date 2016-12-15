@@ -10,7 +10,37 @@
     1,
     1
   ],
-  "nogui" : false,
+    "nogui" : false,
+    "mesh": {
+         "properties": {
+      "samples": 256,
+      "isovalue": 0.45,
+      "drawWalls": true,
+      "isoalpha": 1,
+      "isosmooth": 0.5045783843331688,
+      "isocolour": [
+        255,
+        245.46299999999997,
+        226.95000000000002
+      ],
+      "Zmin": 0,
+      "Ymin": 0,
+      "Xmin": 0,
+      "Zmax": 1,
+      "Ymax": 0.9723324001313833,
+      "Xmax": 1,
+      "density": 5,
+      "brightness": -0.11780890196982163,
+      "contrast": 1,
+      "power": 1,
+      "usecolourmap": true,
+      "tricubicFilter": false,
+      "lowPowerDevice": false,
+      "axes": false,
+      "border": false
+    }
+  },
+    
   "volume": {
     "translate": [
       -0.05715767664977255,
