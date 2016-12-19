@@ -214,43 +214,44 @@ if __name__ == "__main__":
     if args.verbose:
         print "Arguments:", args
 
-    if not os.path.isdir(args.output):
+    if args.input and not args.output and os.path.isdir(args.input):
+        args.output = args.input
+    elif args.output and not os.path.isdir(args.output):
         try:
             os.mkdir(args.output)
         except IOError as e:
             print ("I/O error({0}): {1}").format(e.errno, e.strerror)
-        # print()rint 'Error: Folder \'' + args.output + '\' does not exist.'
-        # sys.exit(1)
-
-    if os.path.isfile(args.input) and args.input.endswith('.zip'):
-        with zipfile.ZipFile(args.input, 'r') as inputzip:
-            inputzip.printdir()
-            inputzip.extractall(args.output)
-            inputzip.close()
-    elif os.path.isfile(args.input) and args.input.endswith('.obj'):
-        try:
-            os.mkdir('OBJdir')
-        except IOError as e:
-            print ("I/O error({0}): {1} ").format(e.errno, e.strerror)
-        except:
-            print "Unexpected error:", sys.exc_info()[0]
-            raise
-        try:
-            os.rename(args.input, os.path.join(
+            # print()rint 'Error: Folder \'' + args.output + '\' does not exist.'
+            sys.exit(1)
+        if os.path.isfile(args.input) and args.input.endswith('.zip'):
+            with zipfile.ZipFile(args.input, 'r') as inputzip:
+                inputzip.printdir()
+                inputzip.extractall(args.output)
+                inputzip.close()
+        elif os.path.isfile(args.input) and args.input.endswith('.obj'):
+            try:
+                os.mkdir('OBJdir')
+            except IOError as e:
+                print ("I/O error({0}): {1} ").format(e.errno, e.strerror)
+            except:
+                print "Unexpected error:", sys.exc_info()[0]
+                raise
+            try:
+                os.rename(args.input, os.path.join(
+                    os.path.dirname(args.input),
+                    'OBJdir',
+                    os.path.basename(args.input))+'.obj')
+            except IOError as e:
+                print ("I/O error({0}): {1} ").format(e.errno, e.strerror)
+            except:
+                print "Unexpected error:", sys.exc_info()[0]
+                raise
+            args.input = os.path.join(
                 os.path.dirname(args.input),
-                'OBJdir',
-                os.path.basename(args.input))+'.obj')
-        except IOError as e:
-            print ("I/O error({0}): {1} ").format(e.errno, e.strerror)
-        except:
-            print "Unexpected error:", sys.exc_info()[0]
-            raise
-        args.input = os.path.join(
-            os.path.dirname(args.input),
-            'OBJdir')
+                'OBJdir')
 
     else:
-        print 'Error: Zip \'' + args.input + '\' does not exist.'
+        print 'Error: \'' + args.input + '\' does not exist.'
         sys.exit(1)
 
     model_token_filename = os.path.join(args.output, 'model.tok')
