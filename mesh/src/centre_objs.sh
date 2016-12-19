@@ -87,7 +87,6 @@ if [ "$?" -ne 0 ]; then
                 error_exit "objcentre and rollback orig failed."
             fi
         else
-
             mv -f "${orig}" "${centred_file}"
         fi
     done

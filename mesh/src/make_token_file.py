@@ -207,7 +207,7 @@ if __name__ == "__main__":
                         obj files, or a zip file with similar properties ''',
                         required=True)
     parser.add_argument('-o', '--output',
-                        help='''Output directory''', required=True)
+                        help='''Output directory''')
     parser.add_argument('-v', '--verbose',
                         help='Verbose.', action="store_true")
     args = parser.parse_args()

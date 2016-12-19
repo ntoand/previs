@@ -23,7 +23,7 @@ function processUploadObjFile(io, data) {
 	  var zipfile = config.local_data_dir + filename;
 	  var result_dir = config.local_data_dir + basename + '_result';
     var result_msg = 'Uploaded valid zip file';
-	 	var cmd = 'if test ${PIP_REQUIRE_VIRTUALENV+defined}; then PIP_REQUIRE_VIRTUALENV="";fi;cd ' + config.scripts_dir +' && python verifyZipOBJ.py -i ' + result_dir;
+	 	var cmd = 'if test ${PIP_REQUIRE_VIRTUALENV+defined}; then PIP_REQUIRE_VIRTUALENV="";fi;cd ' + config.scripts_dir +' && python verifyZipOBJ.py -i ' + zipfile + ' -o ' + result_dir;
 
 	  console.log(cmd);
 	  exec(cmd, function(err, stdout, stderr) 
@@ -32,7 +32,7 @@ function processUploadObjFile(io, data) {
     	       console.log(stderr);
     	       if(err)
 		         {
-			           io.emit('processOBJuploadfile', {status: 'error', result: 'cannot create LavaVu invalidate zip file', detail: stderr});
+			           io.emit('processOBJuploadfile', {status: 'error', result: 'cannot validate zip file', detail: stderr});
 			           return;
 		         }
 		         io.emit('processOBJuploadfile', {status: 'working', result: ' Zip file has valid components for OBJ/Mesh viewing.'})
@@ -41,14 +41,14 @@ function processUploadObjFile(io, data) {
 
 }
 
-function validateObjectsandMaterials(io, data) {
+function createWebSurferTokFile(io, data) {
     var basename = path.basename(data.file, '.zip');
 	  var result_msg = 'Uploaded ';
 	  var filename = data.file;
 	  var zipfile = config.local_data_dir + filename;
     var result_dir = config.local_data_dir + basename + '_result';
 
-    var cmd = 'if test ${PIP_REQUIRE_VIRTUALENV+defined}; then PIP_REQUIRE_VIRTUALENV="";fi;cd ' + config.scripts_dir + ' && python make_token_file.py -i ' + zipfile + ' -o ' + result_dir;
+    var cmd = 'if test ${PIP_REQUIRE_VIRTUALENV+defined}; then PIP_REQUIRE_VIRTUALENV="";fi;cd ' + config.scripts_dir + ' && python make_token_file.py -i ' + result_dir;
 
 	  console.log(cmd);
 	  exec(cmd, function(err, stdout, stderr) 
