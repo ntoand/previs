@@ -22,8 +22,8 @@ function processUploadObjFile(io, data) {
 	  var filename = data.file;
 	  var zipfile = config.local_data_dir + filename;
 	  var result_dir = config.local_data_dir + basename + '_result';
-
-	  var cmd = 'if test ${PIP_REQUIRE_VIRTUALENV+defined}; then PIP_REQUIRE_VIRTUALENV="";fi;cd ' + config.scripts_dir + ' && python make_token_file.py -i ' + zipfile + ' -o ' + result_dir;
+    var result_msg = 'Uploaded valid zip file';
+	 	var cmd = 'if test ${PIP_REQUIRE_VIRTUALENV+defined}; then PIP_REQUIRE_VIRTUALENV="";fi;cd ' + config.scripts_dir +' && python verifyZipOBJ.py -i ' + result_dir;
 
 	  console.log(cmd);
 	  exec(cmd, function(err, stdout, stderr) 
@@ -32,13 +32,13 @@ function processUploadObjFile(io, data) {
     	       console.log(stderr);
     	       if(err)
 		         {
-			           io.emit('processOBJuploadfile', {status: 'error', result: 'cannot unpack zip and/or create Websurfer model.tok file', detail: stderr});
+			           io.emit('processOBJuploadfile', {status: 'error', result: 'cannot create LavaVu invalidate zip file', detail: stderr});
 			           return;
 		         }
-		         io.emit('processOBJuploadfile', {status: 'working', result: 'creating on model.tok ok. Now createing LavaVu init.script'})
-		         validateObjectsandMaterials(io, data);
-             
+		         io.emit('processOBJuploadfile', {status: 'working', result: ' Zip file has valid components for OBJ/Mesh viewing.'})
+             createWebSurferTokFile(io, data);
          });
+
 }
 
 function validateObjectsandMaterials(io, data) {
@@ -47,7 +47,8 @@ function validateObjectsandMaterials(io, data) {
 	  var filename = data.file;
 	  var zipfile = config.local_data_dir + filename;
     var result_dir = config.local_data_dir + basename + '_result';
-	  var cmd = 'if test ${PIP_REQUIRE_VIRTUALENV+defined}; then PIP_REQUIRE_VIRTUALENV="";fi;cd ' + config.scripts_dir +' && python check_objects_and_materials.py -i ' + result_dir;
+
+    var cmd = 'if test ${PIP_REQUIRE_VIRTUALENV+defined}; then PIP_REQUIRE_VIRTUALENV="";fi;cd ' + config.scripts_dir + ' && python make_token_file.py -i ' + zipfile + ' -o ' + result_dir;
 
 	  console.log(cmd);
 	  exec(cmd, function(err, stdout, stderr) 
@@ -56,11 +57,12 @@ function validateObjectsandMaterials(io, data) {
     	       console.log(stderr);
     	       if(err)
 		         {
-			           io.emit('processOBJuploadfile', {status: 'error', result: 'cannot create LavaVu init.script file', detail: stderr});
+			           io.emit('processOBJuploadfile', {status: 'error', result: 'cannot create Websurfer model.tok file', detail: stderr});
 			           return;
 		         }
-		         io.emit('processOBJuploadfile', {status: 'working', result: ' init.script created. Centering OBJ files.'})
-             centreObjects(io, data);
+		         io.emit('processOBJuploadfile', {status: 'working', result: 'creating on model.tok ok. Now creating LavaVu init.script'})
+		         createLavaVuInitScript(io, data);
+             
          });
 }
 
