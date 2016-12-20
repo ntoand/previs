@@ -166,7 +166,7 @@ app.get('/rest/members', function (req, res) {
 
 //! Make model tok file
 /*
-app.get('/rest/maketok', function (req, res) {
+app.get('/rest/makeSurferTok', function (req, res) {
 	  var cid = req.query.cid;
 	  var sid = req.query.sid;
 	  console.log(cid);
@@ -202,11 +202,12 @@ io.on('connection', function (socket) {
   		console.log(data);
   		mydaris.viewDataset(io, data);
   	});
-
+    //Volume Upload
   	socket.on('processuploadfile', function (data) {
   		console.log(data);
   		mylocalupload.processUploadFile(io, data);
   	});
+    // Mesh upload
   	socket.on('processOBJuploadfile', function (data) {
   		console.log(data);
   		mylocalOBJupload.processUploadObjFile(io, data);

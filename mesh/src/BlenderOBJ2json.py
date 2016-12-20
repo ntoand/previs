@@ -219,11 +219,13 @@ TEMPLATE_COLOR = "%.3g,%.3g,%.3g"
 TEMPLATE_COLOR_DEC = "%d"
 
 TEMPLATE_MORPH_VERTICES = '\t{ "name": "%s", "vertices": [%s] }'
-TEMPLATE_MORPH_COLORS   = '\t{ "name": "%s", "colors": [%s] }'
+TEMPLATE_MORPH_COLORS = '\t{ "name": "%s", "colors": [%s] }'
 
 # #####################################################
 # Utils
 # #####################################################
+
+
 def file_exists(filename):
     """Return true if file exists and is accessible for reading.
 
@@ -247,35 +249,37 @@ def get_name(fname):
 
     return os.path.splitext(os.path.basename(fname))[0]
 
+
 def bbox(vertices):
     """Compute bounding box of vertex array.
     """
 
-    if len(vertices)>0:
+    if len(vertices) > 0:
         minx = maxx = vertices[0][0]
         miny = maxy = vertices[0][1]
         minz = maxz = vertices[0][2]
 
         for v in vertices[1:]:
-            if v[0]<minx:
+            if v[0] < minx:
                 minx = v[0]
-            elif v[0]>maxx:
+            elif v[0] > maxx:
                 maxx = v[0]
 
-            if v[1]<miny:
+            if v[1] < miny:
                 miny = v[1]
-            elif v[1]>maxy:
+            elif v[1] > maxy:
                 maxy = v[1]
 
-            if v[2]<minz:
+            if v[2] < minz:
                 minz = v[2]
-            elif v[2]>maxz:
+            elif v[2] > maxz:
                 maxz = v[2]
 
-        return { 'x':[minx,maxx], 'y':[miny,maxy], 'z':[minz,maxz] }
+        return {'x': [minx, maxx], 'y': [miny, maxy], 'z': [minz, maxz]}
 
     else:
-        return { 'x':[0,0], 'y':[0,0], 'z':[0,0] }
+        return {'x': [0, 0], 'y': [0, 0], 'z': [0, 0]}
+
 
 def translate(vertices, t):
     """Translate array of vertices by vector t.
@@ -286,17 +290,19 @@ def translate(vertices, t):
         vertices[i][1] += t[1]
         vertices[i][2] += t[2]
 
+
 def center(vertices):
     """Center model (middle of bounding box).
     """
 
     bb = bbox(vertices)
 
-    cx = bb['x'][0] + (bb['x'][1] - bb['x'][0])/2.0
-    cy = bb['y'][0] + (bb['y'][1] - bb['y'][0])/2.0
-    cz = bb['z'][0] + (bb['z'][1] - bb['z'][0])/2.0
+    cx = bb['x'][0] + (bb['x'][1] - bb['x'][0]) / 2.0
+    cy = bb['y'][0] + (bb['y'][1] - bb['y'][0]) / 2.0
+    cz = bb['z'][0] + (bb['z'][1] - bb['z'][0]) / 2.0
 
-    translate(vertices, [-cx,-cy,-cz])
+    translate(vertices, [-cx, -cy, -cz])
+
 
 def top(vertices):
     """Align top of the model with the floor (Y-axis) and center it around X and Z.
@@ -304,11 +310,12 @@ def top(vertices):
 
     bb = bbox(vertices)
 
-    cx = bb['x'][0] + (bb['x'][1] - bb['x'][0])/2.0
+    cx = bb['x'][0] + (bb['x'][1] - bb['x'][0]) / 2.0
     cy = bb['y'][1]
-    cz = bb['z'][0] + (bb['z'][1] - bb['z'][0])/2.0
+    cz = bb['z'][0] + (bb['z'][1] - bb['z'][0]) / 2.0
 
-    translate(vertices, [-cx,-cy,-cz])
+    translate(vertices, [-cx, -cy, -cz])
+
 
 def bottom(vertices):
     """Align bottom of the model with the floor (Y-axis) and center it around X and Z.
@@ -316,11 +323,12 @@ def bottom(vertices):
 
     bb = bbox(vertices)
 
-    cx = bb['x'][0] + (bb['x'][1] - bb['x'][0])/2.0
+    cx = bb['x'][0] + (bb['x'][1] - bb['x'][0]) / 2.0
     cy = bb['y'][0]
-    cz = bb['z'][0] + (bb['z'][1] - bb['z'][0])/2.0
+    cz = bb['z'][0] + (bb['z'][1] - bb['z'][0]) / 2.0
 
-    translate(vertices, [-cx,-cy,-cz])
+    translate(vertices, [-cx, -cy, -cz])
+
 
 def centerxz(vertices):
     """Center model around X and Z.
@@ -328,20 +336,22 @@ def centerxz(vertices):
 
     bb = bbox(vertices)
 
-    cx = bb['x'][0] + (bb['x'][1] - bb['x'][0])/2.0
+    cx = bb['x'][0] + (bb['x'][1] - bb['x'][0]) / 2.0
     cy = 0
-    cz = bb['z'][0] + (bb['z'][1] - bb['z'][0])/2.0
+    cz = bb['z'][0] + (bb['z'][1] - bb['z'][0]) / 2.0
 
-    translate(vertices, [-cx,-cy,-cz])
+    translate(vertices, [-cx, -cy, -cz])
+
 
 def normalize(v):
     """Normalize 3d vector"""
 
-    l = math.sqrt(v[0]*v[0] + v[1]*v[1] + v[2]*v[2])
+    l = math.sqrt(v[0] * v[0] + v[1] * v[1] + v[2] * v[2])
     if l:
         v[0] /= l
         v[1] /= l
         v[2] /= l
+
 
 def veckey3(v):
     return round(v[0], 6), round(v[1], 6), round(v[2], 6)
@@ -349,9 +359,12 @@ def veckey3(v):
 # #####################################################
 # MTL parser
 # #####################################################
+
+
 def texture_relative_path(fullpath):
     texture_file = os.path.basename(fullpath.replace("\\", "/"))
     return texture_file
+
 
 def parse_mtl(fname):
     """Parse MTL file.
@@ -388,23 +401,27 @@ def parse_mtl(fname):
             # Diffuse texture
             # map_Kd texture_diffuse.jpg
             if chunks[0] == "map_Kd" and len(chunks) == 2:
-                materials[identifier]["mapDiffuse"] = texture_relative_path(chunks[1])
+                materials[identifier]["mapDiffuse"] = texture_relative_path(chunks[
+                                                                            1])
 
             # Specular texture
             # map_Ks texture_specular.jpg
             if chunks[0] == "map_Ks" and len(chunks) == 2:
-                materials[identifier]["mapSpecular"] = texture_relative_path(chunks[1])
+                materials[identifier]["mapSpecular"] = texture_relative_path(chunks[
+                                                                             1])
 
             # Alpha texture
             # map_d texture_alpha.png
             if chunks[0] == "map_d" and len(chunks) == 2:
                 materials[identifier]["transparent"] = True
-                materials[identifier]["mapAlpha"] = texture_relative_path(chunks[1])
+                materials[identifier]["mapAlpha"] = texture_relative_path(chunks[
+                                                                          1])
 
             # Bump texture
             # map_bump texture_bump.jpg or bump texture_bump.jpg
             if (chunks[0] == "map_bump" or chunks[0] == "bump") and len(chunks) == 2:
-                materials[identifier]["mapBump"] = texture_relative_path(chunks[1])
+                materials[identifier]["mapBump"] = texture_relative_path(chunks[
+                                                                         1])
 
             # Split the remaining parameters.
             if len(chunks) > 1:
@@ -413,12 +430,14 @@ def parse_mtl(fname):
             # Diffuse color
             # Kd 1.000 1.000 1.000
             if chunks[0] == "Kd" and len(chunks) == 4:
-                materials[identifier]["colorDiffuse"] = [float(chunks[1]), float(chunks[2]), float(chunks[3])]
+                materials[identifier]["colorDiffuse"] = [
+                    float(chunks[1]), float(chunks[2]), float(chunks[3])]
 
             # Specular color
             # Ks 1.000 1.000 1.000
             if chunks[0] == "Ks" and len(chunks) == 4:
-                materials[identifier]["colorSpecular"] = [float(chunks[1]), float(chunks[2]), float(chunks[3])]
+                materials[identifier]["colorSpecular"] = [
+                    float(chunks[1]), float(chunks[2]), float(chunks[3])]
 
             # Specular coefficient
             # Ns 154.000
@@ -466,6 +485,8 @@ def parse_mtl(fname):
 # #####################################################
 # OBJ parser
 # #####################################################
+
+
 def parse_vertex(text):
     """Parse text chunk specifying single vertex.
 
@@ -490,7 +511,8 @@ def parse_vertex(text):
         if chunks[2]:
             n = int(chunks[2])
 
-    return { 'v':v, 't':t, 'n':n }
+    return {'v': v, 't': t, 'n': n}
+
 
 def parse_obj(fname):
     """Parse OBJ file.
@@ -565,7 +587,7 @@ def parse_obj(fname):
                 x = float(chunks[1])
                 y = float(chunks[2])
                 z = float(chunks[3])
-                vertices.append([x,y,z])
+                vertices.append([x, y, z])
 
             # Normals in (x,y,z) form; normals might not be unit
             # vn 0.707 0.000 0.707
@@ -573,7 +595,7 @@ def parse_obj(fname):
                 x = float(chunks[1])
                 y = float(chunks[2])
                 z = float(chunks[3])
-                normals.append([x,y,z])
+                normals.append([x, y, z])
 
             # Texture coordinates in (u,v[,w]) coordinates, w is optional
             # vt 0.500 -1.352 [0.234]
@@ -581,16 +603,15 @@ def parse_obj(fname):
                 u = float(chunks[1])
                 v = float(chunks[2])
                 w = 0
-                if len(chunks)>3:
+                if len(chunks) > 3:
                     w = float(chunks[3])
-                uvs.append([u,v,w])
+                uvs.append([u, v, w])
 
             # Face
             if chunks[0] == "f" and len(chunks) >= 4:
                 vertex_index = []
                 uv_index = []
                 normal_index = []
-
 
                 # Precompute vert / normal / uv lists
                 # for negative index lookup
@@ -613,15 +634,15 @@ def parse_obj(fname):
                             vertex['n'] += normlen
                         normal_index.append(vertex['n'])
                 faces.append({
-                    'vertex':vertex_index,
-                    'uv':uv_index,
-                    'normal':normal_index,
+                    'vertex': vertex_index,
+                    'uv': uv_index,
+                    'normal': normal_index,
 
-                    'material':mcurrent,
-                    'group':group,
-                    'object':object,
-                    'smooth':smooth,
-                    })
+                    'material': mcurrent,
+                    'group': group,
+                    'object': object,
+                    'smooth': smooth,
+                })
 
             # Smooth shading
             if chunks[0] == "s" and len(chunks) == 2:
@@ -632,6 +653,8 @@ def parse_obj(fname):
 # #####################################################
 # Generator - faces
 # #####################################################
+
+
 def setBit(value, position, on):
     if on:
         mask = 1 << position
@@ -640,24 +663,27 @@ def setBit(value, position, on):
         mask = ~(1 << position)
         return (value & mask)
 
+
 def generate_face(f, fc):
-    isTriangle = ( len(f['vertex']) == 3 )
+    isTriangle = (len(f['vertex']) == 3)
 
     if isTriangle:
         nVertices = 3
     else:
         nVertices = 4
 
-    hasMaterial = True # for the moment OBJs without materials get default material
+    hasMaterial = True  # for the moment OBJs without materials get default material
 
-    hasFaceUvs = False # not supported in OBJ
-    hasFaceVertexUvs = ( len(f['uv']) >= nVertices )
+    hasFaceUvs = False  # not supported in OBJ
+    hasFaceVertexUvs = (len(f['uv']) >= nVertices)
 
-    hasFaceNormals = False # don't export any face normals (as they are computed in engine)
-    hasFaceVertexNormals = ( len(f["normal"]) >= nVertices and SHADING == "smooth" )
+    # don't export any face normals (as they are computed in engine)
+    hasFaceNormals = False
+    hasFaceVertexNormals = (
+        len(f["normal"]) >= nVertices and SHADING == "smooth")
 
     hasFaceColors = BAKE_COLORS
-    hasFaceVertexColors = False # not supported in OBJ
+    hasFaceVertexColors = False  # not supported in OBJ
 
     faceType = 0
     faceType = setBit(faceType, 0, not isTriangle)
@@ -691,7 +717,7 @@ def generate_face(f, fc):
         index = f['vertex'][i] - 1
         faceData.append(index)
 
-    faceData.append( f['material'] )
+    faceData.append(f['material'])
 
     if hasFaceVertexUvs:
         for i in xrange(nVertices):
@@ -707,13 +733,16 @@ def generate_face(f, fc):
         index = fc['material']
         faceData.append(index)
 
-    return ",".join( map(str, faceData) )
+    return ",".join(map(str, faceData))
 
 # #####################################################
 # Generator - chunks
 # #####################################################
+
+
 def hexcolor(c):
-    return ( int(c[0] * 255) << 16  ) + ( int(c[1] * 255) << 8 ) + int(c[2] * 255)
+    return (int(c[0] * 255) << 16) + (int(c[1] * 255) << 8) + int(c[2] * 255)
+
 
 def generate_vertex(v, option_vertices_truncate, scale):
     if not option_vertices_truncate:
@@ -721,14 +750,18 @@ def generate_vertex(v, option_vertices_truncate, scale):
     else:
         return TEMPLATE_VERTEX_TRUNCATE % (scale * v[0], scale * v[1], scale * v[2])
 
+
 def generate_normal(n):
     return TEMPLATE_N % (n[0], n[1], n[2])
+
 
 def generate_uv(uv):
     return TEMPLATE_UV % (uv[0], uv[1])
 
+
 def generate_color_rgb(c):
     return TEMPLATE_COLOR % (c[0], c[1], c[2])
+
 
 def generate_color_decimal(c):
     return TEMPLATE_COLOR_DEC % hexcolor(c)
@@ -736,20 +769,25 @@ def generate_color_decimal(c):
 # #####################################################
 # Morphs
 # #####################################################
+
+
 def generate_morph_vertex(name, vertices):
-    vertex_string = ",".join(generate_vertex(v, TRUNCATE, SCALE) for v in vertices)
+    vertex_string = ",".join(generate_vertex(
+        v, TRUNCATE, SCALE) for v in vertices)
     return TEMPLATE_MORPH_VERTICES % (name, vertex_string)
+
 
 def generate_morph_color(name, colors):
     color_string = ",".join(generate_color_rgb(c) for c in colors)
     return TEMPLATE_MORPH_COLORS % (name, color_string)
+
 
 def extract_material_colors(materials, mtlfilename, basename):
     """Extract diffuse colors from MTL materials
     """
 
     if not materials:
-        materials = { 'default': 0 }
+        materials = {'default': 0}
 
     mtl = create_materials(materials, mtlfilename, basename)
 
@@ -757,13 +795,14 @@ def extract_material_colors(materials, mtlfilename, basename):
     for m in mtl:
         if m in materials:
             index = materials[m]
-            color = mtl[m].get("colorDiffuse", [1,0,0])
+            color = mtl[m].get("colorDiffuse", [1, 0, 0])
             mtlColorArraySrt.append([index, color])
 
     mtlColorArraySrt.sort()
     mtlColorArray = [x[1] for x in mtlColorArraySrt]
 
     return mtlColorArray
+
 
 def extract_face_colors(faces, material_colors):
     """Extract colors from materials and assign them to faces
@@ -776,6 +815,7 @@ def extract_face_colors(faces, material_colors):
         faceColors.append(material_colors[material_index])
 
     return faceColors
+
 
 def generate_morph_targets(morphfiles, n_vertices, infile):
     skipOriginalMorph = False
@@ -798,7 +838,8 @@ def generate_morph_targets(morphfiles, n_vertices, infile):
 
                 name = os.path.basename(normpath)
 
-                morphFaces, morphVertices, morphUvs, morphNormals, morphMaterials, morphMtllib = parse_obj(normpath)
+                morphFaces, morphVertices, morphUvs, morphNormals, morphMaterials, morphMtllib = parse_obj(
+                    normpath)
 
                 n_morph_vertices = len(morphVertices)
 
@@ -822,9 +863,11 @@ def generate_morph_targets(morphfiles, n_vertices, infile):
 
     morphTargets = ""
     if len(morphVertexData):
-        morphTargets = "\n%s\n\t" % ",\n".join(generate_morph_vertex(name, vertices) for name, vertices in morphVertexData)
+        morphTargets = "\n%s\n\t" % ",\n".join(generate_morph_vertex(
+            name, vertices) for name, vertices in morphVertexData)
 
     return morphTargets
+
 
 def generate_morph_colors(colorfiles, n_vertices, n_faces):
     morphColorData = []
@@ -839,7 +882,8 @@ def generate_morph_colors(colorfiles, n_vertices, n_faces):
             normpath = os.path.normpath(path)
             name = os.path.basename(normpath)
 
-            morphFaces, morphVertices, morphUvs, morphNormals, morphMaterials, morphMtllib = parse_obj(normpath)
+            morphFaces, morphVertices, morphUvs, morphNormals, morphMaterials, morphMtllib = parse_obj(
+                normpath)
 
             n_morph_vertices = len(morphVertices)
             n_morph_faces = len(morphFaces)
@@ -854,8 +898,10 @@ def generate_morph_colors(colorfiles, n_vertices, n_faces):
 
             else:
 
-                morphMaterialColors = extract_material_colors(morphMaterials, morphMtllib, normpath)
-                morphFaceColors = extract_face_colors(morphFaces, morphMaterialColors)
+                morphMaterialColors = extract_material_colors(
+                    morphMaterials, morphMtllib, normpath)
+                morphFaceColors = extract_face_colors(
+                    morphFaces, morphMaterialColors)
                 morphColorData.append((get_name(name), morphFaceColors))
 
                 # take first color map for baking into face colors
@@ -868,13 +914,16 @@ def generate_morph_colors(colorfiles, n_vertices, n_faces):
 
     morphColors = ""
     if len(morphColorData):
-        morphColors = "\n%s\n\t" % ",\n".join(generate_morph_color(name, colors) for name, colors in morphColorData)
+        morphColors = "\n%s\n\t" % ",\n".join(generate_morph_color(
+            name, colors) for name, colors in morphColorData)
 
     return morphColors, colorFaces, materialColors
 
 # #####################################################
 # Materials
 # #####################################################
+
+
 def generate_color(i):
     """Generate hex color corresponding to integer.
 
@@ -885,18 +934,20 @@ def generate_color(i):
     """
 
     if i < len(COLORS):
-        #return "0x%06x" % COLORS[i]
+        # return "0x%06x" % COLORS[i]
         return COLORS[i]
     else:
-        #return "0x%06x" % int(0xffffff * random.random())
+        # return "0x%06x" % int(0xffffff * random.random())
         return int(0xffffff * random.random())
 
+
 def value2string(v):
-    if type(v)==str and v[0:2] != "0x":
+    if type(v) == str and v[0:2] != "0x":
         return '"%s"' % v
     elif type(v) == bool:
         return str(v).lower()
     return str(v)
+
 
 def generate_materials(mtl, materials):
     """Generate JS array of materials objects
@@ -921,11 +972,13 @@ def generate_materials(mtl, materials):
             if BAKE_COLORS:
                 mtl[m]['vertexColors'] = "face"
 
-            mtl_raw = ",\n".join(['\t"%s" : %s' % (n, value2string(v)) for n,v in sorted(mtl[m].items())])
+            mtl_raw = ",\n".join(['\t"%s" : %s' % (n, value2string(v))
+                                  for n, v in sorted(mtl[m].items())])
             mtl_string = "\t{\n%s\n\t}" % mtl_raw
             mtl_array.append([index, mtl_string])
 
-    return ",\n\n".join([m for i,m in sorted(mtl_array)])
+    return ",\n\n".join([m for i, m in sorted(mtl_array)])
+
 
 def generate_mtl(materials):
     """Generate dummy materials (if there is no MTL file).
@@ -941,22 +994,24 @@ def generate_mtl(materials):
         }
     return mtl
 
+
 def generate_materials_string(materials, mtlfilename, basename):
     """Generate final materials string.
     """
 
     if not materials:
-        materials = { 'default': 0 }
+        materials = {'default': 0}
 
     mtl = create_materials(materials, mtlfilename, basename)
     return generate_materials(mtl, materials)
+
 
 def create_materials(materials, mtlfilename, basename):
     """Parse MTL file and create mapping between its materials and OBJ materials.
        Eventual edge cases are handled here (missing materials, missing MTL file).
     """
 
-    random.seed(42) # to get well defined color order for debug colors
+    random.seed(42)  # to get well defined color order for debug colors
 
     # default materials with debug colors for when
     # there is no specified MTL / MTL loading failed,
@@ -987,41 +1042,51 @@ def create_materials(materials, mtlfilename, basename):
 # #####################################################
 # Faces
 # #####################################################
+
+
 def is_triangle_flat(f):
-    return len(f['vertex'])==3 and not (f["normal"] and SHADING == "smooth") and not f['uv']
+    return len(f['vertex']) == 3 and not (f["normal"] and SHADING == "smooth") and not f['uv']
+
 
 def is_triangle_flat_uv(f):
-    return len(f['vertex'])==3 and not (f["normal"] and SHADING == "smooth") and len(f['uv'])==3
+    return len(f['vertex']) == 3 and not (f["normal"] and SHADING == "smooth") and len(f['uv']) == 3
+
 
 def is_triangle_smooth(f):
-    return len(f['vertex'])==3 and f["normal"] and SHADING == "smooth" and not f['uv']
+    return len(f['vertex']) == 3 and f["normal"] and SHADING == "smooth" and not f['uv']
+
 
 def is_triangle_smooth_uv(f):
-    return len(f['vertex'])==3 and f["normal"] and SHADING == "smooth" and len(f['uv'])==3
+    return len(f['vertex']) == 3 and f["normal"] and SHADING == "smooth" and len(f['uv']) == 3
+
 
 def is_quad_flat(f):
-    return len(f['vertex'])==4 and not (f["normal"] and SHADING == "smooth") and not f['uv']
+    return len(f['vertex']) == 4 and not (f["normal"] and SHADING == "smooth") and not f['uv']
+
 
 def is_quad_flat_uv(f):
-    return len(f['vertex'])==4 and not (f["normal"] and SHADING == "smooth") and len(f['uv'])==4
+    return len(f['vertex']) == 4 and not (f["normal"] and SHADING == "smooth") and len(f['uv']) == 4
+
 
 def is_quad_smooth(f):
-    return len(f['vertex'])==4 and f["normal"] and SHADING == "smooth" and not f['uv']
+    return len(f['vertex']) == 4 and f["normal"] and SHADING == "smooth" and not f['uv']
+
 
 def is_quad_smooth_uv(f):
-    return len(f['vertex'])==4 and f["normal"] and SHADING == "smooth" and len(f['uv'])==4
+    return len(f['vertex']) == 4 and f["normal"] and SHADING == "smooth" and len(f['uv']) == 4
+
 
 def sort_faces(faces):
     data = {
-    'triangles_flat': [],
-    'triangles_flat_uv': [],
-    'triangles_smooth': [],
-    'triangles_smooth_uv': [],
+        'triangles_flat': [],
+        'triangles_flat_uv': [],
+        'triangles_smooth': [],
+        'triangles_smooth_uv': [],
 
-    'quads_flat': [],
-    'quads_flat_uv': [],
-    'quads_smooth': [],
-    'quads_smooth_uv': []
+        'quads_flat': [],
+        'quads_flat_uv': [],
+        'quads_smooth': [],
+        'quads_smooth_uv': []
     }
 
     for f in faces:
@@ -1048,6 +1113,8 @@ def sort_faces(faces):
 # #####################################################
 # API - ASCII converter
 # #####################################################
+
+
 def convert_ascii(infile, morphfiles, colorfiles, outfile):
     """Convert infile.obj to outfile.js
 
@@ -1091,7 +1158,8 @@ def convert_ascii(infile, morphfiles, colorfiles, outfile):
 
     # extract morph colors
 
-    morphColors, colorFaces, materialColors = generate_morph_colors(colorfiles, n_vertices, n_faces)
+    morphColors, colorFaces, materialColors = generate_morph_colors(
+        colorfiles, n_vertices, n_faces)
 
     # generate colors string
 
@@ -1103,34 +1171,35 @@ def convert_ascii(infile, morphfiles, colorfiles, outfile):
         materialColors = extract_material_colors(materials, mtllib, infile)
 
     if BAKE_COLORS:
-        colors_string = ",".join(generate_color_decimal(c) for c in materialColors)
+        colors_string = ",".join(generate_color_decimal(c)
+                                 for c in materialColors)
         ncolor = len(materialColors)
 
     # generate ascii model string
 
     text = TEMPLATE_FILE_ASCII % {
-    "name"      : get_name(outfile),
-    "fname"     : os.path.basename(infile),
-    "nvertex"   : len(vertices),
-    "nface"     : len(faces),
-    "nuv"       : len(uvs),
-    "nnormal"   : nnormal,
-    "ncolor"    : ncolor,
-    "nmaterial" : len(materials),
+        "name": get_name(outfile),
+        "fname": os.path.basename(infile),
+        "nvertex": len(vertices),
+        "nface": len(faces),
+        "nuv": len(uvs),
+        "nnormal": nnormal,
+        "ncolor": ncolor,
+        "nmaterial": len(materials),
 
-    "materials" : generate_materials_string(materials, mtllib, infile),
+        "materials": generate_materials_string(materials, mtllib, infile),
 
-    "normals"       : normals_string,
-    "colors"        : colors_string,
-    "uvs"           : ",".join(generate_uv(uv) for uv in uvs),
-    "vertices"      : ",".join(generate_vertex(v, TRUNCATE, SCALE) for v in vertices),
+        "normals": normals_string,
+        "colors": colors_string,
+        "uvs": ",".join(generate_uv(uv) for uv in uvs),
+        "vertices": ",".join(generate_vertex(v, TRUNCATE, SCALE) for v in vertices),
 
-    "morphTargets"  : morphTargets,
-    "morphColors"   : morphColors,
+        "morphTargets": morphTargets,
+        "morphColors": morphColors,
 
-    "faces"     : ",".join(generate_face(f, fc) for f, fc in zip(faces, colorFaces)),
+        "faces": ",".join(generate_face(f, fc) for f, fc in zip(faces, colorFaces)),
 
-    "scale"    : SCALE
+        "scale": SCALE
     }
 
     out = open(outfile, "w")
@@ -1146,56 +1215,64 @@ def convert_ascii(infile, morphfiles, colorfiles, outfile):
 def dump_materials_to_buffer(faces, buffer):
     for f in faces:
         data = struct.pack('<H',
-                            f['material'])
+                           f['material'])
         buffer.append(data)
+
 
 def dump_vertices3_to_buffer(faces, buffer):
     for f in faces:
         vi = f['vertex']
         data = struct.pack('<III',
-                            vi[0]-1, vi[1]-1, vi[2]-1)
+                           vi[0] - 1, vi[1] - 1, vi[2] - 1)
         buffer.append(data)
+
 
 def dump_vertices4_to_buffer(faces, buffer):
     for f in faces:
         vi = f['vertex']
         data = struct.pack('<IIII',
-                            vi[0]-1, vi[1]-1, vi[2]-1, vi[3]-1)
+                           vi[0] - 1, vi[1] - 1, vi[2] - 1, vi[3] - 1)
         buffer.append(data)
+
 
 def dump_normals3_to_buffer(faces, buffer):
     for f in faces:
         ni = f['normal']
         data = struct.pack('<III',
-                            ni[0]-1, ni[1]-1, ni[2]-1)
+                           ni[0] - 1, ni[1] - 1, ni[2] - 1)
         buffer.append(data)
+
 
 def dump_normals4_to_buffer(faces, buffer):
     for f in faces:
         ni = f['normal']
         data = struct.pack('<IIII',
-                            ni[0]-1, ni[1]-1, ni[2]-1, ni[3]-1)
+                           ni[0] - 1, ni[1] - 1, ni[2] - 1, ni[3] - 1)
         buffer.append(data)
+
 
 def dump_uvs3_to_buffer(faces, buffer):
     for f in faces:
         ui = f['uv']
         data = struct.pack('<III',
-                            ui[0]-1, ui[1]-1, ui[2]-1)
+                           ui[0] - 1, ui[1] - 1, ui[2] - 1)
         buffer.append(data)
+
 
 def dump_uvs4_to_buffer(faces, buffer):
     for f in faces:
         ui = f['uv']
         data = struct.pack('<IIII',
-                            ui[0]-1, ui[1]-1, ui[2]-1, ui[3]-1)
+                           ui[0] - 1, ui[1] - 1, ui[2] - 1, ui[3] - 1)
         buffer.append(data)
+
 
 def add_padding(buffer, n):
     if n % 4:
         for i in range(4 - n % 4):
             data = struct.pack('<B', 0)
             buffer.append(data)
+
 
 def convert_binary(infile, outfile):
     """Convert infile.obj to outfile.js + outfile.bin
@@ -1230,17 +1307,17 @@ def convert_binary(infile, outfile):
     # ###################
 
     text = TEMPLATE_FILE_BIN % {
-    "name"       : get_name(outfile),
+        "name": get_name(outfile),
 
-    "materials" : generate_materials_string(materials, mtllib, infile),
-    "buffers"   : binfile,
+        "materials": generate_materials_string(materials, mtllib, infile),
+        "buffers": binfile,
 
-    "fname"     : os.path.basename(infile),
-    "nvertex"   : len(vertices),
-    "nface"     : len(faces),
-    "nmaterial" : len(materials),
-    "nnormal"   : nnormals,
-    "nuv"       : len(uvs)
+        "fname": os.path.basename(infile),
+        "nvertex": len(vertices),
+        "nface": len(faces),
+        "nmaterial": len(materials),
+        "nnormal": nnormals,
+        "nuv": len(uvs)
     }
 
     out = open(outfile, "w")
@@ -1255,7 +1332,7 @@ def convert_binary(infile, outfile):
 
     # header
     # ------
-    header_bytes  = struct.calcsize('<12s')
+    header_bytes = struct.calcsize('<12s')
     header_bytes += struct.calcsize('<BBBBBBBB')
     header_bytes += struct.calcsize('<IIIIIIIIIII')
 
@@ -1283,13 +1360,13 @@ def convert_binary(infile, outfile):
     # uv_index_bytes          unsigned char   1
     # material_index_bytes    unsigned char   1
     bdata = struct.pack('<BBBBBBBB', header_bytes,
-                               vertex_coordinate_bytes,
-                               normal_coordinate_bytes,
-                               uv_coordinate_bytes,
-                               vertex_index_bytes,
-                               normal_index_bytes,
-                               uv_index_bytes,
-                               material_index_bytes)
+                        vertex_coordinate_bytes,
+                        normal_coordinate_bytes,
+                        uv_coordinate_bytes,
+                        vertex_index_bytes,
+                        normal_index_bytes,
+                        uv_index_bytes,
+                        material_index_bytes)
 
     ntri_flat = len(sfaces['triangles_flat'])
     ntri_smooth = len(sfaces['triangles_smooth'])
@@ -1315,16 +1392,16 @@ def convert_binary(infile, outfile):
     # nquad_flat_uv   unsigned int    4
     # nquad_smooth_uv unsigned int    4
     ndata = struct.pack('<IIIIIIIIIII', len(vertices),
-                               nnormals,
-                               len(uvs),
-                               ntri_flat,
-                               ntri_smooth,
-                               ntri_flat_uv,
-                               ntri_smooth_uv,
-                               nquad_flat,
-                               nquad_smooth,
-                               nquad_flat_uv,
-                               nquad_smooth_uv)
+                        nnormals,
+                        len(uvs),
+                        ntri_flat,
+                        ntri_smooth,
+                        ntri_flat_uv,
+                        ntri_smooth_uv,
+                        nquad_flat,
+                        nquad_smooth,
+                        nquad_flat_uv,
+                        nquad_smooth_uv)
     buffer.append(signature)
     buffer.append(bdata)
     buffer.append(ndata)
@@ -1346,9 +1423,9 @@ def convert_binary(infile, outfile):
     if SHADING == "smooth":
         for n in normals:
             normalize(n)
-            data = struct.pack('<bbb', math.floor(n[0]*127+0.5),
-                                       math.floor(n[1]*127+0.5),
-                                       math.floor(n[2]*127+0.5))
+            data = struct.pack('<bbb', math.floor(n[0] * 127 + 0.5),
+                               math.floor(n[1] * 127 + 0.5),
+                               math.floor(n[2] * 127 + 0.5))
             buffer.append(data)
 
         add_padding(buffer, nnormals * 3)
@@ -1363,7 +1440,7 @@ def convert_binary(infile, outfile):
 
     # padding
     #data = struct.pack('<BB', 0, 0)
-    #buffer.append(data)
+    # buffer.append(data)
 
     # 4. flat triangles (vertices + materials)
     # ------------------
@@ -1527,6 +1604,8 @@ def convert_binary(infile, outfile):
 # #############################################################################
 # Helpers
 # #############################################################################
+
+
 def usage():
     print "Usage: %s -i filename.obj -o filename.js [-m morphfiles*.obj] [-c morphcolors*.obj] [-a center|top|bottom] [-s flat|smooth] [-t binary|ascii] [-d invert|normal]" % os.path.basename(sys.argv[0])
 
@@ -1537,7 +1616,8 @@ if __name__ == "__main__":
 
     # get parameters from the command line
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "hbi:m:c:b:o:a:s:t:d:x:f:", ["help", "bakecolors", "input=", "morphs=", "colors=", "output=", "align=", "shading=", "type=", "truncatescale=", "framestep="])
+        opts, args = getopt.getopt(sys.argv[1:], "hbi:m:c:b:o:a:s:t:d:x:f:", [
+                                   "help", "bakecolors", "input=", "morphs=", "colors=", "output=", "align=", "shading=", "type=", "truncatescale=", "framestep="])
 
     except getopt.GetoptError:
         usage()
@@ -1602,4 +1682,3 @@ if __name__ == "__main__":
         convert_ascii(infile, morphfiles, colorfiles, outfile)
     elif TYPE == "binary":
         convert_binary(infile, outfile)
-

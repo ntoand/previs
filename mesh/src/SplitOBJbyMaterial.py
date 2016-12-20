@@ -116,6 +116,8 @@ def file_exists(filename):
 # #####################################################
 # OBJ parser
 # #####################################################
+
+
 def parse_vertex(text):
     """Parse text chunk specifying single vertex.
 
@@ -140,7 +142,8 @@ def parse_vertex(text):
         if chunks[2]:
             n = int(chunks[2])
 
-    return { 'v': v, 't': t, 'n': n }
+    return {'v': v, 't': t, 'n': n}
+
 
 def parse_obj(fname):
     """Parse OBJ file.
@@ -173,7 +176,7 @@ def parse_obj(fname):
                 x = float(chunks[1])
                 y = float(chunks[2])
                 z = float(chunks[3])
-                vertices.append([x,y,z])
+                vertices.append([x, y, z])
 
             # Normals in (x,y,z) form; normals might not be unit
             # vn 0.707 0.000 0.707
@@ -181,7 +184,7 @@ def parse_obj(fname):
                 x = float(chunks[1])
                 y = float(chunks[2])
                 z = float(chunks[3])
-                normals.append([x,y,z])
+                normals.append([x, y, z])
 
             # Texture coordinates in (u,v[,w]) coordinates, w is optional
             # vt 0.500 -1.352 [0.234]
@@ -189,9 +192,9 @@ def parse_obj(fname):
                 u = float(chunks[1])
                 v = float(chunks[2])
                 w = 0
-                if len(chunks)>3:
+                if len(chunks) > 3:
                     w = float(chunks[3])
-                uvs.append([u,v,w])
+                uvs.append([u, v, w])
 
             # Face
             if chunks[0] == "f" and len(chunks) >= 4:
@@ -209,15 +212,15 @@ def parse_obj(fname):
                         normal_index.append(vertex['n'])
 
                 faces.append({
-                    'vertex':vertex_index,
-                    'uv':uv_index,
-                    'normal':normal_index,
+                    'vertex': vertex_index,
+                    'uv': uv_index,
+                    'normal': normal_index,
 
-                    'material':mcurrent,
-                    'group':group,
-                    'object':object,
-                    'smooth':smooth,
-                    })
+                    'material': mcurrent,
+                    'group': group,
+                    'object': object,
+                    'smooth': smooth,
+                })
 
             # Group
             if chunks[0] == "g" and len(chunks) == 2:
@@ -250,6 +253,8 @@ def parse_obj(fname):
 # #############################################################################
 # API - Breaker
 # #############################################################################
+
+
 def break_obj(infile, outfile):
     """Break infile.obj to outfile.obj
     """
@@ -267,7 +272,8 @@ def break_obj(infile, outfile):
     for face in faces:
         material = face["material"]
         if not material in chunks:
-            chunks[material] = {"faces": [], "vertices": set(), "normals": set(), "uvs": set()}
+            chunks[material] = {
+                "faces": [], "vertices": set(), "normals": set(), "uvs": set()}
 
         chunks[material]["faces"].append(face)
 
@@ -313,12 +319,11 @@ def break_obj(infile, outfile):
         for i, t in enumerate(new_uvs):
             tmap[t] = i + 1
 
-
         # vertices
 
         pieces = []
         for i in new_vertices:
-            vertex = vertices[i-1]
+            vertex = vertices[i - 1]
             txt = TEMPLATE_VERTEX % (vertex[0], vertex[1], vertex[2])
             pieces.append(txt)
 
@@ -328,7 +333,7 @@ def break_obj(infile, outfile):
 
         pieces = []
         for i in new_normals:
-            normal = normals[i-1]
+            normal = normals[i - 1]
             txt = TEMPLATE_NORMAL % (normal[0], normal[1], normal[2])
             pieces.append(txt)
 
@@ -338,7 +343,7 @@ def break_obj(infile, outfile):
 
         pieces = []
         for i in new_uvs:
-            uv = uvs[i-1]
+            uv = uvs[i - 1]
             txt = TEMPLATE_UV % (uv[0], uv[1])
             pieces.append(txt)
 
@@ -371,7 +376,8 @@ def break_obj(infile, outfile):
                     tb = tmap[ft[1]]
                     tc = tmap[ft[2]]
 
-                    txt = TEMPLATE_FACE3_VTN % (va, ta, na, vb, tb, nb, vc, tc, nc)
+                    txt = TEMPLATE_FACE3_VTN % (
+                        va, ta, na, vb, tb, nb, vc, tc, nc)
 
                 elif len(fn) == 3:
                     na = nmap[fn[0]]
@@ -408,7 +414,8 @@ def break_obj(infile, outfile):
                     tc = tmap[ft[2]]
                     td = tmap[ft[3]]
 
-                    txt = TEMPLATE_FACE4_VTN % (va, ta, na, vb, tb, nb, vc, tc, nc, vd, td, nd)
+                    txt = TEMPLATE_FACE4_VTN % (
+                        va, ta, na, vb, tb, nb, vc, tc, nc, vd, td, nd)
 
                 elif len(fn) == 4:
                     na = nmap[fn[0]]
@@ -431,21 +438,20 @@ def break_obj(infile, outfile):
 
             pieces.append(txt)
 
-
         str_faces = "\n".join(pieces)
 
         # generate OBJ string
 
         content = TEMPLATE_OBJ % {
-        "nfaces"        : len(chunk["faces"]),
-        "nvertices"     : len(new_vertices),
-        "nnormals"      : len(new_normals),
-        "nuvs"          : len(new_uvs),
+            "nfaces": len(chunk["faces"]),
+            "nvertices": len(new_vertices),
+            "nnormals": len(new_normals),
+            "nuvs": len(new_uvs),
 
-        "vertices"      : str_vertices,
-        "normals"       : str_normals,
-        "uvs"           : str_uvs,
-        "faces"         : str_faces
+            "vertices": str_vertices,
+            "normals": str_normals,
+            "uvs": str_uvs,
+            "faces": str_faces
         }
 
         # write OBJ file
@@ -471,7 +477,8 @@ if __name__ == "__main__":
     # get parameters from the command line
 
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "hi:o:x:", ["help", "input=", "output=", "truncatescale="])
+        opts, args = getopt.getopt(sys.argv[1:], "hi:o:x:", [
+                                   "help", "input=", "output=", "truncatescale="])
 
     except getopt.GetoptError:
         usage()
@@ -501,4 +508,3 @@ if __name__ == "__main__":
     print "Splitting [%s] into [%s_XXX.obj] ..." % (infile, outfile)
 
     break_obj(infile, outfile)
-

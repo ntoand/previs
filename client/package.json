@@ -11,15 +11,16 @@
     "url": ""
   },
   "keywords": [
-    "Electron",
-    "MIVP",
-    "previs",
-    "volume"
+      "Electron",
+      "MIVP",
+      "previs",
+      "volume",
+      "meshes"
   ],
   "author": "MIVP",
   "license": "None",
   "bugs": {
-    "url": ""
+    "url": "mivp-admin@monash.edu.au"
   },
   "homepage": "http://monash.edu/mivp",
   "devDependencies": {
