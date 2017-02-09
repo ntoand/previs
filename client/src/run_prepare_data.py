@@ -117,7 +117,7 @@ def main(argv):
                 downloadfile(server + vol_thumb, vol_thumb_filename)
 
                 vol_json_filename = vol_dir + "vol1.json"
-                vol_json = data["volumes"][ii]["json_full"]
+                vol_json = data["volumes"][ii]["json"]
                 print "Download " + vol_json + " file..."
                 downloadfile(server + vol_json, vol_json_filename)
 
@@ -129,7 +129,7 @@ def main(argv):
                 vol_ele = {}
                 vol_ele["thumb"] = vol_thumb_filename
                 vol_ele["dir"] = vol_dir
-                vol_ele["res"] = data["volumes"][ii]["res_full"]
+                vol_ele["res"] = data["volumes"][ii]["res"]
                 vol_ele["name"] = ""
                 local_json["volumes"].append(vol_ele)
 

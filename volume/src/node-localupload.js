@@ -158,12 +158,12 @@ function sendViewDataToClient(io, data) {
 					var volumes = [];
 					var volume = {};
 					volume.data_dir='data/local/' + basename + '_result';
-					volume.json_full=jsonurl_full;
+					volume.json=jsonurl_full;
 					volume.json_web=jsonurl_web;
 					volume.thumb=thumburl;
 					volume.png=pngurl;
 					volume.xrw=xrwurl;
-					volume.res_full=obj_full.objects[0].volume.res;
+					volume.res=obj_full.objects[0].volume.res;
 					volume.res_web=obj_web.objects[0].volume.res;
 					volumes.push(volume);
 					tag_json.volumes=volumes;
