@@ -15,7 +15,8 @@ var fs 			  = require('fs');
 var config 		  = require('./src/node-config').config;
 var mydaris		  = require('./src/node-daris');
 var mylocalupload = require('./src/node-localupload');
-var mylocalOBJupload = require('./src/node-objman');
+var mylocalOBJupload = require('./src/node-localobjupload');
+//var mylocalOBJupload = require('./src/node-objman');
 
 
 // ===== INITIALISATION ======
@@ -210,7 +211,7 @@ io.on('connection', function (socket) {
     // Mesh upload
   	socket.on('processOBJuploadfile', function (data) {
   		console.log(data);
-  		mylocalOBJupload.processUploadObjFile(io, data);
+  		mylocalOBJupload.processUploadFile(io, data);
   	});
   	socket.on('searchdataset', function(data) {
   		console.log(data);
@@ -230,6 +231,11 @@ io.on('connection', function (socket) {
 	socket.on('savedatajson', function(data) {
 		console.log(data);
 		saveDataJson(io, data);
+	});
+
+	socket.on('saveparams', function(data) {
+		console.log(data);
+		saveParams(io, data);
 	});
 });
 
@@ -260,3 +266,34 @@ function saveDataJson(io, data) {
 	});
 }
 
+function saveParams(io, data)
+{
+	console.log("Received saveparams from JS");
+	console.log(data);
+
+	var filename = data.filename;
+
+	fs.writeFile(config.public_dir + "/" + filename, data.params, function(err)
+	{
+		if(err)
+		{
+			console.log("Error: " + err);
+			return;
+		}
+
+		console.log("Saved");
+	});
+
+	var scriptFilename = data.scriptFilename;
+
+	fs.writeFile(config.public_dir + "/" + scriptFilename, data.script, function(err)
+	{
+		if(err)
+		{
+			console.log("Error: " + err);
+			return;
+		}
+
+		console.log("Saved init script");
+	});
+}

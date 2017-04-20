@@ -61,7 +61,7 @@ $('#upload-input').on('change', function(){
                 document.getElementById("local_upload_message").style.display = "block";
                 var lmessage = document.getElementById("message_label");
                 lmessage.style.color = 'blue';
-                lmessage.innerHTML = "Uploaded successfully! Now working... ";
+                lmessage.innerHTML = "Uploaded successfully! Now working... " + data.file;
                 process_img = document.getElementById("process_img");
                 process_img.style.visibility = 'visible';  
                 socket.emit('processOBJuploadfile', {task: "process", file: data.file});
@@ -97,6 +97,7 @@ $('#upload-input').on('change', function(){
 });
 
 socket.on('processOBJuploadfile', function (data) {
+    console.log('processing done..');
     var lmessage = document.getElementById("message_label");
     var process_img = document.getElementById("process_img");
     console.log(data);
@@ -136,9 +137,13 @@ socket.on('processOBJuploadfile', function (data) {
 
         view_button.onclick = function () {
             var model = $(this).prop('id')
-            var pos1 = model.indexOf("data/local/");
-            var pos2 = model.indexOf("//mesh.json");
-            window.open('websurfer/index.html?model=' + model.slice(pos1,pos2) + '', target="_blank");
+            console.log("Model: " + model);
+            //var pos1 = model.indexOf("data/local/");
+            var pos1 = model.indexOf("data/");
+            var pos2 = model.indexOf("/mesh.json");
+            //window.open('websurfer/index.html?model=' + model.slice(pos1,pos2) + '', target="_blank");
+            //window.open('viewer/index.html?tag=' + model.slice(pos1,pos2) + '', target="_blank");
+            window.open('viewer/index.html?tag=' + model.slice(pos1, pos2) + '', target="_blank");
         };
         local_upload_result_container.appendChild(view_button);
         
