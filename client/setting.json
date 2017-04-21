@@ -1,6 +1,8 @@
 {
     "server_hostname": "cave2-dataweb-server-instance",
     "server": "http://mivp-dws1.erc.monash.edu:3000",
-    "local_data_dir": "/home/ubuntu/git/previs/volume/public/data/local/",
     "eagerm_data_dir": "/Users/eagerm/Projects/previs"
+    "local_data_dir": "/Users/toand/Downloads/previs",
+    "desktop": "LavaVu",
+    "cave2": "LavaVR"
 }

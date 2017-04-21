@@ -3,14 +3,14 @@
 $.jgrid.defaults.responsive = true;
 $.jgrid.defaults.styleUI = 'Bootstrap';
    
-   //implement
-   var socket = io();
-   
-   //
+//implement
+var socket = io();
+
+//
 var saved_datasets = [];
 var num_processed_datasets = 0;
    
-   var getColumnIndexByName = function (grid, columnName) {
+var getColumnIndexByName = function (grid, columnName) {
     var cm = grid.jqGrid('getGridParam', 'colModel'), i, l;
     for (i = 0, l = cm.length; i < l; i += 1) {
         if (cm[i].name === columnName) {

@@ -4,31 +4,35 @@ var dataset_info = {};
 
 var fs = require('fs');
 function loadSetting() {
-    fs.readFile("setting.json", 'utf8', function (err, jsondata) {
-        if (err) {
-            console.log(err);
-            return;
-        } 
-        setting = JSON.parse(jsondata);
-        console.log(setting);
-        document.getElementById('setting-server').value = setting.server;
-        document.getElementById('setting-local-data-dir').value = setting.local_data_dir;
-    });
+  fs.readFile("setting.json", 'utf8', function (err, jsondata) {
+    if (err) {
+      console.log(err);
+      return;
+    } 
+    setting = JSON.parse(jsondata);
+    console.log(setting);
+    document.getElementById('setting-server').value = setting.server;
+    document.getElementById('setting-local-data-dir').value = setting.local_data_dir;
+    document.getElementById('setting-local-desktop').value = setting.desktop;
+    document.getElementById('setting-local-cave2').value = setting.cave2;
+  });
 }
 
 function saveSetting() {
-    setting.server = document.getElementById('setting-server').value;
-    setting.local_data_dir = document.getElementById('setting-local-data-dir').value;
-    fs.writeFile( "setting.json", JSON.stringify(setting, null, 4), function(err) {
-        if (err) {
-            showMessage("Error! Check err msg in console");
-            console.log(err);
-            return;
-        } 
-        document.getElementById('setting-message').innerHTML = "Saved successfully!";
-        document.getElementById('setting-message').style.display = 'block';
-        setTimeout(function(){ document.getElementById('setting-message').style.display = 'none'; }, 1500);
-    });
+  setting.server = document.getElementById('setting-server').value;
+  setting.local_data_dir = document.getElementById('setting-local-data-dir').value;
+  setting.desktop = document.getElementById('setting-local-desktop').value;
+  setting.cave2 = document.getElementById('setting-local-cave2').value;
+  fs.writeFile( "setting.json", JSON.stringify(setting, null, 4), function(err) {
+    if (err) {
+      showMessage("Error! Check err msg in console");
+      console.log(err);
+      return;
+    } 
+    document.getElementById('setting-message').innerHTML = "Saved successfully!";
+    document.getElementById('setting-message').style.display = 'block';
+    setTimeout(function(){ document.getElementById('setting-message').style.display = 'none'; }, 1500);
+  });
 }
 
 document.addEventListener("keydown", function (e) {
@@ -222,27 +226,28 @@ function runCommand(cmd) {
     });
 }
 
-function runDesktop(dataset_index) {
-    console.log(dataset_index);
-    if (dataset_info.type == "volume") {
-        var dataset = dataset_info.volumes[dataset_index];
-    } else if  (dataset_info.type == "mesh") {
-        var dataset = dataset_info.volumes[dataset_index];
-    } else{
-        showMessage("Cannot find type info in volume or mesh dataset");
-    }
-    if (dataset) {
-        var cmd = 'cd ' + dataset.dir + ' && LavaVu';
-        runCommand(cmd)
-    }
-    else {
-        showMessage("Cannot find volume or mesh data");
-    }
-    
+function runDesktop(vol_index) {
+  console.log(vol_index);
+  var vol = vols_info.volumes[vol_index];
+  if (vol) {
+    var cmd = 'cd ' + vol.dir + ' && ' + setting.desktop;
+    runCommand(cmd)
+  }
+  else {
+    showMessage("Cannot find volume data");
+  }
 }
 
 function runCAVE2(vol_index) {
-    console.log(vol_index);
+  console.log(vol_index);
+  var vol = vols_info.volumes[vol_index];
+  if (vol) {
+    var cmd = 'cd ' + vol.dir + ' && ' + setting.cave2;
+    runCommand(cmd)
+  }
+  else {
+    showMessage("Cannot find volume data");
+  }
 }
 
 // main

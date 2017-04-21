@@ -6,12 +6,33 @@ $('#btnUploadFile').on('click', function (){
     $('.progress-bar').width('0%');
 });
 
+$('#tiffstack_help').on('click', function(event) {
+    event.preventDefault();
+    
+    var msg_content =   '<div>' + 
+                            '<p>Example data <a href="data/example/tiffstack-foot.zip">tiffstack-foot.zip</a></p>' + 
+                            '<p><b>How to prepare data:</b>' +
+                            '<li>Create a directory to store slices</li>' +
+                            '<li>Convert slices to tiff format if needed using image editors (e.g. ImageMagick)</li>' +
+                            '<li>Slices (tiff images) are named in order (e.g. 0001.tif, 0002.tif, ...)</li>' +
+                            '<li>Compress the directory into a zip file</li>' +
+                            '</p>' +
+                            '<p>Please contact us if you need any help to prepare your data</p>'
+                        '</div>'
+    
+    BootstrapDialog.show({
+                        title: 'TIFF image stack',
+                        message: msg_content,
+                    });
+});
+
 $('#upload-input').on('change', function(){
     var files = $(this).get(0).files;
     
     if (files.length > 0){
         file = files[0];
         console.log(file);
+        $("#local_file_upload_info").show();
         document.getElementById("upload_filename").innerHTML = "File selected: " + file.name + ' (size: ' + file.size + ')';
         var formData = new FormData();
         formData.append('uploads', file, file.name);

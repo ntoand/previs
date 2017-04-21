@@ -125,6 +125,10 @@ div#local_upload_result_container {
 	padding: 10px 0px 10px 0px;
 }
 
+div#local_file_upload_info {
+  display:none;
+}
+
 /*card ref: http://www.bootply.com/Z9Wb4IiQ3R*/
 .card {
   box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.16), 0 2px 10px 0 rgba(0, 0, 0, 0.12);
@@ -228,4 +232,24 @@ div#grid_div {
 
 #upload-input {
   display: none;
+}
+
+/* admin page */
+div#admin_div_login {
+	padding: 10px 0px;
+}
+
+div#admin_div_logoff {
+	padding: 20px 0px;
+	display:none;
+}
+
+label#admin_loginfail {
+	font-size: 13px;
+	color: #f00;
+	display:none;
+}
+
+div#admin_tags_container {
+	display:none;
 }

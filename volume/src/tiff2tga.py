@@ -11,11 +11,11 @@ import json
 import time
 import shutil
 
-MAX_FILESIZE = 150 * 1024 * 1024
+MAX_FILESIZE = 1024 * 1024 * 1024
 
 def help():
 	print 'Usage: tiff2tga.py [-h] -i input_file -o output_dir'
- 	print 'Example: tiff2tg1.py -i /path/to/tiffs.zip -o /path/to/data'
+ 	print 'Example: tiff2tga.py -i /path/to/tiffs.zip -o /path/to/data'
 
 def jsonError(errstr):
         json_ret = {}
@@ -82,9 +82,9 @@ def main(argv):
     tga_dir = ouput_dir + '/' + filename + '_tga'
     subprocess.check_output(['mkdir', '-p', tga_dir])
 
-    for root, dirs, files in os.walk(ouput_dir):
+    for root, dirs, files in os.walk(ouput_dir + '/' + filename):
         for file in files:
-            if file.endswith(".tif") or file.endswith(".tiff"):
+            if file[0] != '.' and file[0] != '_' and (file.endswith(".tif") or file.endswith(".tiff")):
                  list_tiff_files.append(os.path.join(root, file))
 
     if not len(list_tiff_files):
