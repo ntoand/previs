@@ -98,3 +98,5 @@ node_modules
 */public/data/local/*
 */public/data/info/*
 */public/img/*
+*/public/meshviewer/data
+volume
