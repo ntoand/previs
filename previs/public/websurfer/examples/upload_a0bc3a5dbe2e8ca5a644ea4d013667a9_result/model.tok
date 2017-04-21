@@ -1,0 +1,22 @@
+title_frag:Mesh viewer for CAVE2 - /Users/eagerm/Projects/previs/mesh/public/data/local/upload_a0bc3a5dbe2e8ca5a644ea4d013667a9_result
+pdf_footer_txt:
+camera_position:0:-180:0
+camera_lookat:0:0:0
+camera_up:0:0:1
+views:Left lateral:0,-180,0:0,0,0:0,0,1
+views:Right lateral:0,180,0:0,0,0:0,0,1
+views:Anterior:-180,0,0:0,0,0:0,0,1
+views:Posterior:180,0,0:0,0,0:0,0,1
+views:Dorsal:0,0,240:0,0,0:1,0,0
+views:Ventral:0,0,-240:0,0,0:-1,0,0
+grps:All:Z:true
+grps:__MACOSX:a:true
+grps:Left_brain:b:true
+grps:Right_part:c:true
+grps:small:d:true
+objs:Left_brain  left_cerebrum:b:Left_brain/left_cerebrum.obj:1.00:0.82:0.16:0.80
+objs:Right_part  right_cerebrum:c:Right_part/right_cerebrum.obj:0.31:0.52:0.96:0.80
+objs:Right_part  righthalf:c:Right_part/righthalf.obj:0.31:0.52:0.96:0.80
+objs:small  left_brain:d:small/left_brain.obj:1.00:0.82:0.97:0.80
+objs:small  right_brain:d:small/right_brain.obj:1.00:0.82:0.97:0.80
+bb:0.00:-37.09:-86.54:378.80:36.37:286.65

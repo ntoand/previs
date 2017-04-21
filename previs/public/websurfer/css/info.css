@@ -1,0 +1,29 @@
+
+.ui-widget-content {
+    font-family: georgia;
+    font-size: 12px;
+}
+.ui-button-text-only .ui-button-text {
+    padding: 0;
+}
+.ui-state-default, .ui-widget-content .ui-state-default, .ui-widget-header .ui-state-default {
+    border: 0 solid #000000;
+}
+.ui-dialog-titlebar-close {
+    background-color: transparent !important;
+    background-image: url("../images/icon-close-16.png") !important;
+    background-repeat: no-repeat !important;
+    outline-width: 0 !important;
+}
+.ui-dialog-titlebar-close:hover, .ui-dialog-titlebar-close:focus {
+    background-color: transparent !important;
+    background-image: url("../images/icon-close-16.png") !important;
+    background-repeat: no-repeat !important;
+}
+.ui-dialog-titlebar-close span {
+    display: none !important;
+}
+.ui-dialog {
+    opacity: 0.9;
+    width: 600px !important;
+}

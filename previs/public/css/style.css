@@ -1,0 +1,304 @@
+@charset "UTF-8";
+/*
+footer {
+	margin: 20px 0;
+    padding: 30px 0;
+    background-color: #f8f8f8;
+}
+*/
+p.copyright {
+    margin: 15px 0 0;
+}
+
+p {
+	font-family: Arimo, Helvetica, sans-serif;
+}
+
+.main-div {
+  min-height: 600px;
+}
+
+.example-code {
+	font-family: Courier New, Courier, monospace;
+}
+
+#upload_filename {
+  padding: 5px 0px 5px 0px;
+}
+
+.img_process {
+	margin-left: 10px;
+	visibility: hidden;
+}
+
+.status_label {
+	margin-left: 10px;
+	color: blue;
+	font-weight: bold;
+}
+
+label#daris_labelLogoff {
+    font-size: 13px;
+    color: #777;
+}
+
+label#daris_loginfail {
+	font-size: 13px;
+	color: #f00;
+	display:none;
+}
+
+button {
+	margin: 1px;
+}
+
+.delete_button {
+	color: red;
+}
+
+.view_button {
+	color: green;
+}
+
+.cave_button {
+	color: blue;
+}
+
+.setting_button {
+	color: black;
+}
+
+div#datasets
+{
+	padding:1px; 
+}
+
+span#dataset
+{
+	padding-left: 10px;
+}
+
+div#daris_select_container {
+	display:none;
+}
+
+div#daris_div_login {
+	padding: 10px 0px;
+}
+
+div#daris_div_logoff {
+	padding: 20px 0px;
+	display:none;
+}
+
+div#daris_div_tree {
+	overflow-x: auto;
+    overflow-y: auto;
+    min-height: 250px;
+	max-height: 400px;
+	width: 100%;
+}
+
+div#daris_div_search {
+	min-height: 250px;
+	width: 100%;
+}
+
+div#daris_loading_status {
+	font-size: 13px;
+	float:left;
+	padding: 10px; 
+	display:none;
+}
+
+div#daris_tree_button {
+	float: right;
+	padding: 10px;
+}
+
+div#datasets_container {
+	padding: 10px 0px;
+}
+
+div#local_upload_message {
+	display:none;
+	padding: 10px;
+}
+
+div#local_upload_result_container {
+	padding: 10px 0px 10px 0px;
+}
+
+/*card ref: http://www.bootply.com/Z9Wb4IiQ3R*/
+.card {
+  box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.16), 0 2px 10px 0 rgba(0, 0, 0, 0.12);
+}
+.card {
+  margin-top: 10px;
+  box-sizing: border-box;
+  border-radius: 2px;
+  background-clip: padding-box;
+}
+.card span.card-title {
+    font-size: 24px;
+    font-weight: 300;
+    text-transform: uppercase;
+}
+.card span.card-title-dark {
+    color: #333;
+    font-size: 24px;
+    font-weight: 300;
+    text-transform: uppercase;
+}
+.card .card-image {
+  position: relative;
+  overflow: hidden;
+}
+.card .card-image img {
+  border-radius: 2px 2px 0 0;
+  background-clip: padding-box;
+  position: relative;
+  z-index: -1;
+}
+.card .card-image span.card-title {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  padding: 16px;
+}
+.card .card-image span.card-title-dark {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  padding: 16px;
+}
+.card .card-content {
+  padding: 16px;
+  border-radius: 0 0 2px 2px;
+  background-clip: padding-box;
+  box-sizing: border-box;
+}
+.card .card-content-center {
+  padding: 16px;
+  border-radius: 0 0 2px 2px;
+  background-clip: padding-box;
+  box-sizing: border-box;
+  text-align: center;
+}
+.card .card-content p {
+  margin: 0;
+  color: inherit;
+}
+.card .card-content span.card-title {
+  line-height: 48px;
+}
+.card .card-action {
+  border-top: 1px solid rgba(160, 160, 160, 0.2);
+  padding: 16px;
+}
+.card .card-action a {
+  color: #ffab40;
+  margin-right: 16px;
+  transition: color 0.3s ease;
+  text-transform: uppercase;
+}
+.card .card-action a:hover {
+  color: #ffd8a6;
+  text-decoration: none;
+}
+/* end card */
+
+
+/* masonry */
+div#grid_div {
+	min-height: 300px;
+}
+
+.result_label {
+	display: block;
+}
+
+.result_img {
+	width: 256px;
+	height: 256px;
+}
+
+.grid-item {
+  width: 256px;
+  padding: 20px 0px 0px 0px;
+}
+
+/* end masonry */
+
+#upload-input {
+  display: none;
+}
+
+
+#filedrag
+{
+	display: none;
+	font-weight: bold;
+	text-align: center;
+	padding: 1em 0;
+	margin: 1em 0;
+	color: #555;
+	border: 2px dashed #555;
+	border-radius: 7px;
+	cursor: default;
+}
+
+#filedrag.hover
+{
+	color: #f00;
+	border-color: #f00;
+	border-style: solid;
+	box-shadow: inset 0 3px 4px #888;
+}
+
+
+img
+{
+	max-width: 100%;
+}
+
+pre
+{
+	width: 95%;
+	height: 8em;
+	font-family: monospace;
+	font-size: 0.9em;
+	padding: 1px 2px;
+	margin: 0 0 1em auto;
+	border: 1px inset #666;
+	background-color: #eee;
+	overflow: auto;
+}
+
+#messages
+{
+	padding: 0 10px;
+	margin: 1em 0;
+	border: 1px solid #999;
+}
+
+#progress p
+{
+	display: block;
+	width: 240px;
+	padding: 2px 5px;
+	margin: 2px 0;
+	border: 1px inset #446;
+	border-radius: 5px;
+	background: #eee url("progress.png") 100% 0 repeat-y;
+}
+
+#progress p.success
+{
+	background: #0c0 none 0 0 no-repeat;
+}
+
+#progress p.failed
+{
+	background: #c00 none 0 0 no-repeat;
+}
