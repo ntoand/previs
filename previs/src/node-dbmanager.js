@@ -4,7 +4,7 @@ var crypto = require('crypto');
 var DBManager = function () {};
 
 function generateTag(callback) {
-	var dbname = './public/data/previs-tags.db';
+	var dbname = config.database;
 	var db = new sqlite3.Database(dbname);
 	var tag = crypto.randomBytes(3).toString('hex');
 	db.all('SELECT * FROM Tag WHERE tag="' + tag + '"', function(err, rows) {
@@ -16,7 +16,7 @@ function generateTag(callback) {
 }
 
 DBManager.prototype.createTag = function(data, callback) {
-	var dbname = './public/data/previs-tags.db';
+	var dbname = config.database;
 	var db = new sqlite3.Database(dbname);
 	
 	db.serialize(function() {
@@ -39,6 +39,23 @@ DBManager.prototype.createTag = function(data, callback) {
 	  		}
 	  	});
 	});
+}
+
+DBManager.prototype.getTags = function(callback) {
+	var dbname = config.database;
+	var db = new sqlite3.Database(dbname);
+	db.all('SELECT * FROM Tag', function(err, rows) {
+		callback(err, rows);
+	});
+}
+
+DBManager.prototype.deleteTag = function(tag, callback) {
+	var dbname = config.database;
+	var db = new sqlite3.Database(dbname);
+	db.run("DELETE FROM Tag WHERE tag=(?)", tag, function(err) {
+	    callback(err);
+        db.close();
+    });
 }
 
 module.exports = new DBManager();

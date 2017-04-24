@@ -100,6 +100,21 @@ app.post('/rest/login', function (req, res) {
     });
 });
 
+app.post('/rest/adminlogin', function (req, res) {
+
+	var user = req.body.user;
+	var password = req.body.password;
+	//console.log(user + ' ' + password);
+
+	if(user != "admin" || password != "c4ve2016") {
+		res.setHeader('Content-Type', 'application/json');
+		res.send(JSON.stringify({ status: "error", result: "Cannot run login" }, null, 4));
+		return;
+	}
+	res.setHeader('Content-Type', 'application/json');
+	res.send(JSON.stringify({ status: "success", result: "Can login" }, null, 4));
+});
+
 app.get('/rest/logoff', function (req, res) {
 	var sid = req.query.sid;
 
@@ -231,6 +246,16 @@ io.on('connection', function (socket) {
 	socket.on('savedatajson', function(data) {
 		console.log(data);
 		saveDataJson(io, data);
+	});
+
+	socket.on('admingettags', function(data) {
+		console.log(data);
+		myadmin.getTags(io, data);
+	});
+	
+	socket.on('admindeletetags', function(data) {
+		console.log(data);
+		myadmin.deleteTags(io, data);
 	});
 
 	socket.on('saveparams', function(data) {

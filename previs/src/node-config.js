@@ -7,7 +7,8 @@ var config = {
 	scripts_dir: './src',
 	local_data_dir: path.dirname(require.main.filename) +  '/public/data/local/',
 	daris_data_dir: path.dirname(require.main.filename) +  '/public/data/daris/',
-	info_dir: path.dirname(require.main.filename) + '/public/data/info/'
+	info_dir: path.dirname(require.main.filename) + '/public/data/info/',
+	database: path.dirname(require.main.filename) + '/public/data/previs-tags.db'
 };
 
 exports.config = config;

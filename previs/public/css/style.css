@@ -302,3 +302,23 @@ pre
 {
 	background: #c00 none 0 0 no-repeat;
 }
+
+/* admin page */
+div#admin_div_login {
+	padding: 10px 0px;
+}
+
+div#admin_div_logoff {
+	padding: 20px 0px;
+	display:none;
+}
+
+label#admin_loginfail {
+	font-size: 13px;
+	color: #f00;
+	display:none;
+}
+
+div#admin_tags_container {
+	display:none;
+}

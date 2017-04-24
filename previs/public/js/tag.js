@@ -101,7 +101,7 @@ function generateLocalUploadMeshGrid(meshes) {
         
         var view_button = document.createElement("button");
         view_button.setAttribute("class", "view_button");
-        view_button.setAttribute("id", vol.json);
+        view_button.setAttribute("id", vol.json_web);
         view_button.innerHTML = 'View';
         view_button.onclick = function () {
             var meshSrc = vol.json;

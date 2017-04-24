@@ -88,6 +88,7 @@ jspm_packages
 
 
 *.DS_Store*
+.project
 test_data
 node_modules
 *.pyc
