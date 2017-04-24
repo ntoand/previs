@@ -1,5 +1,6 @@
 var sqlite3 = require('sqlite3').verbose()
 var crypto = require('crypto');
+var config	= require('./node-config').config; 
 
 var DBManager = function () {};
 
