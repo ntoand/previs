@@ -144,6 +144,12 @@ div#local_upload_result_container {
     font-weight: 300;
     text-transform: uppercase;
 }
+.card span.card-title-light {
+	color: #cccccc;
+    font-size: 24px;
+    font-weight: 300;
+    text-transform: uppercase;
+}
 .card span.card-title-dark {
     color: #333;
     font-size: 24px;
@@ -161,6 +167,12 @@ div#local_upload_result_container {
   z-index: -1;
 }
 .card .card-image span.card-title {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  padding: 16px;
+}
+.card .card-image span.card-title-light {
   position: absolute;
   bottom: 0;
   left: 0;

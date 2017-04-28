@@ -110,10 +110,78 @@
              </li>-->
         </ul>
 
+        <script>
+            //http://www.html5rocks.com/en/tutorials/file/dndfiles/
+        // Check for the various File API support.
+        if (window.File && window.FileReader && window.FileList && window.Blob) {
+        // Great success! All the File APIs are supported.
+        } else {
+        alert('The File APIs are not fully supported in this browser.');
+            }
+        </script>
+
+        <!--<input type="file" id="upload-input" name="uploads"/>-->
+
+        <output id="list"></output>
+
+        <script>
+         function handleFileSelect(evt) {
+             var files = evt.target.files; // FileList object
+
+             // files is a FileList of File objects. List some properties.
+             var output = [];
+             for (var i = 0, f; f = files[i]; i++) {
+                 output.push('<li><strong>', escape(f.name), '</strong> (', f.type || 'n/a', ') - ',
+                             f.size, ' bytes, last modified: ',
+                             f.lastModifiedDate ? f.lastModifiedDate.toLocaleDateString() : 'n/a',
+                             '</li>');
+             }
+             document.getElementById('list').innerHTML = '<ul>' + output.join('') + '</ul>';
+         }
+
+         document.getElementById('files').addEventListener('change', handleFileSelect, false);
+        </script>        
+
         <div id="drop_zone">
-            <button type="button" id="btnUploadFile" class="btn btn-default ">Select or drop local file here</button>
+            <button type="button" id="btnUploadFile" class="btn btn-default ">Select or drop local file here (drop may not work in Internet Explorer)</button>
         </div>
-        
+
+        <script>
+         function handleFileSelect(evt) {
+             console.log("handleFileSelect()");
+             evt.stopPropagation();
+             evt.preventDefault();
+
+             var files = evt.dataTransfer.files; // FileList object.
+
+             // files is a FileList of File objects. List some properties.
+             var output = [];
+             for (var i = 0, f; f = files[i]; i++) {
+                 output.push('<li><strong>', escape(f.name), '</strong> (', f.type || 'n/a', ') - ',
+                             f.size, ' bytes, last modified: ',
+                             f.lastModifiedDate ? f.lastModifiedDate.toLocaleDateString() : 'n/a',
+                             '</li>');
+             }
+             document.getElementById('list').innerHTML = '<ul>' + output.join('') + '</ul>';
+
+             // trigger the upload
+             var outEvt = new Event('change');
+             document.getElementById('upload-input').dispatchEvent(outEvt);
+         }
+
+         function handleDragOver(evt) {
+             console.log("handleDragOver()");
+             evt.stopPropagation();
+             evt.preventDefault();
+             evt.dataTransfer.dropEffect = 'copy'; // Explicitly show this is a copy.
+         }
+
+         // Setup the dnd listeners.
+         var dropZone = document.getElementById('drop_zone');
+         dropZone.addEventListener('dragover', handleDragOver, false);
+         dropZone.addEventListener('drop', handleFileSelect, false);
+        </script>
+
         <input id="upload-input" type="file" name="uploads"></br>
         <label id="upload_filename">File selected: </label></br>
         <div class="progress" style="width: 300px">

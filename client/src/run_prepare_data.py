@@ -3,6 +3,7 @@ import sys
 import getopt
 import urllib2
 import json
+import zipfile
 
 #remote_host="http://mivp-dws1.erc.monash.edu:3000/"
 #local_data_dir="/Users/toand/Downloads/previs/"
@@ -174,47 +175,67 @@ def main(argv):
                     f.write("file " + dataset_xrw_filename + "\n")
                     f.write("file " + dataset_json_filename)
 
-        if(dataset_type == "mesh" and source == "localupload"):    
-            local_json["meshes"] = []
-            if not os.path.isfile(os.path.join(mesh_dir, "init.script")):
+        elif(dataset_type == "mesh" and source == "localupload"):
+            # DW: the json format for info files still uses 'volumes' to
+            # define meshes; change this when the format is updated
+            local_json["volumes"] = []
+
+            vols = data["volumes"]
+            for ii in range(len(vols)):
+                print "Mesh: " + str(ii)
+
+                # DW: currently no support for multiple meshes, might not
+                #        be needed anyway
+                dataset_dir = tag_dir + "/data" + str(ii) + "/"
+                if not os.path.exists(dataset_dir):
+                    os.makedirs(dataset_dir)
+
+                # DW: meshes don't have thumbnails (yet)
+                # dataset_thumb_filename = dataset_dir + "vol1_thumb.png"
+                # dataset_thumb = data["volumes"][ii]["thumb"]
+                # print "Download " + dataset_thumb + " file..."
+                # downloadfile(server + dataset_thumb, dataset_thumb_filename)
+
+                dataset_zip_filename = dataset_dir + "meshes.zip"
+                dataset_zip = data["volumes"][ii]["zip"]
+                print "Download " + dataset_zip + " file..."
+                downloadfile(server + dataset_zip, dataset_zip_filename)
+
+                dataset_initscr_filename = dataset_dir + "init.script"
+                dataset_initscr = data["volumes"][ii]["initscr"]
+                print "Download " + dataset_initscr + " file..."
+                downloadfile(server + dataset_initscr, dataset_initscr_filename)
+
+                print "Unzipping mesh archive.."
+
+                # open the zipfile
+                zfile = zipfile.ZipFile(dataset_zip_filename, 'r')
+                zinfolist = zfile.infolist()
+
+                print "Extracting:"
                 
+                # extract mesh hierarchy
+                for cmpinfo in zinfolist:
+                    zfile.extract(cmpinfo, dataset_dir)
 
-            meshObjs = data["meshes"]
-            for ii in range(len(meshObj)):
-                print "Mesh object: " + str(ii)
+                # dataset_json_filename = dataset_dir + "vol1.json"
+                # dataset_json = data["volumes"][ii]["json"]
+                # print "Download " + dataset_json + " file..."
+                # downloadfile(server + dataset_json, dataset_json_filename)
 
-                mesh_dir = tag_dir + "/mesh" + str(ii) + "/"
-                if not os.path.exists(mesh_dir):
-                    os.makedirs(mesh_dir)
+                # dataset_xrw_filename = dataset_dir + "vol1.xrw"
+                # dataset_xrw = data["volumes"][ii]["xrw"]
+                # print "Download " + dataset_xrw + " file..."
+                # downloadfile(server + dataset_xrw, dataset_xrw_filename)
 
-                mesh_thumb_filename = mesh_dir + "mesh1_thumb.png"
-                mesh_thumb = data["meshes"][ii]["thumb"]
-                print "Download " + mesh_thumb + " file..."
-                downloadfile(server + mesh_thumb, mesh_thumb_filename)
+                dataset_ele = {}
+                # dataset_ele["thumb"] = dataset_thumb_filename
+                dataset_ele["dir"] = dataset_dir
+                dataset_ele["res"] = data["volumes"][ii]["res"]
+                dataset_ele["name"] = ""
+                local_json["volumes"].append(dataset_ele)
 
-                mesh_json_filename = mesh_dir + "mesh.json"
-                mesh_json = data["meshes"][ii]["json"]
-                print "Download " + mesh_json + " file..."
-                downloadfile(server + mesh_json, mesh_json_filename)
-
-                #TODO
-                #mesh_obj_filename = mesh_dir + "vol1.xrw"
-                #mesh_obj = data["meshes"][ii]["obj"]
-                #print "Download " + mesh_obj + " file..."
-                #downloadfile(server + mesh_obj, mesh_obj_filename)
-
-                mesh_ele = {}
-                mesh_ele["thumb"] = mesh_thumb_filename
-                mesh_ele["dir"] = mesh_dir
-                mesh_ele["res"] = data["meshes"][ii]["res"]
-                mesh_ele["name"] = ""
-                local_json["meshes"].append(mesh_ele)
-
-                if not os.path.isfile(os.path.join(mesh_dir, "init.script")):
-                    with open(dataset_dir + "/init.script", "wt") as f:
-                        f.write("file " + mesh_obj_filename + "\n")
-                        f.write("file " + mesh_json_filename)
-
+                # finished here, don't need to create init.script as it came from the server
         else:
             raise NameError("Invalid type")
             #print "invalid type"

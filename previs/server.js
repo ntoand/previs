@@ -15,7 +15,7 @@ var fs 			  = require('fs');
 var config 		  = require('./src/node-config').config;
 var mydaris		  = require('./src/node-daris');
 var myadmin 	  = require('./src/node-admin');
-var mylocalupload = require('./src/node-localupload');
+// var mylocalupload = require('./src/node-localupload');
 var mylocalOBJupload = require('./src/node-localobjupload');
 //var mylocalOBJupload = require('./src/node-objman');
 

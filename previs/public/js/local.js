@@ -77,7 +77,10 @@ $('#tiffstack_help').on('click', function(event) {
 
 
 $('#upload-input').on('change', function(){
+    console.log("upload-input change");
     var files = $(this).get(0).files;
+
+    console.log("# of files: " + files.length);
     
     if (files.length > 0){
         file = files[0];
@@ -143,6 +146,7 @@ $('#upload-input').on('change', function(){
 
 
 socket.on('processuploadfile', function (data) {
+    console.log("socket/processuploadfile");
     var lmessage = document.getElementById("message_label");
     var process_img = document.getElementById("process_img");
     console.log(data);

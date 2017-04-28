@@ -9,7 +9,7 @@ var g_prevMouseX = 0, g_prevMouseY = 0;
 var g_camDistance = 1.0;
 var g_camRotX = 0.0, g_camRotY = 0.0;
 var model;
-var g_totalLoaded = 0;
+// var g_totalLoaded = 0;
 var camTransform = new THREE.Matrix4();
 var g_gui;
 var g_properties;
@@ -25,6 +25,8 @@ var g_sceneOBJCount = 0;
 var g_sceneOBJLoaded = 0;
 var g_objectBounds;
 var g_allObjectsGroup;
+var g_showAxisLines = true;
+var g_axisLines;
 
 // SceneTransport holds data about groups and models, used for saving/reconstructing
 var SceneTransport = function()
@@ -246,6 +248,14 @@ var responder = function()
         refreshGUI(g_gui);
     };
 
+    this.toggleAxis = function()
+    {
+        console.log("Toggle axis lines");
+        g_showAxisLines = !g_showAxisLines;
+
+        g_axisLines.visible = g_showAxisLines;
+    };
+
     this.reportSave = function()
     {
         //console.log(localStorage);
@@ -381,7 +391,7 @@ function loadOBJ(filename)
 
             g_properties.attachModel(filename, object, mat);
 
-            g_totalLoaded++;
+            // g_totalLoaded++;
             g_sceneOBJLoaded++;
 
             var title = document.getElementById("viewertitle");
@@ -404,10 +414,23 @@ function loadOBJ(filename)
             lights[1].position.y = g_objectBounds.min.y;
             lights[1].position.z = g_objectBounds.min.z;
 
+            console.log("Bounding box: (" +
+                g_objectBounds.min.x + ", " + g_objectBounds.min.y + ", " + g_objectBounds.min.z + ")-(" +
+                g_objectBounds.max.x + ", " + g_objectBounds.max.y + ", " + g_objectBounds.max.z + ")");
+            console.log("Simple centroid: (" +
+                (g_objectBounds.min.x + g_objectBounds.max.x / 2) + ", " +
+                (g_objectBounds.min.y + g_objectBounds.max.y / 2) + ", " +
+                (g_objectBounds.min.z + g_objectBounds.max.z / 2) + ")");
+
             if(g_sceneOBJLoaded == g_sceneOBJCount && g_sceneOBJCount > 0)
             {
                 finaliseScene();
             }
+        }, function () {
+             // progress
+        },
+        function(err) {
+            console.log("OBJLoader error: " + err)
         }
     );
 }
@@ -454,14 +477,16 @@ function main()
     g_properties = new OBJViewProperties();
 
     scene = new THREE.Scene();
-    camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    //camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 2000);
     g_allObjectsGroup = new THREE.Group();  // create a group for all objects
 
     scene.add(g_allObjectsGroup);
     
     g_objectBounds = new THREE.Box3();
 
-    light1 = new THREE.PointLight(0xffffff, 1, 500);
+    // light1 = new THREE.PointLight(0xffffff, 1, 500);
+    light1 = new THREE.PointLight(0xffffff, 1);
     //light1.position.set(4, 4, -5);
     light1.position.set(8, 8, -10);
     light1.intensity = 1;
@@ -469,7 +494,8 @@ function main()
 
     lights.push(light1);
 
-    var light2 = new THREE.PointLight(0xffffff, 1, 500);
+    // var light2 = new THREE.PointLight(0xffffff, 1, 500);
+    var light2 = new THREE.PointLight(0xffffff, 1);
     light2.position.set(20, 20, 10);
     light2.intensity = 1;
     scene.add(light1);
@@ -506,13 +532,19 @@ function main()
         new THREE.Vector3(0.0, 0.0, 500.0)
     );
 
+    g_axisLines = new THREE.Group();
+
     var line1 = new THREE.Line(geometryLine1, materialLine1);
     var line2 = new THREE.Line(geometryLine2, materialLine2);
     var line3 = new THREE.Line(geometryLine3, materialLine3);
 
-    scene.add(line1);
-    scene.add(line2);
-    scene.add(line3);
+    g_axisLines.add(line1);
+    g_axisLines.add(line2);
+    g_axisLines.add(line3);
+
+    scene.add(g_axisLines);
+    // scene.add(line2);
+    // scene.add(line3);
 
     var geometry = new THREE.BoxGeometry(1, 1, 1);
     var material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
@@ -525,7 +557,7 @@ function main()
     var loader = new THREE.ImageLoader();
     loader.load('obj/vive/onepointfive_texture.png',
         function(object) {
-            g_totalLoaded++;
+            // g_totalLoaded++;
             console.log("Texture loaded: " + object.width + "x" + object.height);
             objTexture.image = object;
         }
@@ -534,7 +566,7 @@ function main()
     var loader = new THREE.ImageLoader();
     loader.load('obj/vive/onepointfive_spec.png',
         function(object) {
-            g_totalLoaded++;
+            // g_totalLoaded++;
             console.log("Specular map loaded: " + object.width + "x" + object.height);
             objSpecMap.image = object;
         }
@@ -569,7 +601,7 @@ function main()
             object.rotation.set(1.5708, 0.0, 0.0);
             scene.add(object);
 
-            g_totalLoaded++;
+            // g_totalLoaded++;
         }
     );
 
@@ -669,6 +701,7 @@ function setupGUI()
     g_responder['Save settings'] = g_responder.saveAll;
     g_responder['Reload settings'] = g_responder.loadAll;
     g_responder['Reset all'] = g_responder.resetAll;
+    g_responder['Toggle axis lines'] = g_responder.toggleAxis;
     
     // var camdist = g_gui.add(g_properties, 'camDistance');
     // g_gui.add(g_properties, "camRotX");
@@ -686,6 +719,7 @@ function setupGUI()
     g_gui.add(g_responder, ['Reset all']);
     //g_gui.add(g_responder, "loadAll");
     g_gui.add(g_responder, ['Reload settings']);
+    g_gui.add(g_responder, ['Toggle axis lines']);
 
     var folderMeshGroups = g_gui.addFolder("Mesh groups");
 
@@ -735,10 +769,10 @@ function setupGUI()
 function render()
 {
     requestAnimationFrame(render);
-    if(g_totalLoaded < 3)
-    {
-        return;
-    }
+    // if(g_totalLoaded < 3)
+    // {
+    //     return;
+    // }
     console.log("Frame");
     renderer.render(scene, camera);
 }

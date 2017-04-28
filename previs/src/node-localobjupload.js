@@ -285,10 +285,12 @@ function sendMeshViewDataToClient(io, data) {
 	var xrwfile = config.local_data_dir + basename + '_result/vol.xrw';
 	var pngfile = config.local_data_dir + basename + '_result/vol.png';
 	var jsonfile = config.local_data_dir + basename + '_result/mesh.json';
+	var initfile = config.local_data_dir + basename + '_result/init.script';
 	var jsontemp = path.dirname(process.mainModule.filename) + '/src/template.json';
 	var processedzip = basename + '_processed.zip';
 
 	var jsonurl = 'data/local/' + basename + '_result/mesh.json';
+	var initurl = 'data/local/' + basename + '_result/init.script';
 	var thumburl = 'data/local/' + basename + '_result/vol_thumb.png';
 	var pngurl = 'data/local/' + basename + '_result/vol.png';
 	var xrwurl = 'data/local/' + basename + '_result/vol.xrw';
@@ -323,16 +325,18 @@ function sendMeshViewDataToClient(io, data) {
 					io.emit('processOBJuploadfile', {status: 'error', cid: data.cid, result: 'cannot_create_tag'});
 					return;
 				}
-			
+
 				var tag_json = {};
 				tag_json.tag=tag_str;
 				tag_json.type='mesh'
 				tag_json.source='localupload';
 				tag_json.date=Date.now();
-					
+
 				var volumes = [];
 				var volume = {};
+				volume.data_dir='data/local/' + basename + '_result';
 				volume.json=jsonurl;
+				volume.initscr = initurl;
 				volume.thumb=thumburl;
 				volume.png=pngurl;
 				volume.xrw=xrwurl;
