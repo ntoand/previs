@@ -76,11 +76,7 @@ $('#tiffstack_help').on('click', function(event) {
 });
 
 
-$('#upload-input').on('change', function(){
-    console.log("upload-input change");
-    var files = $(this).get(0).files;
-
-    console.log("# of files: " + files.length);
+function uploadFileToProcess(files) {
     
     if (files.length > 0){
         file = files[0];
@@ -142,6 +138,37 @@ $('#upload-input').on('change', function(){
             }
         });
     }
+}
+
+
+// =========================================================================================
+// drag drop files
+function handleFileSelect(evt) {
+    evt.stopPropagation();
+    evt.preventDefault();
+    
+    var files = evt.dataTransfer.files; // FileList object.
+    console.log(files);
+    uploadFileToProcess(files);
+}
+
+function handleDragOver(evt) {
+    evt.stopPropagation();
+    evt.preventDefault();
+    evt.dataTransfer.dropEffect = 'copy'; // Explicitly show this is a copy.
+}
+
+// Setup the dnd listeners.
+var dropZone = document.getElementById('drop_zone');
+dropZone.addEventListener('dragover', handleDragOver, false);
+dropZone.addEventListener('drop', handleFileSelect, false);
+// end drag drop files
+// =========================================================================================
+
+$('#upload-input').on('change', function(){
+    var files = $(this).get(0).files;
+    console.log(files);
+    uploadFileToProcess(files);
 });
 
 
