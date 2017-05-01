@@ -109,7 +109,7 @@ def main(argv):
             for ii in range(len(vols)):
                 print "Volume: " + str(ii)
 
-                dataset_dir = tag_dir + "/vol" + str(ii) + "/"
+                dataset_dir = tag_dir + "/data" + str(ii) + "/"
                 if not os.path.exists(dataset_dir):
                     os.makedirs(dataset_dir)
 
