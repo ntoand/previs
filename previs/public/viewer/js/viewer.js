@@ -650,7 +650,7 @@ function render()
     // {
     //     return;
     // }
-    console.log("Frame");
+    //console.log("Frame");
     renderer.render(scene, camera);
 }
 
