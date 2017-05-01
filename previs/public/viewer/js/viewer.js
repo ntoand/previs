@@ -654,6 +654,15 @@ function render()
     renderer.render(scene, camera);
 }
 
+// resetView() - sets up the camera and canvas to suit current window parameters
+function resetView()
+{
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+
+    renderer.setSize(window.innerWidth, window.innerHeight);
+}
+
 function onDocumentMouseMove(event)
 {
     vx = event.clientX;
@@ -801,6 +810,11 @@ function onDocumentMouseWheel(event)
 
     // update dat.gui
     
+}
+
+function onDocumentResize()
+{
+    resetView();
 }
 
 function loader_getGroup(groupName)
@@ -1004,12 +1018,12 @@ function saveScene()
 socket.on('saveparams', function(data) {
     if(data.status == "error")
     {
-        console.log("Can't save view parameters for examples!");
+        console.log("Can't save view parameters for examples - aborting!");
 
         var title = document.getElementById("viewertitle");
         if(title != null)
         {
-            title.innerHTML = "Error: can't save examples!";
+            title.innerHTML = "Can't save examples!";
         }
         
         setTimeout(resetTitle, 4000);
