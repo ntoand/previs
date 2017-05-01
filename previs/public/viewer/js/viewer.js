@@ -1,9 +1,9 @@
 // previs viewer and editor for multiple OBJ files
 // by dw in 2017 for MIVP
 var scene, camera, renderer;
-var lights = [];
+var lights = [];                // lights that surround the meshes
 var light1;
-var light_cam;  // camera-bound light
+var light_cam;                  // camera-bound light
 var g_width, g_height;
 var g_prevMouseX = 0, g_prevMouseY = 0;
 var g_camDistance = 1.0;
@@ -14,13 +14,13 @@ var camTransform = new THREE.Matrix4();
 var g_gui;
 var g_properties;
 //var dataPrefix = "data/";
-var dataPrefix = "";    // 20170411 - not needed
+var dataPrefix = "";            // 20170411 - not needed
 var g_responder;
 var g_jsonTransport;
-var g_tempScene;        // object to hold load/save data
-var g_tempSceneJSON;    // a temporary string to hold JSON of all mesh parameters
+var g_tempScene;                // object to hold load/save data
+var g_tempSceneJSON;            // a temporary string to hold JSON of all mesh parameters
 var socket = io();
-var g_sourceName = "";       // the name of the directory/file used as a source of scene data (a tempfile or eventually, a tag)
+var g_sourceName = "";          // the name of the directory/file used as a source of scene data
 var g_sceneOBJCount = 0;
 var g_sceneOBJLoaded = 0;
 var g_objectBounds;
@@ -109,11 +109,7 @@ var OBJGroup_store = function()
 var OBJGroup = function()
 {
     console.log("Creating new OBJGroup");
-    // this.name = "";
     this.nodes = [];
-    // this.visible = true;
-    // this.colour = [ 255, 255, 255 ];
-    // this.alpha = 1.0;
     // OBJGroup.refresh() - apply alpha/colour settings to all meshes in the group
     this.refresh = function()
     {
@@ -214,14 +210,20 @@ var OBJViewProperties = function()
 // finaliseScene() - update the page when everything is loaded
 function finaliseScene()
 {
+    resetTitle();
+
+    g_responder.loadAll();
+};
+
+// resetTitle() - sets the main title back to its default, just used for now until a modal dialog is added for feedback
+function resetTitle()
+{
     var title = document.getElementById("viewertitle");
     if(title != null)
     {
         title.innerHTML = "Web mesh previs";
     }
-
-    g_responder.loadAll();
-};
+}
 
 // responder - contains callbacks for dat.gui events
 var responder = function()
@@ -229,8 +231,6 @@ var responder = function()
     this.loadAll = function()
     {
         console.log("Loading scene");
-        //loadScene(g_tempSceneJSON);
-        //requestLoad("testsave.json");
         requestLoad(g_sourceName + "_params.json");
     };
 
@@ -299,22 +299,18 @@ var responder = function()
                 }
 
                 allModels.push(model);
-
-                // console.log("Original object:");
-                // console.log(g_properties.groups[i]);
-                // console.log("Saved object:");
-                // console.log(group);
             }
 
             allGroups.push(group);
         }
 
-        console.log("Groups");
-        console.log("======");
-        console.log(allGroups);
-        console.log("Models");
-        console.log("======");
-        console.log(allModels);
+        // report the scene content
+        // console.log("Groups");
+        // console.log("======");
+        // console.log(allGroups);
+        // console.log("Models");
+        // console.log("======");
+        // console.log(allModels);
     };
 };
 
@@ -335,34 +331,10 @@ function loadOBJ(filename)
     var obj = null;
     var filelocation = dataPrefix + filename;
 
-    //loader.load(filename,
     loader.load(filelocation,
         function(object)
         {
             console.log("Model loaded");
-            //model = object;
-
-            // object.traverse(
-            //     function(node)
-            //     {
-            //         if(node instanceof THREE.Mesh)
-            //         {
-            //             console.log("Assigning texture");
-            //             //node.material.map = objTexture;
-            //             //node.material.shininess = 80;
-            //             //node.material.specularMap = objSpecMap;
-            //             //node.material.color = 0xff0000;
-            //             //node.material.emissive = 0xffffff;
-            //             //node.material.color.set(0xff00ff);
-                        
-            //             var r = Math.random();
-            //             var g = Math.random();
-            //             var b = Math.random();
-
-            //             node.material.color.copy(new THREE.Color(r, g, b));
-            //         }
-            //     }
-            // );
 
             object.position.y = 0;
             //object.scale.set(20, 20, 20);
@@ -379,8 +351,6 @@ function loadOBJ(filename)
                         var g = new THREE.Geometry()
                         g.fromBufferGeometry(node.geometry);
 
-                        // node.geometry.mergeVertices();
-                        // node.geometry.computeVertexNormals();
                         g.mergeVertices();
                         g.computeVertexNormals();
                         node.geometry.fromGeometry(g);
@@ -391,7 +361,6 @@ function loadOBJ(filename)
 
             g_properties.attachModel(filename, object, mat);
 
-            // g_totalLoaded++;
             g_sceneOBJLoaded++;
 
             var title = document.getElementById("viewertitle");
@@ -546,65 +515,6 @@ function main()
     // scene.add(line2);
     // scene.add(line3);
 
-    var geometry = new THREE.BoxGeometry(1, 1, 1);
-    var material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
-    var cube = new THREE.Mesh(geometry, material);
-    //scene.add(cube);
-
-    var objTexture = new THREE.Texture();
-    var objSpecMap = new THREE.Texture();
-
-    var loader = new THREE.ImageLoader();
-    loader.load('obj/vive/onepointfive_texture.png',
-        function(object) {
-            // g_totalLoaded++;
-            console.log("Texture loaded: " + object.width + "x" + object.height);
-            objTexture.image = object;
-        }
-    );
-
-    var loader = new THREE.ImageLoader();
-    loader.load('obj/vive/onepointfive_spec.png',
-        function(object) {
-            // g_totalLoaded++;
-            console.log("Specular map loaded: " + object.width + "x" + object.height);
-            objSpecMap.image = object;
-        }
-    );
-
-    var loader = new THREE.OBJLoader();
-
-    loader.load('obj/vive/vr_controller_vive_1_5.obj',
-        function(object)
-        {
-            console.log("Model loaded");
-            model = object;
-
-            object.traverse(
-                function(node)
-                {
-                    if(node instanceof THREE.Mesh)
-                    {
-                        console.log("Assigning texture");
-                        //node.material.map = objTexture;
-                        //node.material.shininess = 80;
-                        node.material.specularMap = objSpecMap;
-                        //node.material.color = 0xff0000;
-                        //node.material.emissive = 0xffffff;
-                        node.material.color.set(0xff00ff);
-                    }
-                }
-            );
-
-            object.position.y = 0;
-            object.scale.set(20, 20, 20);
-            object.rotation.set(1.5708, 0.0, 0.0);
-            scene.add(object);
-
-            // g_totalLoaded++;
-        }
-    );
-
     g_width = window.innerWidth;
     g_height = window.innerHeight;
 
@@ -639,17 +549,9 @@ function main()
                 
                 for(var j = 0; j < meshGroup.length; j++)
                 {
-                    /*
-                    var filename = dataPrefix + g_sourceName + "/";
-                    //filename += pair;
-                    filename += jsonObj[i][0];
-                    filename += "/";
-                    filename += meshGroup[j]
-                    */
                     var filename = jsonObj[i][0] + "/" + meshGroup[j];    // 20170420: don't store full pathname, that's in dataPrefix
 
                     console.log("Opening " + filename + "...");
-                    //console.log("Opening something..");
 
                     loadOBJ(filename);
                     g_sceneOBJCount++;
@@ -675,11 +577,9 @@ function main()
             setupGUI();
         }
     }
-    //xmlreq.open("GET", g_sourceName + ".json");
     xmlreq.open("GET", g_sourceName + "/meshgroups.json");   // 20170411 - server provdes full filename now, don't need to add .json
     xmlreq.send();
 
-    //socket.on('loadjson', loadParamsFromString(msg));
     socket.on('loadjson', function(msg)
     {
         console.log("Received scene parameters from server, loading..");
@@ -703,21 +603,14 @@ function setupGUI()
     g_responder['Reset all'] = g_responder.resetAll;
     g_responder['Toggle axis lines'] = g_responder.toggleAxis;
     
-    // var camdist = g_gui.add(g_properties, 'camDistance');
-    // g_gui.add(g_properties, "camRotX");
-    // g_gui.add(g_properties, "camRotY");
-    // g_gui.add(g_properties, 'camRotX').listen();
-    // g_gui.add(g_properties, 'camRotY').listen();
     console.log("setupGUI(): Global group count: " + g_properties.groups.length);
 
-    //g_gui.remember(g_properties);
-
     //btn = g_gui.add(g_responder, "saveAll");
-    btn = g_gui.add(g_responder, ['Save settings']);
     //g_gui.add(g_responder, "reportSave");
     //g_gui.add(g_responder, "resetAll");
-    g_gui.add(g_responder, ['Reset all']);
     //g_gui.add(g_responder, "loadAll");
+    btn = g_gui.add(g_responder, ['Save settings']);
+    g_gui.add(g_responder, ['Reset all']);
     g_gui.add(g_responder, ['Reload settings']);
     g_gui.add(g_responder, ['Toggle axis lines']);
 
@@ -743,26 +636,10 @@ function setupGUI()
         alphaSlider.onChange(function(value){
             g_properties.refresh();
         });
-
-        // g_gui.remember(g_properties.groups[i]);
-
-        //colourPicker.onFinishChange = g_properties.groups[i]
     }
 
     // mesh groups folder is open by default
     folderMeshGroups.open();
-
-    //for(group in g_properties.groups)
-    // for(var i = 0; i < g_properties.groups.length; i++)
-    // {
-    //     console.log("Adding group " + g_properties.groups[i].name + " to GUI.. (nodes: " + g_properties.groups[i].nodes.length + ")");
-    //     // add control for mesh toggle
-    //     var element = folderMeshGroups.add(g_properties.groups[i], 'visible');
-    //     element.onChange(function(value){
-    //         g_properties.refresh();
-    //     });
-    //     element.name(g_properties.groups[i].name);
-    // }
 }
 
 // render() - draw everything
@@ -852,9 +729,9 @@ function onDocumentMouseMove(event)
 
         // camPos.multiplyScalar(g_camDistance);
 
-        console.log("xDelta" + xDelta + " yDelta: " + yDelta);
-        console.log("rotX: " + rotX + " rotY: " + rotY);
-        console.log(camera.position);
+        // console.log("xDelta" + xDelta + " yDelta: " + yDelta);
+        // console.log("rotX: " + rotX + " rotY: " + rotY);
+        // console.log(camera.position);
 
         // camera.position = camPos;
         // camera.lookAt(c);        
@@ -1123,6 +1000,21 @@ function saveScene()
     //socket.emit('saveparams', g_tempSceneJSON);
     socket.emit('saveparams', saveArgs);
 };
+
+socket.on('saveparams', function(data) {
+    if(data.status == "error")
+    {
+        console.log("Can't save view parameters for examples!");
+
+        var title = document.getElementById("viewertitle");
+        if(title != null)
+        {
+            title.innerHTML = "Error: can't save examples!";
+        }
+        
+        setTimeout(resetTitle, 4000);
+    }
+});
 
 // requestLoad() - request the view parameters JSON file from the server
 function requestLoad()

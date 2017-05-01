@@ -302,6 +302,10 @@ function saveParams(io, data)
 		if(err)
 		{
 			console.log("Error: " + err);
+		
+			// send a message to the viewer
+			io.emit('saveparams', { status: 'error' });
+
 			return;
 		}
 
