@@ -95,9 +95,7 @@ node_modules
 *.db
 *.bak
 *.orig
-*/public/data/example
 */public/data/local/*
 */public/data/info/*
-*/public/img/*
 */public/meshviewer/data
 volume

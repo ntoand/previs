@@ -1,0 +1,126 @@
+#verbose
+trisplit=1
+#swapyz=1
+
+file "RightAtrium/RightAtrium.obj"
+select 1
+colour [0.36274509803921573,0.06757016532103038,0.06757016532103038,1.0] append
+
+select
+file "LeftVentricle/LeftVentricle.obj"
+select 2
+colour [0.2629757785467128,0.3118257683696316,0.47058823529411764,1.0] append
+
+select
+file "RightVentricle/RightVentricle.obj"
+select 3
+colour [0.23856209150326801,0.7156862745098039,0.23856209150326824,1.0] append
+
+select
+file "LeftAtrium/LeftAtrium.obj"
+select 4
+colour [0.5294117647058824,0.34775086505190306,0.08823529411764704,1.0] append
+
+select
+file "SeptumMuscle/SeptumMuscle.obj"
+select 5
+colour [1,1,1,1.0] append
+
+select
+file "PulmonaryVessels/PulmonaryVessels.obj"
+select 6
+colour [0.058823529411764726,0.33333333333333337,0.05882352941176484,1.0] append
+
+select
+file "Valves/Valves.obj"
+select 7
+colour [0.7843137254901961,0.5690119184928873,0.26143790849673204,1.0] append
+
+select
+file "LeftAuricle/LeftAuricle.obj"
+select 8
+colour [0.3921568627450981,0.3575547866205306,0.3575547866205306,1.0] append
+
+select
+file "NervousSys/NervousSys.obj"
+select 9
+colour [0.11630142252979625,0.3650745188502161,0.5392156862745099,1.0] append
+
+select
+file "RightAuricle/RightAuricle.obj"
+select 10
+colour [1,1,1,1.0] append
+
+select
+file "Aorta/Aorta.obj"
+select 11
+colour [0.33333333333333337,0.32026143790849676,0.27777777777777785,1.0] append
+
+select
+file "FibrousSkeleton/FibrousSkeleton.obj"
+select 12
+colour [0.026239907727797007,0.20588235294117652,0.20588235294117652,1.0] append
+
+select
+file "CoronaryArteries/CoronaryArteries.obj"
+select 13
+colour [0.7254901960784313,0.4125336409073433,0.5413981048013206,1.0] append
+
+select
+file "CardiacVeins/CardiacVeins.obj"
+select 14
+colour [0.5980392156862745,0.3400615148019992,0.38558699142863584,1.0] append
+
+select
+name 1 "RightAtrium"
+name 2 "LeftVentricle"
+name 3 "RightVentricle"
+name 4 "LeftAtrium"
+name 5 "SeptumMuscle"
+name 6 "PulmonaryVessels"
+name 7 "Valves"
+name 8 "LeftAuricle"
+name 9 "NervousSys"
+name 10 "RightAuricle"
+name 11 "Aorta"
+name 12 "FibrousSkeleton"
+name 13 "CoronaryArteries"
+name 14 "CardiacVeins"
+
+select 1
+opacity=1
+select 2
+opacity=1
+select 3
+opacity=1
+select 4
+opacity=0.6173272535952298
+select 5
+opacity=1
+select 6
+opacity=1
+select 7
+opacity=1
+select 8
+opacity=1
+select 9
+opacity=1
+select 10
+opacity=1
+select 11
+opacity=1
+select 12
+opacity=1
+select 13
+opacity=1
+select 14
+opacity=1
+
+open
+#translation 0 0 -120
+#rotation 0 1 0 0
+
+border off
+axis off
+nearclip 0.2
+eyeseparation 0.12
