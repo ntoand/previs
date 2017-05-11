@@ -8,6 +8,7 @@ var g_width, g_height;
 var g_prevMouseX = 0, g_prevMouseY = 0;
 var g_camDistance = 1.0;
 var g_camRotX = 0.0, g_camRotY = 0.0;
+var g_camTransX = 0.0, g_camTransY = 0.0, g_camTransZ = 0.0;
 var model;
 // var g_totalLoaded = 0;
 var camTransform = new THREE.Matrix4();
@@ -27,6 +28,9 @@ var g_objectBounds;
 var g_allObjectsGroup;
 var g_showAxisLines = true;
 var g_axisLines;
+var g_boundsSize = 1.0;         // the longest distance in any dimension that the mesh extends from the origin
+
+var CAMERA_DISTANCE_MIN = 0.1;
 
 // SceneTransport holds data about groups and models, used for saving/reconstructing
 var SceneTransport = function()
@@ -221,13 +225,15 @@ function resetTitle()
     var title = document.getElementById("viewertitle");
     if(title != null)
     {
-        title.innerHTML = "Web mesh previs";
+        title.innerHTML = "MIVP mesh viewer";
     }
 }
 
 // responder - contains callbacks for dat.gui events
 var responder = function()
 {
+    this.showAxis = true;
+
     this.loadAll = function()
     {
         console.log("Loading scene");
@@ -251,9 +257,10 @@ var responder = function()
     this.toggleAxis = function()
     {
         console.log("Toggle axis lines");
-        g_showAxisLines = !g_showAxisLines;
+        //g_showAxisLines = !g_showAxisLines;
 
-        g_axisLines.visible = g_showAxisLines;
+        //g_axisLines.visible = g_showAxisLines;
+        g_axisLines.visible = this.showAxis;
     };
 
     this.reportSave = function()
@@ -391,6 +398,24 @@ function loadOBJ(filename)
                 (g_objectBounds.min.y + g_objectBounds.max.y / 2) + ", " +
                 (g_objectBounds.min.z + g_objectBounds.max.z / 2) + ")");
 
+            var maxCoord = Math.max(g_objectBounds.min.x, g_objectBounds.min.y, g_objectBounds.min.z, g_objectBounds.max.x, g_objectBounds.max.y, g_objectBounds.max.z);
+            var minCoord = Math.min(g_objectBounds.min.x, g_objectBounds.min.y, g_objectBounds.min.z, g_objectBounds.max.x, g_objectBounds.max.y, g_objectBounds.max.z);
+
+            var targetDist = Math.max(Math.abs(maxCoord), Math.abs(minCoord));
+            g_boundsSize = targetDist;
+
+            g_camDistance = targetDist * 1.5;
+
+            // change the far clipping plane
+            camera.far = targetDist * 8.0;  // arbitarily chosen for now, 8x the size of the bounding box
+
+            // reset the camera
+            placeCamera(0, 0, 0, g_camDistance);
+            camera.updateProjectionMatrix();
+
+            // update the axis lines to be at least the length of the clipping region
+            updateAxisLines(g_boundsSize * 8.0);
+
             if(g_sceneOBJLoaded == g_sceneOBJCount && g_sceneOBJCount > 0)
             {
                 finaliseScene();
@@ -488,17 +513,19 @@ function main()
     var geometryLine2 = new THREE.Geometry();
     var geometryLine3 = new THREE.Geometry();
 
+    var lineLength = 1.0;
+
     geometryLine1.vertices.push(
-        new THREE.Vector3(-500.0, 0.0, 0.0),
-        new THREE.Vector3(500.0, 0.0, 0.0)
+        new THREE.Vector3(-lineLength, 0.0, 0.0),
+        new THREE.Vector3(lineLength, 0.0, 0.0)
     );
     geometryLine2.vertices.push(
-        new THREE.Vector3(0.0, -500.0, 0.0),
-        new THREE.Vector3(0.0, 500.0, 0.0)
+        new THREE.Vector3(0.0, -lineLength, 0.0),
+        new THREE.Vector3(0.0, lineLength, 0.0)
     );
     geometryLine3.vertices.push(
-        new THREE.Vector3(0.0, 0.0, -500.0),
-        new THREE.Vector3(0.0, 0.0, 500.0)
+        new THREE.Vector3(0.0, 0.0, -lineLength),
+        new THREE.Vector3(0.0, 0.0, lineLength)
     );
 
     g_axisLines = new THREE.Group();
@@ -514,6 +541,8 @@ function main()
     scene.add(g_axisLines);
     // scene.add(line2);
     // scene.add(line3);
+
+    updateAxisLines(500);
 
     g_width = window.innerWidth;
     g_height = window.innerHeight;
@@ -601,7 +630,8 @@ function setupGUI()
     g_responder['Save settings'] = g_responder.saveAll;
     g_responder['Reload settings'] = g_responder.loadAll;
     g_responder['Reset all'] = g_responder.resetAll;
-    g_responder['Toggle axis lines'] = g_responder.toggleAxis;
+    //g_responder['Toggle axis lines'] = g_responder.toggleAxis;
+    g_responder['Show axis lines'] = g_responder.showAxis;
     
     console.log("setupGUI(): Global group count: " + g_properties.groups.length);
 
@@ -612,7 +642,12 @@ function setupGUI()
     btn = g_gui.add(g_responder, ['Save settings']);
     g_gui.add(g_responder, ['Reset all']);
     g_gui.add(g_responder, ['Reload settings']);
-    g_gui.add(g_responder, ['Toggle axis lines']);
+    //g_gui.add(g_responder, ['Toggle axis lines']);
+    var axisEvent = g_gui.add(g_responder, ['Show axis lines']);
+    axisEvent.onChange(function(value) {
+        g_responder.showAxis = value;
+        g_responder.toggleAxis();
+    });
 
     var folderMeshGroups = g_gui.addFolder("Mesh groups");
 
@@ -650,7 +685,7 @@ function render()
     // {
     //     return;
     // }
-    console.log("Frame");
+    //console.log("Frame"); // write to log for all frames, only needed for debugging (to check for renderer stopping)
     renderer.render(scene, camera);
 }
 
@@ -672,78 +707,137 @@ function onDocumentMouseMove(event)
     xDelta = vx - g_prevMouseX;
     yDelta = vy - g_prevMouseY;
 
-    if(event.buttons & 1)
+    translating = false;
+    dragging = false;
+    rolling = false;
+
+    if(event.buttons != 0)
     {
-        //var camPos = camera.position;
-        //camPos.z += (event.deltaY * .1);
-        //g_camDistance += (event.deltaY * .1);
-        var scaleX = 5.0;
-        var scaleY = 5.0;
-        
-        g_camRotY -= (xDelta / g_width) * scaleX;
-        g_camRotX -= (yDelta / g_height) * scaleY;
+        dragging = true;
+    }
 
-        g_camRotX = Math.min(Math.max(-Math.PI / 2.0, g_camRotX), Math.PI / 2.0);
-        //g_camRotY = Math.min(Math.max(0.0, g_camRotY), Math.PI * 2.0);
+    if(event.ctrlKey || (event.buttons & 2))
+    {
+        translating = true;
+    }
 
-        rotX = g_camRotX;// % (Math.PI * 2.0);
-        rotY = g_camRotY;// % (Math.PI * 2.0);
+    if(event.buttons & 4)
+    {
+        rolling = true;
+    }
 
-        g_properties.camRotX = rotX;
-        g_properties.camRotY = rotY;
-        
-        var transform = new THREE.Matrix4();
-        var translate = new THREE.Matrix4();
-        var rotate = new THREE.Matrix4();
+    if(dragging)
+    {
+        if(translating)
+        {
+            // var scaleX = 7.0;
+            // var scaleY = 7.0;
+            // set a scale based on the object size and the window size
+            var scaleX = 3.0 * (g_boundsSize / g_width);
+            var scaleY = 3.0 * (g_boundsSize / g_height);
+            
+            // generate a vector from mouse movement
+            var translateLocal = new THREE.Vector3(xDelta * scaleX, -yDelta * scaleY, 0.0);
+            //console.log("Translate camera: " + translateLocal.x + ", " + translateLocal.y + ", " + translateLocal.z);
+            // var transX = xDelta;
+            // var transY = yDelta;
 
-        var rotateX = new THREE.Matrix4();
-        var rotateY = new THREE.Matrix4();
-        rotateX.makeRotationFromEuler(new THREE.Euler(rotX, 0.0, 0.0), "XYZ");
-        rotateY.makeRotationFromEuler(new THREE.Euler(0.0, rotY, 0.0), "XYZ");
+            // remember the length of the mouse movement vector because transformDirection() will normalise it
+            var translateLength = translateLocal.length();
 
-        translate.makeTranslation(0.0, 0.0, 1.0);
-        rotate.makeRotationFromEuler(new THREE.Euler(rotX, rotY, 0.0), "XYZ");
+            // rotate the vector to be relative to the camera's direction, then restore the vector's length
+            translateLocal.transformDirection(camera.matrixWorld);
+            translateLocal.multiplyScalar(translateLength);
+            //translateLocal *= (camera.getWorldDirection());
+            //translateLocal.multiplyVectors(camera.getWorldDirection(), translateLocal);
+            // camera.position.x += translateLocal.x;
+            // camera.position.y += translateLocal.y;
+            // camera.position.z += translateLocal.z;
 
-        //transform = rotate.multiply(translate);
-        //transform.multiplyMatrices(rotate, translate);
+            // translate the object
+            g_allObjectsGroup.position.x += (translateLocal.x);
+            g_allObjectsGroup.position.y += (translateLocal.y);
+            g_allObjectsGroup.position.z += (translateLocal.z);
 
-        transform.multiplyMatrices(rotateX, translate);
-        transform.multiplyMatrices(rotateY, transform);
-        
-        var camPos = new THREE.Vector3(0.0, 0.0, g_camDistance);
-        camPos.applyMatrix4(transform);
-        
-        var c = new THREE.Vector3(0, 0, 0);
+            //console.log("Translate camera: " + translateLocal.x + ", " + translateLocal.y + ", " + translateLocal.z);
 
-        //camera.position.x = vx;
-        camera.position.x = camPos.x;
-        camera.position.y = camPos.y;
-        camera.position.z = camPos.z;
-        camera.lookAt(c);
+            //var c = new THREE.Vector3(0, 0, 0);
+            //camera.lookAt(c);
+        }
+        else if(!rolling)
+        {
+            var scaleX = 2.0;
+            var scaleY = 2.0;
+            
+            // desired rotation offset
+            camRotY = (-xDelta / g_width) * scaleX;
+            camRotX = (-yDelta / g_height) * scaleY;
+            
+            var rotateOffset = new THREE.Matrix4();
 
-        updateLights();
+            var rotateX = new THREE.Matrix4();
+            var rotateY = new THREE.Matrix4();
+            
+            // get camera's world matrix
+            var camMat = new THREE.Matrix4;
+            camMat.extractRotation(camera.matrixWorld);
 
-        // // model.rotateZ((xDelta * 0.01) * Math.PI);
-        // // model.rotateX((yDelta * 0.01) * Math.PI);
-        // // model.updateMatrix();
+            // calculate camera's up and right vectors
+            var camUp = new THREE.Vector3(0, 1, 0);
+            var camRight = new THREE.Vector3(1, 0, 0);
+            camUp.applyMatrix4(camMat);
+            camRight.applyMatrix4(camMat);
 
-        // g_camRotX = (xDelta * 0.1);
-        // g_camRotY = (yDelta * 0.1);
+            // generate rotation matrices for local X and Y
+            rotateX.makeRotationAxis(camUp, camRotY);
+            rotateY.makeRotationAxis(camRight, camRotX);
 
-        // var c = new THREE.Vector3(0, 0, 0);
-        // var camPos = new THREE.Vector3(0, 0, 0);
-        // camPos.x = Math.sin(g_camRotX % Math.PI);
-        // camPos.y = Math.cos(g_camRotY % Math.PI);
-        // camPos.z = -1.0;
+            // apply rotation Y then X
+            rotateOffset.multiplyMatrices(rotateY, rotateOffset);
+            rotateOffset.multiplyMatrices(rotateX, rotateOffset);
 
-        // camPos.multiplyScalar(g_camDistance);
+            // apply the final rotation to the camera's world matrix            
+            camera.applyMatrix(rotateOffset);
 
-        // console.log("xDelta" + xDelta + " yDelta: " + yDelta);
-        // console.log("rotX: " + rotX + " rotY: " + rotY);
-        // console.log(camera.position);
+            // update after these changes
+            camera.updateMatrixWorld();
+            updateLights();
+        }
+        else
+        {
+            var scaleX = 4.0;
+            
+            console.log("Rolling..");
 
-        // camera.position = camPos;
-        // camera.lookAt(c);        
+            // desired rotation offset
+            camRotZ = (-xDelta / g_width) * scaleX;
+            
+            var rotateOffset = new THREE.Matrix4();
+
+            var rotateZ = new THREE.Matrix4();
+            
+            // get camera's world matrix
+            var camMat = new THREE.Matrix4;
+            camMat.extractRotation(camera.matrixWorld);
+
+            // calculate camera's direction vector
+            var camDir = new THREE.Vector3(0, 0, 1);
+            camDir.applyMatrix4(camMat);
+
+            // generate rotation matrix for local Z
+            rotateZ.makeRotationAxis(camDir, camRotZ);
+
+            // apply rotation Z
+            rotateOffset.multiplyMatrices(rotateZ, rotateOffset);
+
+            // apply the final rotation to the camera's world matrix            
+            camera.applyMatrix(rotateOffset);
+
+            // update after these changes
+            camera.updateMatrixWorld();
+
+            updateLights();
+        }
     }
     //else
     {
@@ -763,12 +857,41 @@ function onDocumentMouseMove(event)
 
 function onDocumentMouseWheel(event)
 {
-    //var camPos = camera.position;
-    //camPos.z += (event.deltaY * .1);
-    g_camDistance += (event.deltaY * .1);
+    // NEW ZOOM ROUTINE
+    var wheelLength = -event.deltaY;
+
+    var c = camera.position.clone();
+    c.negate();
+    //g_camDistance = camera.position.distanceTo(c);
+    //var directionTo
+    var distanceToOrigin = c.length();
     
-    rotX = g_camRotX;// % (Math.PI * 2.0);
-    rotY = g_camRotY;// % (Math.PI * 2.0);
+    // work out direction to origin
+    var directionToOrigin = c.clone();
+    directionToOrigin.normalize();
+
+    // work out how far to move
+    var targetOffset = directionToOrigin.clone();
+    targetOffset.multiplyScalar(wheelLength * (g_boundsSize * .001));
+
+    // if zooming in would go through the origin, then cancel (but always allow zooming out)
+    if(wheelLength > 0.0 && targetOffset.length() >= distanceToOrigin)
+    {
+        return;
+    }
+
+    camera.position.add(targetOffset);
+    camera.updateMatrixWorld();
+
+    updateLights();
+}
+
+function placeCamera(rotX, rotY, rotZ, dist, up)
+{
+    // g_camDistance += (event.deltaY * .1);
+    
+    // rotX = g_camRotX;// % (Math.PI * 2.0);
+    // rotY = g_camRotY;// % (Math.PI * 2.0);
         
     var transform = new THREE.Matrix4();
     var translate = new THREE.Matrix4();
@@ -809,7 +932,18 @@ function onDocumentMouseWheel(event)
     updateLights();
 
     // update dat.gui
-    
+}
+
+function updateAxisLines(scale)
+{
+    console.log("Scaling axis lines to " + scale);
+
+    //var mat = new THREE.Matrix4();
+    //mat.makeScale(scale, scale, scale);
+
+    //g_axisLines.matrix = mat;
+    g_axisLines.scale.set(scale, scale, scale);
+    g_axisLines.updateMatrixWorld();
 }
 
 function onDocumentResize()
@@ -854,6 +988,11 @@ function resetScene()
             g_properties.groups[i].nodes[j].alpha = 1.0;
         }
     }
+
+    // reset the object's transform
+    g_allObjectsGroup.position.x = 0.0;
+    g_allObjectsGroup.position.y = 0.0;
+    g_allObjectsGroup.position.z = 0.0;
 };
 
 // saveScene() - save all view parameters to JSON and export a LavaVu init script to match view settings
