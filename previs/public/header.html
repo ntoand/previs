@@ -1,37 +1,49 @@
 <!-- Navigation -->
-<nav class="navbar navbar-inverse">
+<nav class="navbar navbar-static-top navbar-inverse">
     <div class="container">
+        
         <div class="navbar-header">
+            <button class="navbar-toggle collapsed" type="button" data-toggle="collapse" data-target=".bs-navbar-collapse"> 
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+ 
             <a class="navbar-brand" href="index.html">CAVE2 Portal</a>
         </div>
-        <ul class="nav navbar-nav">
-            <li><a href="index.html">Home</a></li>
-            <li class="dropdown">
-                <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Volume <span class="caret"></span></a>
-                <ul class="dropdown-menu">
-                    <li><a href="local.html">Upload volumes</a></li>
-                    <!--<li><a href="daris.html">From DaRIS</a></li>-->
-                </ul>
-            </li>
-            <li class="dropdown">
-                <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Meshes <span class="caret"></span></a>
-                <ul class="dropdown-menu">
-                    <li><a href="local.html">Upload meshes</a></li>
-                    <!--<li><a href="mesh.html">Conversion [TODO]</a></li>-->
-                </ul>
-            </li>
-            <!--
-            <li class="dropdown">
-                <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Review <span class="caret"></span></a>
-                <ul class="dropdown-menu">
-                <li><a href="tag.html">Review your volume or mesh</a></li>
-                </ul>
-            </li>
-            -->
-            <li><a href="tag.html">Review</a></li>
-        </ul>
-        <ul class="nav navbar-nav navbar-right">
-            <li><a href="http://monash.edu/mivp" target="_blank"><span class="glyphicon glyphicon-home"></span> MIVP homepage</a></li> 
-        </ul>
+        
+        <nav class="collapse navbar-collapse bs-navbar-collapse" role="navigation">
+            <ul class="nav navbar-nav">
+                <li><a href="index.html">Home</a></li>
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Volume <span class="caret"></span></a>
+                    <ul class="dropdown-menu">
+                        <li><a href="local.html">Upload volumes</a></li>
+                        <!--<li><a href="daris.html">From DaRIS</a></li>-->
+                    </ul>
+                </li>
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Mesh <span class="caret"></span></a>
+                    <ul class="dropdown-menu">
+                        <li><a href="local.html">Upload meshes</a></li>
+                        <!--<li><a href="mesh.html">Conversion [TODO]</a></li>-->
+                    </ul>
+                </li>
+                <!--
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Review <span class="caret"></span></a>
+                    <ul class="dropdown-menu">
+                    <li><a href="tag.html">Review your volume or mesh</a></li>
+                    </ul>
+                </li>
+                -->
+                <li><a href="tag.html">Review</a></li>
+            </ul>
+            <ul class="nav navbar-nav navbar-right">
+                <li><a href="http://monash.edu/mivp" target="_blank"><span class="glyphicon glyphicon-home"></span> MIVP homepage</a></li> 
+            </ul>
+        </nav>
+        
     </div>
 </nav>
