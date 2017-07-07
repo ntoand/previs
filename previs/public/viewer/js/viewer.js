@@ -821,7 +821,7 @@ function onDocumentMouseMove(event)
         {
             var scaleX = 4.0;
             
-            console.log("Rolling..");
+            // console.log("Rolling..");
 
             // desired rotation offset
             camRotZ = (-xDelta / g_width) * scaleX;
