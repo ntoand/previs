@@ -735,7 +735,16 @@ function onDocumentMouseMove(event)
             // set a scale based on the object size and the window size
             var scaleX = 3.0 * (g_boundsSize / g_width);
             var scaleY = 3.0 * (g_boundsSize / g_height);
-            
+
+            // adjust the scale based on the distance between the camera and the object            
+            var c = camera.position.clone();
+            c.negate();
+            var distanceToOrigin = c.length();
+
+            // a little clumsy but log of camera distance to origin is a decent relationship for now..
+            scaleX *= (0.3 * Math.log(distanceToOrigin));
+            scaleY *= (0.3 * Math.log(distanceToOrigin));
+
             // generate a vector from mouse movement
             var translateLocal = new THREE.Vector3(xDelta * scaleX, -yDelta * scaleY, 0.0);
             //console.log("Translate camera: " + translateLocal.x + ", " + translateLocal.y + ", " + translateLocal.z);
@@ -750,14 +759,19 @@ function onDocumentMouseMove(event)
             translateLocal.multiplyScalar(translateLength);
             //translateLocal *= (camera.getWorldDirection());
             //translateLocal.multiplyVectors(camera.getWorldDirection(), translateLocal);
-            // camera.position.x += translateLocal.x;
-            // camera.position.y += translateLocal.y;
-            // camera.position.z += translateLocal.z;
 
             // translate the object
-            g_allObjectsGroup.position.x += (translateLocal.x);
-            g_allObjectsGroup.position.y += (translateLocal.y);
-            g_allObjectsGroup.position.z += (translateLocal.z);
+            // g_allObjectsGroup.position.x += (translateLocal.x);
+            // g_allObjectsGroup.position.y += (translateLocal.y);
+            // g_allObjectsGroup.position.z += (translateLocal.z);
+
+            // translate the camera by subtracting the translation that was meant for the object
+            camera.position.x -= translateLocal.x;
+            camera.position.y -= translateLocal.y;
+            camera.position.z -= translateLocal.z;
+
+            // update the camera's attached light
+            updateLights();
 
             //console.log("Translate camera: " + translateLocal.x + ", " + translateLocal.y + ", " + translateLocal.z);
 
@@ -807,7 +821,7 @@ function onDocumentMouseMove(event)
         {
             var scaleX = 4.0;
             
-            console.log("Rolling..");
+            // console.log("Rolling..");
 
             // desired rotation offset
             camRotZ = (-xDelta / g_width) * scaleX;
@@ -857,8 +871,12 @@ function onDocumentMouseMove(event)
 
 function onDocumentMouseWheel(event)
 {
+    // step the same amount regardless of how far the browser reported the wheel moved
+    var delta = 55 * Math.sign(event.deltaY);
+
     // NEW ZOOM ROUTINE
-    var wheelLength = -event.deltaY;
+    //var wheelLength = -event.deltaY;
+    var wheelLength = -delta;
 
     var c = camera.position.clone();
     c.negate();
@@ -869,6 +887,8 @@ function onDocumentMouseWheel(event)
     // work out direction to origin
     var directionToOrigin = c.clone();
     directionToOrigin.normalize();
+
+    directionToOrigin = camera.getWorldDirection();
 
     // work out how far to move
     var targetOffset = directionToOrigin.clone();
@@ -949,6 +969,13 @@ function updateAxisLines(scale)
 function onDocumentResize()
 {
     resetView();
+}
+
+function onDocumentContextMenu(event)
+{
+    // stop context menu from appearing when user right-clicks to translate the camera
+    event.preventDefault();
+    return false;
 }
 
 function loader_getGroup(groupName)

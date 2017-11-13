@@ -8,6 +8,7 @@
 
     <body>
         <script src="js/three.min.js"></script>
+        <script src="js/MTLLoader.js"></script>
         <script src="js/OBJLoader.js"></script>
         <script src="js/dat.gui.min.js"></script>
         <script src="/socket.io/socket.io.js"></script>
@@ -19,6 +20,7 @@
             document.addEventListener('mousemove', onDocumentMouseMove, false);
             document.addEventListener('wheel', onDocumentMouseWheel, false);
             window.addEventListener('resize', onDocumentResize, false);
+            document.addEventListener('contextmenu', onDocumentContextMenu, false);
 
         </script>
 
