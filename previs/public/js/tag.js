@@ -155,7 +155,7 @@ function generateLocalUploadGrid(volumes) {
         
         var view_button = document.createElement("button");
         view_button.setAttribute("class", "view_button");
-        view_button.setAttribute("id", vol.json);
+        view_button.setAttribute("id", vol.json_web);
         view_button.innerHTML = 'View';
         view_button.onclick = function () {
             window.open('sharevol/index.html?data=' + $(this).prop('id') + '&reset', target="_blank");

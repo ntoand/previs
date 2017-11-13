@@ -9,7 +9,7 @@ colour [0.36274509803921573,0.06757016532103038,0.06757016532103038,1.0] append
 select
 file "LeftVentricle/LeftVentricle.obj"
 select 2
-colour [0.2629757785467128,0.3118257683696316,0.47058823529411764,1.0] append
+colour [0.5136146730895357,0.5196078431372548,0.41772395232602844,1.0] append
 
 select
 file "RightVentricle/RightVentricle.obj"
@@ -89,10 +89,13 @@ name 14 "CardiacVeins"
 
 select 1
 opacity=1
+hide 1
 select 2
 opacity=1
+hide 2
 select 3
 opacity=1
+hide 3
 select 4
 opacity=0.6173272535952298
 select 5
