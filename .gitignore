@@ -99,3 +99,5 @@ node_modules
 */public/data/info/*
 */public/meshviewer/data
 volume
+
+potree
