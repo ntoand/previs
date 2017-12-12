@@ -25,7 +25,6 @@ var paths = {
 	  ],
 	  separate_scripts: [
 		    "public/js/local.js",
-		    "public/js/daris.js",
 		    "public/js/tag.js",
 		    "public/js/admin.js"
 		]

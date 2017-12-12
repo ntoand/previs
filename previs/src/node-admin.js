@@ -73,6 +73,7 @@ var deleteFolderRecursive = function(dir) {
 function deleteTags(io, data) {
     for (var i=0, l=data.length; i < l; i++) {
         var tag =  data[i].tag;
+        
         if(data[i].source === 'localupload') {
             //delete data
             var basename = path.basename(data[i].data, '.zip');
@@ -85,10 +86,6 @@ function deleteTags(io, data) {
 	        deleteFolderRecursive(result_dir);
 	        fs.unlinkSync(zip_file);
 	        fs.unlinkSync(jsonfile);
-        }
-        else if(data[i].source === 'daris') {
-            io.emit('admindeletetags', {status: 'error', result: data, detail: 'not implemented'});
-            return;
         }
         
         //delete tag in database

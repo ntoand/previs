@@ -13,7 +13,6 @@ var bodyParser 	  = require('body-parser');
 var fs 			  = require('fs'); 
 
 var config 		  = require('./src/node-config').config;
-var mydaris		  = require('./src/node-daris');
 var myadmin 	  = require('./src/node-admin');
 var mylocalOBJupload = require('./src/node-localobjupload');
 
@@ -73,32 +72,6 @@ app.post('/localupload', function (req, res) {
 	return;
 });
 
-// ===== DARIS SELECT  =======
-app.post('/rest/login', function (req, res) {
-
-	var domain = req.body.domain;
-	var user = req.body.user;
-	var password = req.body.password;
-	//console.log(domain + ' ' + user + ' ' + password);
-
-	var cmd = 'cd ' + config.scripts_dir + ' && python run_daris.py -t logon -a ' + domain + '/' + user + '/' + password;
-    console.log(cmd);
-    exec(cmd, function(err, stdout, stderr) 
-    {
-    	console.log(stdout);
-    	console.log(stderr);
-    	if(err)
-		{
-			console.log(err);
-			res.setHeader('Content-Type', 'application/json');
-    		res.send(JSON.stringify({ status: "error", result: "Cannot run login" }, null, 4));
-			return;
-		}
-		res.setHeader('Content-Type', 'application/json');
-    	res.send(stdout);
-    });
-});
-
 app.post('/rest/adminlogin', function (req, res) {
 
 	var user = req.body.user;
@@ -112,71 +85,6 @@ app.post('/rest/adminlogin', function (req, res) {
 	}
 	res.setHeader('Content-Type', 'application/json');
 	res.send(JSON.stringify({ status: "success", result: "Can login" }, null, 4));
-});
-
-app.get('/rest/logoff', function (req, res) {
-	var sid = req.query.sid;
-
-	var cmd = 'cd ' + config.scripts_dir + ' && python run_daris.py -t logoff -s' + sid;
-    console.log(cmd);
-    exec(cmd, function(err, stdout, stderr) 
-    {
-    	console.log(stdout);
-    	console.log(stderr);
-    	if(err)
-		{
-			console.log(err);
-			res.setHeader('Content-Type', 'application/json');
-    		res.send(JSON.stringify({ status: "error", result: "Cannot run logoff" }, null, 4));
-			return;
-		}
-		res.setHeader('Content-Type', 'application/json');
-    	res.send(stdout);
-    });
-});
-
-app.get('/rest/projects', function (req, res) {
-	var sid = req.query.sid;
-
-	var cmd = 'cd ' + config.scripts_dir + ' && python run_daris.py -t projects -s ' + sid;
-    console.log(cmd);
-    exec(cmd, function(err, stdout, stderr) 
-    {
-    	console.log(stdout);
-    	console.log(stderr);
-    	if(err)
-		{
-			console.log(err);
-			res.setHeader('Content-Type', 'application/json');
-    		res.send(JSON.stringify({ error: "Cannot get projects" }, null, 4));
-			return;
-		}
-		res.setHeader('Content-Type', 'application/json');
-    	res.send(stdout);
-    });
-});
-
-app.get('/rest/members', function (req, res) {
-	var cid = req.query.cid;
-	var sid = req.query.sid;
-	console.log(cid);
-
-	var cmd = 'cd ' + config.scripts_dir + ' && python run_daris.py -t members -s ' + sid + ' -c ' + cid;
-    console.log(cmd);
-    exec(cmd, function(err, stdout, stderr) 
-    {
-    	console.log(stdout);
-    	console.log(stderr);
-    	if(err)
-		{
-			console.log(err);
-			res.setHeader('Content-Type', 'application/json');
-    		res.send(JSON.stringify({ error: "Cannot get members" }, null, 4));
-			return;
-		}
-		res.setHeader('Content-Type', 'application/json');
-    	res.send(stdout);
-    });
 });
 
 //! Make model tok file
