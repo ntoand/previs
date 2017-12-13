@@ -8,13 +8,13 @@
 - Javascript, html, css: web client
 - Electron: client app
 
-# Install:
+## Install:
 
 - Install python, node.js, mongodb
 - Go to previs directory
 - Run $ npm install
 - Make a symbol link $ ln -s public/data mesh/
 
-Run:
-- Go to example directory
-- Run $ node server.js
+## Run:
+- Go to previs directory
+- run ./GO.sh
