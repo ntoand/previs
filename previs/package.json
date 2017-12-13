@@ -14,6 +14,7 @@
     "crypto": "0.0.3",
     "express": "^4.13.3",
     "formidable": "^1.0.17",
+    "mongodb": "^2.2.5",
     "socket.io": "^1.4.4",
     "sqlite3": "^3.1.1",
     "three-obj-loader": "^1.0.2",

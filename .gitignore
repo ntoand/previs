@@ -7,6 +7,7 @@
 auto-save-list
 tramp
 .\#*
+_bk
 
 # Org-mode
 .org-id-locations

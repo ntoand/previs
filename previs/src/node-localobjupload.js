@@ -8,7 +8,7 @@ var execSync	= require('child_process').execSync;
 
 var myutils 	= require('./node-utils');
 var config		= require('./node-config').config; 
-var dbmanager   = require('./node-dbmanager');
+var dbmanager   = require('./node-mongodb');
 
 function processUploadFile(io, data) {
 	io.emit('processuploadfile', {status: 'working', result: 'Checking if zipfile contains volumes or meshes'});
@@ -240,7 +240,7 @@ function sendViewDataToClient(io, data) {
 				} 
 			
 				//generete tag for later use
-				dbmanager.createTag(data.file, function(err, tag_str) {
+				dbmanager.createNewTag(function(err, tag_str) {
 					if(err) {
 	    				io.emit('processuploadfile', {status: 'error', cid: data.cid, result: 'cannot_create_tag'});
 	    				return;
@@ -251,6 +251,7 @@ function sendViewDataToClient(io, data) {
 					tag_json.type='volume'
 					tag_json.source='localupload';
 					tag_json.date=Date.now();
+					tag_json.data = data.file;
 						
 					var volumes = [];
 					var volume = {};
@@ -264,8 +265,8 @@ function sendViewDataToClient(io, data) {
 					volume.res_web=obj_web.objects[0].volume.res;
 					volumes.push(volume);
 					tag_json.volumes=volumes;
-	
-					fs.writeFile( config.info_dir+'/'+tag_str+'.json', JSON.stringify(tag_json, null, 4), function(err) {
+					
+					dbmanager.insertNewTag(tag_json, function(err, res) {
 						if (err) {
 							io.emit('processuploadfile', {status: 'error', result: 'cannot_generate_tag_json'});
 							//throw err;
@@ -273,7 +274,7 @@ function sendViewDataToClient(io, data) {
 						} 
 						io.emit('processuploadfile', {status: 'done', tag: tag_str, json: jsonurl_web, thumb: thumburl, 
 												  png: pngurl, xrw: xrwurl});
-					});	
+					});
 				});
 			});
 	    });		
@@ -320,7 +321,7 @@ function sendMeshViewDataToClient(io, data) {
 				return;
 			} 
 			//generete tag for later use
-			dbmanager.createTag(data.file, function(err, tag_str) {
+			dbmanager.createNewTag(function(err, tag_str) {
 				if(err) {
 					io.emit('processOBJuploadfile', {status: 'error', cid: data.cid, result: 'cannot_create_tag'});
 					return;
@@ -331,6 +332,7 @@ function sendMeshViewDataToClient(io, data) {
 				tag_json.type='mesh'
 				tag_json.source='localupload';
 				tag_json.date=Date.now();
+				tag_json.data = data.file;
 
 				var volumes = [];
 				var volume = {};
@@ -344,8 +346,8 @@ function sendMeshViewDataToClient(io, data) {
 				volume.res=obj.objects[0].volume.res;
 				volumes.push(volume);
 				tag_json.volumes=volumes;
-
-				fs.writeFile( config.info_dir+'/'+tag_str+'.json', JSON.stringify(tag_json, null, 4), function(err) {
+				
+				dbmanager.insertNewTag(tag_json, function(err, res) {
 					if (err) {
 						io.emit('processOBJuploadfile', {status: 'error', result: 'cannot_generate_tag_json'});
 						//throw err;
@@ -353,7 +355,7 @@ function sendMeshViewDataToClient(io, data) {
 					} 
 					io.emit('processOBJuploadfile', {status: 'done', tag: tag_str, json: jsonurl, thumb: thumburl, 
 												png: pngurl, xrw: xrwurl});
-				});	
+				});
 			});
 	    });		
 	});

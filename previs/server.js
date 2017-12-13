@@ -15,6 +15,7 @@ var fs 			  = require('fs');
 var config 		  = require('./src/node-config').config;
 var myadmin 	  = require('./src/node-admin');
 var mylocalOBJupload = require('./src/node-localobjupload');
+var preview 	  = require('./src/node-preview');
 
 
 // ===== INITIALISATION ======
@@ -121,10 +122,6 @@ io.on('connection', function (socket) {
     	console.log('user disconnected');
   	});
 
-  	socket.on('viewdataset', function (data) {
-  		console.log(data);
-  		mydaris.viewDataset(io, data);
-  	});
     //Volume Upload
   	socket.on('processuploadfile', function (data) {
   		console.log(data);
@@ -135,19 +132,10 @@ io.on('connection', function (socket) {
   		console.log(data);
   		mylocalOBJupload.processUploadFile(io, data);
   	});
-  	socket.on('searchdataset', function(data) {
-  		console.log(data);
-  		mydaris.searchDataset(io, data);
-  	});
-  	
-  	socket.on('tagmulticaveview', function(data) {
-  		console.log(data);
-  		mydaris.getTagMultiCaveView(io, data);
-  	});
   	
   	socket.on('processtag', function(data) {
 		console.log(data);
-		processTag(io, data);
+		preview.processTag(io, data);
 	});
 	
 	socket.on('savedatajson', function(data) {
@@ -170,19 +158,6 @@ io.on('connection', function (socket) {
 		saveParams(io, data);
 	});
 });
-
-function processTag(io, data) {
-	var jsonfile = config.info_dir + data.tag + '.json';
-	fs.readFile( jsonfile, 'utf8', function (err, jsondata) {
-		if (err) {
-			io.emit('processtag', { status: 'error', result: err });
-			//throw err;
-			return;
-		} 
-		var obj = JSON.parse(jsondata);
-		io.emit('processtag', { status: 'done', result: obj });
-	});
-}
 
 function saveDataJson(io, data) {
 	var filename = config.public_dir + "/" + data.file;

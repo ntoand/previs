@@ -1,7 +1,7 @@
 'use strict';
 
 var fs 			= require('fs');
-var dbmanager   = require('./node-dbmanager');
+var dbmanager   = require('./node-mongodb');
 var path        = require('path');
 var config		= require('./node-config').config; 
 
@@ -10,7 +10,7 @@ function getTags(io, data) {
 
     var tags = [];
   
-    dbmanager.getTags(function(err, rows) { 
+    dbmanager.getAllTags(function(err, rows) { 
         //console.log(err);
         //console.log(rows);
         if(err) {
@@ -19,35 +19,20 @@ function getTags(io, data) {
         }
         for (var i=0, l=rows.length; i < l; i++) {
             
-            var tag = rows[i].tag;
+            var row = rows[i];
+            var tag = row.tag;
             var jsonfile = config.info_dir + tag + '.json';
             console.log(jsonfile);
             
             var t = {};
             t.tag = tag;
-            try {
-                var jsondata = fs.readFileSync(jsonfile, 'utf8');
-                var obj = JSON.parse(jsondata);
-    		    t.type = obj.type;
-    		    t.source = obj.source;
-    		    var d = new Date(obj.date);
-    		    t.date = d.toString();
-    		    t.size = obj.volumes[0].res.toString();
-    		    t.data = rows[i].data;
-                tags.push(t);
-                
-            } catch (err) {
-                t.type = 'invalid';
-    		    t.source = 'invalid';
-    		    t.date = 'invalid';
-    		    t.size = 'invalid';
-    		    t.data = 'invalid';
-    		    tags.push(t);
-                continue;
-                // If the type is not what you want, then just throw the error again.
-                //if (err.code !== 'ENOENT') continue;//throw err;
-                // Handle a file-not-found error
-            }
+            t.type = row.type;
+            t.source = row.source;
+            var d = new Date(row.date);
+            t.date = d.toString();
+            t.size = row.volumes[0].res.toString();
+            t.data = row.data;
+            tags.push(t);
         }
         console.log(tags);
         io.emit('admingettags', {status: 'done', result: tags});
@@ -73,19 +58,16 @@ var deleteFolderRecursive = function(dir) {
 function deleteTags(io, data) {
     for (var i=0, l=data.length; i < l; i++) {
         var tag =  data[i].tag;
-        
+        console.log(tag);
         if(data[i].source === 'localupload') {
             //delete data
             var basename = path.basename(data[i].data, '.zip');
 	        var result_dir = config.local_data_dir + basename + '_result';
 	        var zip_file = config.local_data_dir + data[i].data;
-	        var jsonfile = config.info_dir + tag + '.json';
-	        //console.log(result_dir);
-	        //console.log(zip_file);
-	        //console.log(json_file);
+	        console.log(result_dir);
+	        console.log(zip_file);
 	        deleteFolderRecursive(result_dir);
 	        fs.unlinkSync(zip_file);
-	        fs.unlinkSync(jsonfile);
         }
         
         //delete tag in database

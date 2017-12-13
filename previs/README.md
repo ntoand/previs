@@ -1,10 +1,17 @@
+# Previs
 
-Mesh implementation of previs
+## Tech stack
 
+- Node.js
+- MongoDB
+- Python: processing scripts
+- Javascript, html, css: web client
+- Electron: client app
 
 # Install:
 
-- Go to example directory
+- Install python, node.js, mongodb
+- Go to previs directory
 - Run $ npm install
 - Make a symbol link $ ln -s public/data mesh/
 
