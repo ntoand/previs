@@ -8,6 +8,7 @@ auto-save-list
 tramp
 .\#*
 _bk
+build
 
 # Org-mode
 .org-id-locations
@@ -101,4 +102,3 @@ node_modules
 */public/meshviewer/data
 volume
 
-potree
