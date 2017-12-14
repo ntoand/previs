@@ -9,74 +9,53 @@ var execSync	= require('child_process').execSync;
 var myutils 	= require('./node-utils');
 var config		= require('./node-config').config; 
 var dbmanager   = require('./node-mongodb');
+var extract 	= require('extract-zip')
 
 function processUploadFile(io, data) {
-	io.emit('processuploadfile', {status: 'working', result: 'Checking if zipfile contains volumes or meshes'});
-	var filename = data.file;
-	var zipfile = config.local_data_dir + filename;
-	var zipfilename = path.parse(zipfile).name;
-
-	// check zip file type first
-	console.log("Checking zipfile for meshes or TIFF images");
-	var cmd_test = 'cd ' + config.scripts_dir + ' && python checkzip.py -f ' + zipfile;
-
-	var containsMeshes = false;
-	var containsVolumes = false;
-
-	try
-	{
-		console.log(cmd_test);
-		//exec(cmd_test, function(err, stdout, stderr) 
-		var out = execSync(cmd_test).toString();
-		console.log(out);
-
-		if(out.indexOf("Zip file contains meshes") != -1)
+	
+	var file = data.file;
+	var filepath = config.local_data_dir + file;
+	var type = data.type;
+	
+	// check zip file
+	if (type === 'volume' || type === 'mesh') {
+		io.emit('processuploadfile', {status: 'working', result: 'Checking zipfile...'});
+		var cmd_test = 'cd ' + config.scripts_dir + ' && python checkzip.py -f ' + filepath;
+		try
 		{
-			containsMeshes = true;
+			console.log(cmd_test);
+			var out = execSync(cmd_test).toString();
+			console.log(out);
+	
+			if(type === 'mesh' && out.indexOf("Zip file contains meshes") == -1) {
+				io.emit('processuploadfile', {status: 'error', result: 'Zip file has no obj file'});
+				return;
+			}
+			if(type === 'volume' && out.indexOf("Zip file contains TIFF files") == -1) {
+				io.emit('processuploadfile', {status: 'error', result: 'Zip file has no TIFF file'});
+				return;
+			}
+			if(out.indexOf("Zip file contains meshes") != -1 && out.indexOf("Zip file contains TIFF files") != -1) {
+				io.emit('processuploadfile', {status: 'error', result: 'Zip file contains both images and meshes - not yet supported'});
+				return;
+			}
 		}
-		else if(out.indexOf("Zip file contains TIFF files") != -1)
+		catch(err)
 		{
-			containsVolumes = true;
-		}
-		else if(out.indexOf("Zip file contains both images and meshes - not yet supported") != -1)
-		{
-			containsMeshes = containsVolumes = true;
-		}
-		else
-		{
-			// zipfile doesn't contain meshes or volumes
+			console.log("Error!: " + err.message);
+			io.emit('processuploadfile', {status: 'error', result: 'Checking zip file type failed!', detail: err.message});
+			return;
 		}
 	}
-	catch(err)
-	{
-		console.log("Error!: " + err.message);
-		// console.log(stdout);
-		// console.log(stderr);
-		io.emit('processuploadfile', {status: 'error', result: 'Checking zip file type failed!', detail: err.message});
-		return;
-	}
-
-	if(containsMeshes && !containsVolumes)
-	{
-		console.log("Zipfile contains meshes, processing..");
-		processUploadFile_Meshes(io, data);
-	}
-	else if(containsVolumes && !containsMeshes)
-	{
-		console.log("Zipfile contains volumes, processing..");
+	
+	if(type === 'volume') {
 		processUploadFile_Volumes(io, data);
 	}
-	else if(containsVolumes && containsMeshes)
-	{
-		console.log("Can't process this zipfile, it must contain only meshes");
-		io.emit('processuploadfile', {status: 'error', result: 'Zip contains both images and meshes - this is not yet supported', detail: "(unsupported)"});
-		return;
+	else if (type === 'mesh') {
+		processUploadFile_Meshes(io, data);
 	}
-	else
-	{
-		console.log("Can't process this zipfile, it doesn't seem to contain meshes or volumes");
-		io.emit('processuploadfile', {status: 'error', result: 'Zip must contain either TIFF files for volumes or OBJ files for meshes', detail: "(unknown file)"});
-		return;
+	else if (type === 'point') {
+		processUploadFile_Points(io, data);
 	}
 }
 
@@ -124,6 +103,43 @@ function processUploadFile_Meshes(io, data) {
         io.emit('processOBJuploadfile', {status: 'working', result: 'Files unpacked, all groups processed..'})
 		sendMeshViewDataToClient(io, data);
     });
+}
+
+function processUploadFile_Points(io, data)
+{
+	var file = data.file;
+	var filepath = config.local_data_dir + file;
+	var filename = path.parse(filepath).name;
+	var fileext =file.split('.').pop().toLowerCase();
+	if (fileext === 'zip') {
+		var out_dir = config.local_data_dir + filename + '_result';
+		extract(filepath, { dir: out_dir }, function (err) {
+			if(err) {
+				io.emit('processuploadfile_point', {status: 'error', result: 'cannot unzip file', detail: err});
+				return;
+			}
+			fs.unlinkSync(filepath);
+			fs.readdir(out_dir, function(err, items) {
+			    console.log(items);
+			    var found = false;
+			    for (var i=0; i<items.length; i++) {
+			        var ext = items[i].split('.').pop().toLowerCase();
+			        if (ext === 'las' || ext === 'laz' || ext === 'ptx' || ext === 'ply') {
+			        	convertPointcloud(io, data, out_dir + '/' + items[i]);
+			        	found = true;
+			        	break;
+			        }
+			    }
+			    if (found === false) {
+			    	io.emit('processuploadfile_point', {status: 'error', result: 'Cannot find pointcloud file', detail: err});
+					return;
+			    }
+			});
+		})
+	}
+	else {
+		convertPointcloud(io, data, filepath);
+	}
 }
 
 function convertToXRW(io, data) {
@@ -359,6 +375,70 @@ function sendMeshViewDataToClient(io, data) {
 			});
 	    });		
 	});
+}
+
+
+function convertPointcloud(io, data, in_file) {
+	var file = data.file;
+	var filepath = config.local_data_dir + file;
+	var basename = path.parse(filepath).name;
+	var out_dir = config.local_data_dir + basename + '_result';
+	
+	var cmd = 'cd ' + config.potree_converter_dir + ' && ./PotreeConverter -o ' + out_dir + ' -i ' + in_file + ' -p potree';
+	console.log(cmd);
+	io.emit('processuploadfile_point', {status: 'working', result: 'Converting pointcloud...(it takes long time to process big data e.g. ~10min for 100k points)'});
+	exec(cmd, function(err, stdout, stderr) {
+    	console.log(stdout);
+    	console.log(stderr);
+    	if(err)
+		{
+			io.emit('processuploadfile_point', {status: 'error', result: 'cannot_convert_pointcloud', detail: stderr});
+			return;
+		}
+		
+		stdout = myutils.trim(stdout).trim();
+		stdout = stdout.split(' ');
+		var numpoints = '0';
+		for(var i=1; i < stdout.length; i++) {
+			var item = stdout[i].trim();
+			if(item === 'points')
+				numpoints = stdout[i-1];
+		}
+		console.log(numpoints);
+
+		//generete tag for later use
+		dbmanager.createNewTag(function(err, tag_str) {
+			if(err) {
+				io.emit('processuploadfile_point', {status: 'error', cid: data.cid, result: 'cannot_create_tag'});
+				return;
+			}
+	
+			var tag_json = {};
+			tag_json.tag=tag_str;
+			tag_json.type='point'
+			tag_json.source='localupload';
+			tag_json.date=Date.now();
+			tag_json.data = data.file;
+				
+			var potree_url = 'data/local/'+basename + '_result/potree.html';
+			var volumes = [];
+			var volume = {};
+			volume.data_dir ='data/local/' + basename + '_result';
+			volume.potree_url = potree_url;
+			volume.res = [numpoints];
+			volumes.push(volume);
+			tag_json.volumes=volumes;
+			
+			dbmanager.insertNewTag(tag_json, function(err, res) {
+				if (err) {
+					io.emit('processuploadfile_point', {status: 'error', result: 'cannot_generate_tag_json'});
+					//throw err;
+					return;
+				} 
+				io.emit('processuploadfile_point', {status: 'done', tag: tag_str, potree_url: potree_url});
+			});
+		});
+    });
 }
 
 //module.exports.processUploadFile = processUploadFile_Meshes;

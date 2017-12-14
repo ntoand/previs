@@ -52,13 +52,17 @@ socket.on("processtag", function (data) {
         result_div.appendChild(type_label); 
         result_div.appendChild(date_label);
         
-        if(data.result.type === "volume" && data.result.source === "localupload") {
+        if(data.result.type === "volume" ) {
             generateLocalUploadGrid(data.result.volumes);
         }
-        else if(data.result.type === "mesh" &&  data.result.source === "localupload") {
+        else if(data.result.type === "mesh") {
             console.log("This tag is for a mesh - data object is:");
             console.log(data.result);
             generateLocalUploadMeshGrid(data.result.volumes);
+        }
+        else if(data.result.type === "point") {
+            console.log(data.result);
+            generateLocalUploadPointGrid(data.result.volumes);
         }
         else {
             console.log("invalid data type");
@@ -171,6 +175,39 @@ function generateLocalUploadGrid(volumes) {
         });
     });
 }
+
+function generateLocalUploadPointGrid(volumes) {
+    var grid_div = document.getElementById("grid_div");
+    grid_div.innerHTML = "";
+    
+    for(var i=0; i < volumes.length; i++) {
+        var vol = volumes[i];
+        
+        var grid_item = document.createElement("div");
+        grid_item.setAttribute("class", "grid-item");
+        
+        var view_button = document.createElement("button");
+        view_button.setAttribute("class", "view_button");
+        view_button.setAttribute("id", vol.potree_url);
+        view_button.innerHTML = 'View';
+        view_button.onclick = function () {
+            window.open($(this).prop('id'), target="_blank");
+        };
+        grid_item.appendChild(view_button);
+        
+        grid_div.appendChild(grid_item);
+    }
+    
+    $("#grid_div").imagesLoaded( function(){
+         $("#grid_div").masonry({
+            // options
+            itemSelector : '.grid-item',
+            columnWidth : 280
+            //gutter: 20
+        });
+    });
+}
+
 
 function searchKeyPress(e)
 {

@@ -24,7 +24,7 @@ else if (testcase == 1) {
     });
 }
 else if (testcase == 2) {
-    var tag = '56a7cb';
+    var tag = '2d15aa';
     dbmanager.deleteTag(tag, function(err, result) {
        console.log(result); 
        dbmanager.getAllTags(function (err, results) {

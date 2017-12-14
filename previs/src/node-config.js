@@ -7,7 +7,7 @@ var config = {
 	scripts_dir: './src',
 	local_data_dir: path.dirname(require.main.filename) +  '/public/data/local/',
 	info_dir: path.dirname(require.main.filename) + '/public/data/info/',
-	database: path.dirname(require.main.filename) + '/public/data/previs-tags.db'
+	potree_converter_dir: path.dirname(require.main.filename) + '/potree/PotreeConverter/build/PotreeConverter'
 };
 
 exports.config = config;

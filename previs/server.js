@@ -14,7 +14,7 @@ var fs 			  = require('fs');
 
 var config 		  = require('./src/node-config').config;
 var myadmin 	  = require('./src/node-admin');
-var mylocalOBJupload = require('./src/node-localobjupload');
+var mylocalupload = require('./src/node-localobjupload');
 var preview 	  = require('./src/node-preview');
 
 
@@ -122,15 +122,10 @@ io.on('connection', function (socket) {
     	console.log('user disconnected');
   	});
 
-    //Volume Upload
+    //local upload
   	socket.on('processuploadfile', function (data) {
   		console.log(data);
   		mylocalupload.processUploadFile(io, data);
-  	});
-    // Mesh upload
-  	socket.on('processOBJuploadfile', function (data) {
-  		console.log(data);
-  		mylocalOBJupload.processUploadFile(io, data);
   	});
   	
   	socket.on('processtag', function(data) {

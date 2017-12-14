@@ -61,13 +61,19 @@ function deleteTags(io, data) {
         console.log(tag);
         if(data[i].source === 'localupload') {
             //delete data
-            var basename = path.basename(data[i].data, '.zip');
-	        var result_dir = config.local_data_dir + basename + '_result';
-	        var zip_file = config.local_data_dir + data[i].data;
+            var basename = path.parse(data[i].data).name;
+            var result_dir = config.local_data_dir + basename + '_result';
+	        var upload_file = config.local_data_dir + data[i].data;
 	        console.log(result_dir);
-	        console.log(zip_file);
+	        console.log(upload_file);
 	        deleteFolderRecursive(result_dir);
-	        fs.unlinkSync(zip_file);
+	        if (fs.existsSync(upload_file)) {
+                fs.unlinkSync(upload_file);
+            }
+            var processed_file = config.local_data_dir + basename + '_processed.zip';
+            if (fs.existsSync(processed_file)) {
+                fs.unlinkSync(processed_file);
+            }
         }
         
         //delete tag in database

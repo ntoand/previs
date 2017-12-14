@@ -21,10 +21,10 @@
     
     <div class="container">
         <div class="jumbotron">
-           <h2>A WebGL volume and mesh renderer and gateway to the Monash CAVE2</h2>
+           <h2>A WebGL volume, mesh and pointcloud renderer and gateway to the Monash CAVE2</h2>
 	       <p>This is a service provided by MIVP to Monash University staff and affiliates. It provides a way to
-               upload volumetric data or meshes, visualise the data and change display settings on a web page,
-               and then allows people to visualise the volume(s) and mesh(es) in CAVE2.</p>
+               upload volumetric data, meshes or pointclouds, visualise the data and change display settings on a web page,
+               and then allows people to visualise the volumes, meshes and pointclouds in the CAVE2.</p>
         </div>
     </div>
 
@@ -32,26 +32,14 @@
         <div class="row">
             <div class="col-sm-6"> 
                 <div class="card">
-                    <!--
                     <div class="card-image">
-                        <img class="img-responsive" src="img/vol-bonsai.png" alt="Volume foot">
-                        <span class="card-title-dark">Example 1: Bonsai</span>
+                        <img class="img-responsive" src="img/vol-galaxy.jpg" alt="Volume galaxy">
+                        <span class="card-title-dark">Example 1: NGC 3621 galaxy</span>
                     </div>
                     <div class="card-content-center">
-                        <p>Adapted from data from <a href="http://lgdv.cs.fau.de/External/vollib/">The Volume Library</a>, original dataset by <a href="http://www.stereofx.org/">Stephen Roettger</a></p>
+                        <p>NGC 3621 galaxy (<a herf="http://www.mpia.de/THINGS/Data.html"/>http://www.mpia.de/THINGS/Data.html</a>)</p>
                         <p><span class="glyphicon glyphicon-eye-open"></span>
-                            <a href="sharevol/index.html?data=data/example/bonsai/vol.json&reset" target="_blank">VIEW ON WEB</a>
-                        </p>
-                    </div>
-                    -->
-                    <div class="card-image">
-                        <img class="img-responsive" src="img/vol-foot.png" alt="Volume foot">
-                        <span class="card-title-dark">Example 1: Foot</span>
-                    </div>
-                    <div class="card-content-center">
-                        <p>Data: <a href="data/example/tiffstack-foot.zip">tiffstack-foot.zip</a> (image stack, 5MB)</p>
-                        <p><span class="glyphicon glyphicon-eye-open"></span>
-                            <a href="sharevol/index.html?data=data/example/tiffstack-foot/vol.json&reset" target="_blank">VIEW ON WEB</a>
+                            <a href="sharevol/index.html?data=data/example/galaxy/vol_web.json&reset" target="_blank">VIEW ON WEB</a>
                         </p>
                     </div>
                 </div>
@@ -83,8 +71,8 @@
                     </div>
                     <div class="card-content-center">
                         <p> <a href="http://lifesciencedb.jp/bp3d/">BodyParts3D Online database</a> and <a href="https://dbarchive.biosciencedbc.jp/en/bodyparts3d/desc.html">Japan's National Bioscience Database Centre</a></p>
-                        <p>    "BodyParts3D, (c)  The Database Center for Life Science licensed under CC Attribution-Share Alike 2.1 Japan" </p>
-                        <p>Data: <a href="data/example/heart-bp3.0.zip">heart-bp3.0.zip</a> (50MB)</p>
+                        <p>"BodyParts3D, (c)  The Database Center for Life Science licensed under CC Attribution-Share Alike 2.1 Japan"</p>
+                        <!-- <p>Data: <a href="data/example/heart-bp3.0.zip">heart-bp3.0.zip</a> (50MB)</p> -->
                         <p><span class="glyphicon glyphicon-eye-open"></span>
                             <!--<a href="websurfer/index.html?model=data/example/heart-bp3/heart/" target="_blank">VIEW ON WEB</a> (coming soon)</p>-->
                             <a href="viewer/index.html?tag=data/example/mesh-heart" target="_blank">VIEW ON WEB</a></p>
@@ -99,36 +87,64 @@
                     </div>
                     <div class="card-content-center">
                         <p>Data courtesy Frieder Seible</p>
+                        <p>Explore several constructional aspects of the Bay Bridge in San Francisco. This was used for design reviews and construction conflict resolution</p>
                         <p><span class="glyphicon glyphicon-eye-open"></span> 
                            <a href="viewer/index.html?tag=data/example/baybridge" target="_blank">VIEW ON WEB</a>
                         </p>
                     </div>
                 </div>
             </div>
-              </div>
+        </div>
+        
+        <div class="col-xs-12" style="height:20px;"></div>
+        
+        <div class="row">
+            <div class="col-sm-6"> 
+                <div class="card">
+                    <div class="card-image">
+                        <img class="img-responsive" src="img/point-hoyoverde.jpg" alt="Point Hoyo Verde">
+                        <span class="card-title-light">Example 5: Hoyo Verde (100k points) </span>
+                    </div>
+                    <div class="card-content-center">
+                        <p>Data courtesy tba</p>
+                        <p><span class="glyphicon glyphicon-eye-open"></span> 
+                           <a href="data/example/hoyoverde/potree.html" target="_blank">VIEW ON WEB</a>
+                        </p>
+                  </div>
+                </div>
+            </div>
+            <div class="col-sm-6"> 
+                <div class="card">
+                    <div class="card-image">
+                        <img class="img-responsive" src="img/point-hoyoverde.jpg" alt="Point Hoyo Verde">
+                        <span class="card-title-light">Example 5: Hoyo Verde (100k points) </span>
+                    </div>
+                    <div class="card-content-center">
+                        <p>Data courtesy tba</p>
+                        <p><span class="glyphicon glyphicon-eye-open"></span> 
+                           <a href="data/example/hoyoverde/potree.html" target="_blank">VIEW ON WEB</a>
+                        </p>
+                  </div>
+                </div>
+            </div>
+        </div>
               
         <div class="col-xs-12" style="height:30px;"></div>
               
         <div class="row">
             <div class="col-sm-6"> 
-                <h3><a href="local.html">Upload volumes or meshes</a></h3>
-                <p>You can upload volumetric data or meshes from your computer and view it in your browser with WebGL, or on location in the CAVE2</p>
+                <h3><a href="local.html">Upload data</a></h3>
+                <p>You can upload volumetric data, meshes or pointclouds from your computer and view it in your browser with WebGL, or on location in the CAVE2</p>
             </div>
             <div class="col-sm-6">
-                <h3><a href="tag.html">Review your volumes or meshes</a></h3>
-                <p>You can check and review volumes and meshes with a tag number. If you want to view the volumes or meshes on the CAVE2, please write down the tag and bring it with you</p>
+                <h3><a href="tag.html">Review your data</a></h3>
+                <p>You can check and review volumes, meshes or pointclouds with a tag number. If you want to view the volumes, meshes or pointclouds on the CAVE2, please write down the tag and bring it with you</p>
             </div>
-            <!--<div class="col-sm-6">
-                <h3><a href="daris.html">Using DaRIS (volumes only)</a></h3>
-                <p>Select datasets from DaRIS. You can view each dataset
-                directly with WebGL or view all on the CAVE2</p>
-            </div>-->
         </div>
         <div class="row">
-            
             <div class="col-sm-6">
                 <h3>Change and save display settings</h3>
-                <p>You can save your preferred display settings by clicking the "save" button on the web viewer</p>
+                <p>You can save your preferred display settings by clicking the "save" button on the volume or mesh web viewer</p>
             </div>
         </div>
     </div>

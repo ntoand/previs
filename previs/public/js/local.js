@@ -79,12 +79,38 @@ $('#tiffstack_help').on('click', function(event) {
 function uploadFileToProcess(files) {
     
     if (files.length > 0){
-        file = files[0];
+        var file = files[0];
         console.log(file);
         document.getElementById("upload_filename").innerHTML = "File selected: " + file.name + ' (size: ' + file.size + ')';
         var formData = new FormData();
         formData.append('uploads', file, file.name);
         console.log(formData);
+        
+        var fileext = file.name.split('.').pop().toLowerCase();
+        var selectedType = $("input:radio[name=optradio]:checked").val();
+        console.log(fileext);
+        console.log(selectedType);
+        
+        if(selectedType === 'volume' || selectedType === 'mesh') {
+            if (fileext !== 'zip') {
+                BootstrapDialog.show({
+                    title: 'This is not a zip file!',
+                    message: 'Please check file format',
+                    type: BootstrapDialog.TYPE_DANGER
+                });
+                return;
+            }
+        }
+        else {
+            if (fileext !== 'las' && fileext !== 'laz' && fileext !== 'ptx' && fileext !== 'ply' && fileext !== 'zip' ) {
+                BootstrapDialog.show({
+                    title: 'Support las, laz, ptx, ply or zip!',
+                    message: 'Please check file format',
+                    type: BootstrapDialog.TYPE_DANGER
+                });
+                return;
+            }
+        }
         
         $.ajax({
             url: '/localupload',
@@ -107,8 +133,9 @@ function uploadFileToProcess(files) {
                 lmessage.style.color = 'blue';
                 lmessage.innerHTML = "Uploaded successfully! Now working... " + data.file;
                 process_img = document.getElementById("process_img");
-                process_img.style.visibility = 'visible';  
-                socket.emit('processOBJuploadfile', {task: "process", file: data.file});
+                process_img.style.visibility = 'visible';
+                
+                socket.emit('processuploadfile', {task: "process", file: data.file, type: selectedType});
             },
             xhr: function() {
                 // create an XMLHttpRequest
@@ -140,6 +167,27 @@ function uploadFileToProcess(files) {
     }
 }
 
+// radio buttons
+
+function handleRatioClick(myRadio) {
+    
+    var value = myRadio.value;
+    if (value == "volume") {
+        $('#volume-info').show();
+        $('#mesh-info').hide();
+        $('#point-info').hide();
+    }
+    else if (value == "mesh") {
+        $('#volume-info').hide();
+        $('#mesh-info').show();
+        $('#point-info').hide();
+    }
+    else if (value == "point") {
+        $('#volume-info').hide();
+        $('#mesh-info').hide();
+        $('#point-info').show();
+    }
+}
 
 // =========================================================================================
 // drag drop files
@@ -278,6 +326,53 @@ socket.on('processOBJuploadfile', function (data) {
             //window.open('websurfer/index.html?model=' + model.slice(pos1,pos2) + '', target="_blank");
             //window.open('viewer/index.html?tag=' + model.slice(pos1,pos2) + '', target="_blank");
             window.open('viewer/index.html?tag=' + model.slice(pos1, pos2) + '', target="_blank");
+        };
+        local_upload_result_container.appendChild(view_button);
+        
+    }
+    else if (data.status === 'error') {
+        lmessage.style.color = 'red';
+        lmessage.innerHTML = "Error: " + data.result;
+        process_img.style.visibility = 'hidden';
+        BootstrapDialog.show({
+            title: 'Error',
+            message: data.detail,
+            type: BootstrapDialog.TYPE_DANGER
+        });
+    }
+});
+
+
+socket.on('processuploadfile_point', function (data) {
+    console.log("socket/processuploadfile_point");
+    var lmessage = document.getElementById("message_label");
+    var process_img = document.getElementById("process_img");
+    console.log(data);
+    if(data.status === 'working') {   
+        process_img.style.visibility = 'visible';                      
+        lmessage.style.color = 'blue';
+        lmessage.innerHTML = "Working... " + data.result;
+    }
+    else if (data.status === 'done') {
+        process_img.style.visibility = 'hidden';
+        lmessage.style.color = 'blue';
+        lmessage.innerHTML = '';
+        $("#local_upload_message").hide();
+        
+        var local_upload_result_container = document.getElementById("local_upload_result_container");
+        local_upload_result_container.innerHTML = "";
+        
+        var tag_label = document.createElement("label");
+        tag_label.setAttribute("class", "result_label");
+        tag_label.innerHTML = '<h4>Tag: <b><font color="red">' + data.tag + '</font></b> Please write down for later use</h4>';
+        local_upload_result_container.appendChild(tag_label);
+        
+        var view_button = document.createElement("button");
+        view_button.setAttribute("class", "view_button");
+        view_button.setAttribute("id", 'potree_'+data.tag);
+        view_button.innerHTML = 'View';
+        view_button.onclick = function () {
+            window.open(data.potree_url);
         };
         local_upload_result_container.appendChild(view_button);
         
