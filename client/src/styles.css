@@ -1,0 +1,100 @@
+/* You can add global styles to this file, and also import other style files */
+@import "~@angular/material/prebuilt-themes/indigo-pink.css";
+
+.clearfix:after {
+    content: ".";
+    display: block;
+    clear: both;
+    visibility: hidden;
+    line-height: 0;
+    height: 0;
+}
+
+.clearfix {
+    display: inline-block;
+}
+
+p {
+	font-family: Arimo, Helvetica, sans-serif;
+}
+
+a:link {
+  text-decoration: none;
+}
+
+h2 {
+  color: #777;
+}
+
+h3 {
+  color: #999;
+}
+
+body {
+  padding: 0 0;
+  margin: 0 0;
+}
+
+.with-min-height {
+  min-height: 400px;
+}
+
+.container {
+  padding-right: 15px;
+  padding-left: 15px;
+  margin-right: auto;
+  margin-left: auto;
+}
+@media (min-width: 768px) {
+  .container {
+    width: 750px;
+  }
+}
+@media (min-width: 992px) {
+  .container {
+    width: 970px;
+  }
+}
+@media (min-width: 1200px) {
+  .container {
+    width: 1170px;
+  }
+}
+
+.hide {
+  display: none;
+}
+
+
+.alert-box {
+    color:#555;
+    border-radius:10px;
+    font-family:Tahoma,Geneva,Arial,sans-serif;font-size:13px;
+    padding: 10px 10px 10px 36px;
+    margin:10px;
+}
+.alert-box span {
+    font-weight:bold;
+    text-transform:uppercase;
+}
+
+.error {
+    background:#ffecec url('assets/img/error.png') no-repeat 10px 50%;
+    border:1px solid #f5aca6;
+}
+.success {
+    background:#e9ffd9 url('assets/img/success.png') no-repeat 10px 50%;
+    border:1px solid #a6ca8a;
+}
+.warning {
+    background:#fff8c4 url('assets/img/warning.png') no-repeat 10px 50%;
+    border:1px solid #f2c779;
+}
+.notice {
+    background:#e3f7fc url('assets/img/notice.png') no-repeat 10px 50%;
+    border:1px solid #8ed9f6;
+}
+.working {
+    background:#e3f7fc url('assets/img/notice.png') no-repeat 10px 50%;
+    border:1px solid #8ed9f6;
+}

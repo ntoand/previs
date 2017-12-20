@@ -1,0 +1,12 @@
+footer {
+	margin: 20px 0;
+	padding-top: 20px;
+    padding-bottom: 30px;
+    background-color: #f8f8f8;
+}
+
+p.copyright {
+    font-size: 12px;
+    margin: 15px 0 0;
+    color: #333;
+}

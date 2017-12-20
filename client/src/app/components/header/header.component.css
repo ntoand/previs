@@ -1,0 +1,35 @@
+.toolbar {
+  background-color: #eee;
+}
+
+.menu-item {
+  color: #aaa;
+}
+
+.menu-item-active {
+  color: #fff;
+}
+
+.header-title {
+  padding-right: 10px;
+  color: #777;
+}
+
+.header-icon {
+  padding-bottom: 4px;
+  padding-right: 4px;
+}
+
+.header-spacer {
+  flex: 1 1 auto;
+}
+
+.header-right {
+  float: right;
+  display: none
+}
+@media (min-width: 768px) {
+  .header-right {
+    display: inline-block;
+  }
+}

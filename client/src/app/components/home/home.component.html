@@ -1,0 +1,131 @@
+<div class="top-section">
+    <mat-card class="gray">
+        <div class="sub-section">
+            <h2>A WebGL volume, mesh and pointcloud renderer and gateway to the Monash CAVE2</h2>
+            <p class="gray-text">This is a service provided by MIVP to Monash University staff and affiliates. 
+            It provides a way to upload volumetric data, meshes or pointclouds, visualise the data and change display settings on a web page, 
+            and then allows people to visualise the volumes, meshes and pointclouds in the CAVE2.</p>
+        </div>
+        
+        <div class="sub-section">
+            <div fxLayout="row" fxLayout.xs="column" fxLayout.sm="column" fxFlex>
+              <div fxFlex class="column gray-text">
+                  <h3><a routerLink="/upload">Upload data</a></h3>
+                  <p>You can upload volumetric data, meshes or pointclouds from your computer or a shared link and view it in your browser with WebGL, 
+                      or on location in the CAVE2</p>
+              </div>
+              <div fxFlex class="column gray-text">
+                  <h3><a routerLink="/review">Review data</a></h3>
+                  <p>You can check and review volumes, meshes or pointclouds with a tag number. If you want to view the volumes, 
+                  meshes or pointclouds on the CAVE2, please write down the tag and bring it with you</p>
+              </div>
+          </div>
+      </div>
+    </mat-card>
+</div>
+
+<div class="section">
+    <div fxLayout="row" fxLayout.xs="column" fxLayout.sm="column" fxFlex class="section">
+        <div fxFlex class="column">
+            <mat-card class="example-card">
+              <mat-card-header>
+                <mat-card-title>EXAMPLE 1: NGC 3621 GALAXY</mat-card-title>
+              </mat-card-header>
+              <img mat-card-image src="assets/img/vol-galaxy.jpg" alt="NGC 3621 galaxy">
+              <mat-card-content>
+                <p>
+                  NGC 3621 galaxy (<a href="http://www.mpia.de/THINGS/Data.html" target="_blank">http://www.mpia.de/THINGS/Data.html</a>)
+                </p>
+              </mat-card-content>
+              <mat-card-actions>
+                <a href={{examples.url1}} target="_blank"><button mat-button color="primary">VIEW ON WEB</button></a>
+              </mat-card-actions>
+            </mat-card>
+        </div>
+        <div fxFlex class="column">
+            <mat-card class="example-card">
+              <mat-card-header>
+                <mat-card-title>EXAMPLE 2: ARTERIES IN THE BRAIN</mat-card-title>
+              </mat-card-header>
+              <img mat-card-image src="assets/img/vol-brain.png" alt="Arteries in the brain">
+              <mat-card-content>
+                <p>
+                  Data courtesy David G Barnes & Parnesh Raniga
+                </p>
+              </mat-card-content>
+              <mat-card-actions>
+                <a href={{examples.url2}} target="_blank"><button mat-button color="primary">VIEW ON WEB</button></a>
+              </mat-card-actions>
+            </mat-card>
+        </div>
+    </div>
+</div>
+
+<div class="section">
+    <div fxLayout="row" fxLayout.xs="column" fxLayout.sm="column" fxFlex class="section">
+        <div fxFlex class="column">
+            <mat-card class="example-card">
+              <mat-card-header>
+                <mat-card-title>EXAMPLE 3: HEART V5.0</mat-card-title>
+              </mat-card-header>
+              <img mat-card-image src="assets/img/mesh-heart.png" alt="Mesh heart">
+              <mat-card-content>
+                <p> <a href="http://lifesciencedb.jp/bp3d/">BodyParts3D Online database</a> and <a href="https://dbarchive.biosciencedbc.jp/en/bodyparts3d/desc.html">Japan's National Bioscience Database Centre</a></p>
+                <p>"BodyParts3D, (c)  The Database Center for Life Science licensed under CC Attribution-Share Alike 2.1 Japan"</p>
+              </mat-card-content>
+              <mat-card-actions>
+                <a href={{examples.url3}} target="_blank"><button mat-button color="primary">VIEW ON WEB</button></a>
+              </mat-card-actions>
+            </mat-card>
+        </div>
+        <div fxFlex class="column">
+            <mat-card class="example-card">
+              <mat-card-header>
+                <mat-card-title>EXAMPLE 4: BAY BRIDGE</mat-card-title>
+              </mat-card-header>
+              <img mat-card-image src="assets/img/mesh-baybridge.jpg" alt="baybridge">
+              <mat-card-content>
+                <p>Data courtesy Frieder Seible</p>
+                <p>Explore several constructional aspects of the Bay Bridge in San Francisco. 
+                This was used for design reviews and construction conflict resolution</p>
+              </mat-card-content>
+              <mat-card-actions>
+                <a href={{examples.url4}} target="_blank"><button mat-button color="primary">VIEW ON WEB</button></a>
+              </mat-card-actions>
+            </mat-card>
+        </div>
+    </div>
+</div>
+
+<div class="section">
+    <div fxLayout="row" fxLayout.xs="column" fxLayout.sm="column" fxFlex class="section">
+        <div fxFlex class="column">
+            <mat-card class="example-card">
+              <mat-card-header>
+                <mat-card-title>EXAMPLE 5: HOYO VERDE</mat-card-title>
+              </mat-card-header>
+              <img mat-card-image src="assets/img/point-hoyoverde.jpg" alt="Hoyo-Verde">
+              <mat-card-content>
+                <p>Data courtesy tba</p>
+              </mat-card-content>
+              <mat-card-actions>
+                <a href={{examples.url5}} target="_blank"><button mat-button color="primary">VIEW ON WEB</button></a>
+              </mat-card-actions>
+            </mat-card>
+        </div>
+        <div fxFlex class="column">
+            <mat-card class="example-card">
+              <mat-card-header>
+                <mat-card-title>EXAMPLE 5: HOYO VERDE</mat-card-title>
+              </mat-card-header>
+              <img mat-card-image src="assets/img/point-hoyoverde.jpg" alt="Hoyo-Verde">
+              <mat-card-content>
+                <p>Data courtesy tba</p>
+              </mat-card-content>
+              <mat-card-actions>
+                <a href={{examples.url6}} target="_blank"><button mat-button color="primary">VIEW ON WEB</button></a>
+              </mat-card-actions>
+            </mat-card>
+        </div>
+    </div>
+</div>

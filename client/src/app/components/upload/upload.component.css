@@ -1,0 +1,54 @@
+.spacing {
+   padding-top: 20px;
+}
+
+.block {
+    padding: 5px 0px;
+}
+
+.help-block {
+    padding: 10px 0px;
+}
+
+.help-block p {
+    padding: 2px 0px;
+    color: #555;
+    font-size: 14px;
+}
+
+.help-block li {
+    padding: 5px 0px;
+    margin: 0px 10px;
+    color: #777;
+    font-size: 14px;
+}
+
+.type-radio-button {
+    padding-right: 10px;   
+}
+
+.example-code {
+	font-family: Courier New, Courier, monospace;
+	list-style-type: none;
+}
+
+summary {
+    padding-top: 10px;
+    font-size: 15px;
+    color: #555;
+}
+
+summary::-webkit-details-marker {
+  
+}
+summary:focus {
+  outline-style: none;
+}
+
+.progress {
+    padding: 4px 0px;
+    text-align: center;
+    margin: auto;
+    width: 60px;
+}
+  

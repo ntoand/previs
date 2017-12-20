@@ -1,0 +1,12 @@
+<mat-toolbar class="toolbar">
+  <div class="container">
+    <span class="header-title">CAVE2 Portal</span>
+    <span><a mat-button color={{getColor(0)}} routerLink="/" (click)="onMenuClick(0)"><mat-icon class="header-icon">home</mat-icon><b>HOME</b></a></span>
+    <span><a mat-button color={{getColor(1)}} routerLink="/upload" (click)="onMenuClick(1)"><mat-icon class="header-icon">cloud_upload</mat-icon><b>UPLOAD</b></a></span>
+    <span><a mat-button color={{getColor(2)}} routerLink="/review" (click)="onMenuClick(2)"><mat-icon class="header-icon">laptop</mat-icon><b>REVIEW</b></a></span>
+    <!--<span class="header-spacer"></span>-->
+    <!--
+    <span class="header-right"><a mat-button color="primary" href="http://monash.edu/mivp" target="_blank"><mat-icon class="header-icon">open_in_new</mat-icon><b>MIVP</b></a></span>
+    -->
+  </div>
+</mat-toolbar>

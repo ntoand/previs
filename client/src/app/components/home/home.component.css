@@ -1,0 +1,27 @@
+.section {
+    box-sizing: content-box !important;
+    padding-top: 5px;
+}
+
+.top-section {
+    box-sizing: content-box !important;
+    padding-top: 20px;
+    padding-bottom: 10px;
+    padding-right: 5px;
+}
+
+.sub-section {
+    box-sizing: content-box !important;
+}
+
+.column {
+    padding-top: 5px;
+    padding-right: 5px;
+}
+
+.gray {
+    background-color: #f3f3f3;
+}
+.gray-text {
+    color: #555;
+}

@@ -1,0 +1,9 @@
+<div id="drop_zone" (dragover)="onDragOver($event)" (drop)="onDrop($event)">
+    <button mat-raised-button color='primary' (click)="onUploadFileClick($event)">Select or drop local file here (drop may not work in Internet Explorer)</button>
+    <input id="upload-input" type="file" class="uploadfile hide" (change)="fileChange($event)">
+</div>
+<p>File selected: {{selectedFile}}</p>
+<p><mat-progress-bar mode="determinate" value={{uploadPercent}}></mat-progress-bar></p>
+<div class="alert-box error" *ngIf="errMsg !== ''">
+    <span>Error: </span>{{errMsg}}
+</div>

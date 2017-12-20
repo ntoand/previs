@@ -1,9 +1,9 @@
-[submodule "previs/public/sharevol"]
-	path = previs/public/sharevol
+[submodule "server/public/sharevol"]
+	path = server/public/sharevol
 	url = https://github.com/mivp/sharevol.git
-[submodule "previs/potree/LAStools"]
-	path = previs/potree/LAStools
+[submodule "server/potree/LAStools"]
+	path = server/potree/LAStools
 	url = https://github.com/m-schuetz/LAStools.git
-[submodule "previs/potree/PotreeConverter"]
-	path = previs/potree/PotreeConverter
+[submodule "server/potree/PotreeConverter"]
+	path = server/potree/PotreeConverter
 	url = https://github.com/potree/PotreeConverter.git
