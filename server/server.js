@@ -34,6 +34,9 @@ server.listen(process.env.PORT || config.port, process.env.IP || "0.0.0.0", func
   	console.log("previs server listening at", addr.address + ":" + addr.port);
 });
 
+app.get('*', function(req, res) {
+    res.redirect('/');
+});
 
 // ===== REST SERVICES =======
 // ===== LOCAL UPLOAD  =======

@@ -21,5 +21,9 @@ cd ${dir}/server/dist/sharevol
 unlink data
 ln -s ${dir}/server/public/data .
 
+cd ${dir}/server/dist/viewer
+unlink data
+ln -s ${dir}/server/public/data .
+
 cd ${dir}/server
 node server.js

@@ -1,5 +1,5 @@
 <div id="drop_zone" (dragover)="onDragOver($event)" (drop)="onDrop($event)">
-    <button mat-raised-button color='primary' (click)="onUploadFileClick($event)">Select or drop local file here (drop may not work in Internet Explorer)</button>
+    <button mat-raised-button color='primary' (click)="onUploadFileClick($event)">Select or drop file (drop may not work in IE)</button>
     <input id="upload-input" type="file" class="uploadfile hide" (change)="fileChange($event)">
 </div>
 <p>File selected: {{selectedFile}}</p>
