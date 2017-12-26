@@ -8,7 +8,7 @@ Xvfb -screen 0 640x480x24 :100 &
 dir=`pwd`
 
 cd ${dir}/client
-ng build
+npm run build
 
 rm -rf ${dir}/server/dist
 mv ${dir}/server/dist-dev ${dir}/server/dist
