@@ -16,6 +16,7 @@ cd ${dir}/server/dist
 ln -s ${dir}/server/public/data .
 ln -s ${dir}/server/public/sharevol .
 ln -s ${dir}/server/public/viewer .
+ln -s ${dir}/server/public/admin .
 
 cd ${dir}/server/dist/sharevol
 unlink data

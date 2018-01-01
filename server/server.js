@@ -111,13 +111,17 @@ io.on('connection', function (socket) {
   		else if (msg.action === 'processupload') {
   			myupload.processUpload(io, msg.data);
   		}
-  		else if (msg.action === 'admingettags') {
-  			myadmin.getTags(io, msg.data);
-  		}
-  		else if (msg.action === 'admindeletetags') {
-  			myadmin.deleteTags(io, msg.data);
-  		}
   	});
+  	
+  	// admin
+  	socket.on('admingettags', function(data) {
+		console.log(data);
+		myadmin.getTags(io, data);
+	});
+	socket.on('admindeletetags', function(data) {
+		console.log(data);
+		myadmin.deleteTags(io, data);
+	});
 
     // sharevol
 	socket.on('savedatajson', function(data) {

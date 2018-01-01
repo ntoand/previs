@@ -21,9 +21,7 @@ function getTags(io, data) {
             
             var row = rows[i];
             var tag = row.tag;
-            var jsonfile = config.info_dir + tag + '.json';
-            console.log(jsonfile);
-            
+    
             var t = {};
             t.tag = tag;
             t.type = row.type;
@@ -34,7 +32,7 @@ function getTags(io, data) {
             t.data = row.data;
             tags.push(t);
         }
-        console.log(tags);
+        //console.log(tags);
         io.emit('admingettags', {status: 'done', result: tags});
     });
 }
@@ -59,22 +57,9 @@ function deleteTags(io, data) {
     for (var i=0, l=data.length; i < l; i++) {
         var tag =  data[i].tag;
         console.log(tag);
-        if(data[i].source === 'localupload') {
-            //delete data
-            var basename = path.parse(data[i].data).name;
-            var result_dir = config.local_data_dir + basename + '_result';
-	        var upload_file = config.local_data_dir + data[i].data;
-	        console.log(result_dir);
-	        console.log(upload_file);
-	        deleteFolderRecursive(result_dir);
-	        if (fs.existsSync(upload_file)) {
-                fs.unlinkSync(upload_file);
-            }
-            var processed_file = config.local_data_dir + basename + '_processed.zip';
-            if (fs.existsSync(processed_file)) {
-                fs.unlinkSync(processed_file);
-            }
-        }
+        var tag_dir = config.tags_data_dir + tag;
+        console.log('delete ' + tag_dir);
+        deleteFolderRecursive(tag_dir);
         
         //delete tag in database
         dbmanager.deleteTag(tag, function(err) {
