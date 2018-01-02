@@ -22,13 +22,81 @@ function processUpload(io, data) {
 		processUploadFile(io, data);
 	}
 	else if (uploadtype === 'link') {
-		// download file and then process
+		processUploadLink(io, data);
 	}
 	else {
 		console.log ('Invalid upload type');
 		myutils.packAndSend(io, 'processupload', {status: 'error', result: 'Invalid upload type'});
 		return;
 	}
+}
+
+function extractGoogleId(url) {
+	var id = '';
+	
+	// first try with full link e.g. https://drive.google.com/file/d/17cgCGpOo-91kSkMe9limNZtKIV7LtIaq/view?usp=sharing
+	var strs = url.split('/');
+	for(var i=0; i < strs.length-1; i++) {
+		if (strs[i] === 'd') {
+			id = strs[i+1];
+			break;
+		}
+	}
+	if (id === '' || id.length < 25) {
+		//retry with short link e.g. https://drive.google.com/open?id=17cgCGpOo-91kSkMe9limNZtKIV7LtIaq
+		strs = url.split('=');
+		console.log(strs);
+		for (var i=0; i < strs.length-1; i++) {
+			if (strs[i].indexOf('?id') !== -1) {
+				id = strs[i+1];
+				break;
+			}
+		}
+	}
+	
+	return id;
+}
+
+function processUploadLink(io, data) {
+	var url = data.url;
+	
+	var id = '';
+	var service = '';
+	
+	if (url.indexOf("google") !== -1) {
+		id = extractGoogleId(url);
+		service = "google";
+	}
+	
+	if (id === '' || id.length < 25) {
+		myutils.packAndSend(io, 'processupload', {status: 'error', result: 'Fail to extract id'});
+		return;
+	}
+	
+	var destfile = config.tags_data_dir + id + '.' + data.ext;
+	var cmd = 'cd ' + config.scripts_dir + ' && python downloadlink.py ' + service + ' ' + id + ' ' + destfile;
+	console.log(cmd);
+	myutils.packAndSend(io, 'processupload', {status: 'working', result: 'Downloading file from shared link...'})
+	exec(cmd, function(err, stdout, stderr) 
+    {
+    	console.log(stdout);
+    	console.log(stderr);
+    	if(err)
+		{
+			myutils.packAndSend(io, 'processupload', {status: 'error', result: 'cannot download file from shared link', detail: stderr});
+			return;
+		}
+		//check file exist
+		if(myutils.fileExists(destfile) === false) {
+			myutils.packAndSend(io, 'processupload', {status: 'error', result: 'cannot download file from shared link', detail: stderr});
+			return;
+		}
+		
+		myutils.packAndSend(io, 'processupload', {status: 'working', result: 'Processing downloaded file...'});
+		data.file = id + '.' + data.ext;
+		processUploadFile(io, data);
+    });
+	
 }
 
 function processUploadFile(io, data) {

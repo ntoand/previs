@@ -1,3 +1,26 @@
-<p>
-  Coming soon...
-</p>
+<div>
+  <p>Copy/paste a Google Drive shared link. <b>Please make sure that anyone can access data with the link.</b></p>
+  <form class="file-form">
+    <mat-form-field class="full-width">
+      <input matInput placeholder="shared link" [(ngModel)]="urlStr" name="urlStr">
+    </mat-form-field>
+    <mat-form-field *ngIf="dataType === 'point'">
+      <mat-select [(value)]="extStr">
+        <mat-option value="zip">file ext .zip</mat-option>
+        <mat-option value="las">file ext .las</mat-option>
+        <mat-option value="laz">file ext .laz</mat-option>
+        <mat-option value="ptx">file ext .ptx</mat-option>
+        <mat-option value="ply">file ext .ply</mat-option>
+      </mat-select>
+    </mat-form-field>
+    
+    <div class="alert-box error" *ngIf="errMsg !== ''">
+      <span>Error: </span>{{errMsg}}
+    </div>
+    
+    <div>
+      <button mat-raised-button color="primary" (click)="onGoClick($event)" type="submit">Go</button>
+    </div>
+    
+  </form>
+</div>

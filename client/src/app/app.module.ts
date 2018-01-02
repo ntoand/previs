@@ -15,7 +15,7 @@ import { FooterComponent } from './components/footer/footer.component';
 import { FlexLayoutModule } from "@angular/flex-layout";
 
 import { MatToolbarModule, MatButtonModule, MatIconModule, MatInputModule, 
-         MatCardModule, MatRadioModule, MatProgressBarModule, MatProgressSpinnerModule } from '@angular/material';
+         MatCardModule, MatRadioModule, MatProgressBarModule, MatProgressSpinnerModule, MatSelectModule } from '@angular/material';
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 import { AppService } from './services/app.service';
 import { WebsocketService } from './services/websocket.service';
@@ -45,7 +45,8 @@ import { WebsocketService } from './services/websocket.service';
     MatCardModule,
     MatRadioModule,
     MatProgressBarModule,
-    MatProgressSpinnerModule
+    MatProgressSpinnerModule,
+    MatSelectModule
   ],
   providers: [AppService, WebsocketService],
   bootstrap: [AppComponent]
