@@ -1,7 +1,7 @@
 import { Component, OnInit, Input, ElementRef, Renderer2 } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpResponse, HttpRequest, HttpEvent, HttpEventType } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
-import { AppService } from '../../services/app.service';
+import { AppService } from '../../core/app.service';
 
 @Component({
   selector: 'app-uploadfile',

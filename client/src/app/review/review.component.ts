@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
-import { AppService } from '../../services/app.service';
-import { Dataset } from '../../models/dataset';
+import { AppService } from '../core/app.service';
+import { Dataset } from '../shared/dataset.model';
 
 
 @Component({

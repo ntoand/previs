@@ -1,5 +1,5 @@
 import { Component, OnInit, Input } from '@angular/core';
-import { AppService } from '../../services/app.service';
+import { AppService } from '../../core/app.service';
 
 @Component({
   selector: 'app-uploadlink',

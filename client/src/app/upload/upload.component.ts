@@ -1,8 +1,8 @@
 import { Component, OnInit } from '@angular/core';
-import { AppService } from '../../services/app.service';
-import { UploadfileComponent } from '../uploadfile/uploadfile.component';
-import { UploadlinkComponent } from '../uploadlink/uploadlink.component';
-import { Dataset } from '../../models/dataset';
+import { AppService } from '../core/app.service';
+import { UploadfileComponent } from './uploadfile/uploadfile.component';
+import { UploadlinkComponent } from './uploadlink/uploadlink.component';
+import { Dataset } from '../shared/dataset.model';
 
 @Component({
   selector: 'app-upload',
