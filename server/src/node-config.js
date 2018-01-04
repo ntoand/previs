@@ -1,7 +1,7 @@
 var path = require('path');
 
 var config = {
-  port: 3000,
+  port: 9000,
   cave2_port: 3003,
   public_dir: 'dist',
   scripts_dir: './src',

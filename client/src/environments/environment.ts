@@ -5,5 +5,5 @@
 
 export const environment = {
   production: false,
-  ws_url: 'http://mivp-dws1.erc.monash.edu:3000'
+  ws_url: 'https://mivp-dws1.erc.monash.edu:3000'
 };

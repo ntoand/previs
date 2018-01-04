@@ -30,7 +30,7 @@ $("#admin_btnLogin").click(function(event){
     var password_str=$("#admin_password").val();
 
     $.ajax({
-        url: "http://mivp-dws1.erc.monash.edu:3000/rest/adminlogin",
+        url: "https://mivp-dws1.erc.monash.edu:3000/rest/adminlogin",
         dataType: "json",
         method: "POST",
         data: { user: user_str, password: password_str },

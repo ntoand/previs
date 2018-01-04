@@ -29,7 +29,8 @@ app.use(express.static(path.resolve(__dirname, config.public_dir)));
 app.use(bodyParser.json()); // support json encoded bodies
 app.use(bodyParser.urlencoded({ extended: true })); // support encoded bodies
 
-server.listen(process.env.PORT || config.port, process.env.IP || "0.0.0.0", function(){
+//server.listen(process.env.PORT || config.port, process.env.IP || "0.0.0.0", function(){
+server.listen(process.env.PORT || config.port, process.env.IP || "127.0.0.1", function(){
 	var addr = server.address();
   	console.log("previs server listening at", addr.address + ":" + addr.port);
 });
