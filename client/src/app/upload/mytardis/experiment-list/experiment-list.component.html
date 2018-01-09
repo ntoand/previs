@@ -1,0 +1,28 @@
+<h3>{{totalItems}} experiment in total</h3>
+
+<div class="alert-box error" *ngIf="errMsg !== ''">
+    <span>Error: </span>{{errMsg}}
+</div>
+
+<div *ngIf='!experiments'>
+    <mat-spinner diameter=50></mat-spinner>
+</div>
+  
+<div *ngFor="let item of experiments" class="spacing-bottom">
+    <mat-card>
+        <mat-card-header>
+            <mat-card-title><a [routerLink]="['/upload/', { outlets: { auxMytardis: ['experiment',item.id]}}]"><b>{{item.id}}: {{item.title}}</b></a></mat-card-title>
+            <mat-card-subtitle>Created time: {{item.created_time}}</mat-card-subtitle>
+        </mat-card-header>
+    
+        <mat-card-content>
+            {{(item.description.length>256)? (item.description | slice:0:256)+'...':(item.description)}}
+        </mat-card-content>
+    </mat-card>
+</div>
+
+<div *ngIf='experiments'>
+    <span class="spacing-right">Page {{pageIdx}}/{{numPages}}</span>
+    <span class='spacing-right'><button *ngIf="prevStr" (click)="onPrevClick($event)">Previous page</button></span>
+    <span class='spacing-right'><button *ngIf="nextStr" (click)="onNextClick($event)">Next page</button></span>
+</div>

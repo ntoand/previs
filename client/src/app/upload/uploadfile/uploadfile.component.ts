@@ -119,6 +119,11 @@ export class UploadfileComponent implements OnInit {
           }
           this.renderer.selectRootElement('.uploadfile').value = '';
           this.appService.sendMsg({action: 'processupload', data: {task: "process", file: result.file, datatype: this.dataType, uploadtype: 'local'} });
+          
+          let x = document.querySelector("#processing_anchor");
+          if (x){
+              x.scrollIntoView();
+          }
       }
     });
     

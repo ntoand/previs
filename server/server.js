@@ -17,6 +17,7 @@ var config 		  = require('./src/node-config').config;
 var myadmin 	  = require('./src/node-admin');
 var myupload	  = require('./src/node-upload');
 var preview 	  = require('./src/node-preview');
+var mytardis	  = require('./src/node-mytardis');
 
 
 // ===== INITIALISATION ======
@@ -111,6 +112,9 @@ io.on('connection', function (socket) {
   		}
   		else if (msg.action === 'processupload') {
   			myupload.processUpload(io, msg.data);
+  		}
+  		else if (msg.action === 'processmytardis') {
+  			mytardis.processMytardis(io, msg.data);
   		}
   	});
   	

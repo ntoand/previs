@@ -19,6 +19,10 @@ import { MatToolbarModule, MatButtonModule, MatIconModule, MatInputModule,
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 import { AppService } from './core/app.service';
 import { WebsocketService } from './core/websocket.service';
+import { MytardisComponent } from './upload/mytardis/mytardis.component';
+import { ExperimentListComponent } from './upload/mytardis/experiment-list/experiment-list.component';
+import { ExperimentDetailComponent } from './upload/mytardis/experiment-detail/experiment-detail.component';
+import { DatasetDetailComponent } from './upload/mytardis/dataset-detail/dataset-detail.component';
 
 @NgModule({
   declarations: [
@@ -29,7 +33,11 @@ import { WebsocketService } from './core/websocket.service';
     UploadComponent,
     UploadfileComponent,
     UploadlinkComponent,
-    ReviewComponent
+    ReviewComponent,
+    MytardisComponent,
+    ExperimentListComponent,
+    ExperimentDetailComponent,
+    DatasetDetailComponent
   ],
   imports: [
     BrowserModule,

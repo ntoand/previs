@@ -24,37 +24,14 @@ function processUpload(io, data) {
 	else if (uploadtype === 'link') {
 		processUploadLink(io, data);
 	}
+	else if (uploadtype === 'mytardis') {
+		processUploadMytardis(io, data);
+	}
 	else {
 		console.log ('Invalid upload type');
 		myutils.packAndSend(io, 'processupload', {status: 'error', result: 'Invalid upload type'});
 		return;
 	}
-}
-
-function extractGoogleId(url) {
-	var id = '';
-	
-	// first try with full link e.g. https://drive.google.com/file/d/17cgCGpOo-91kSkMe9limNZtKIV7LtIaq/view?usp=sharing
-	var strs = url.split('/');
-	for(var i=0; i < strs.length-1; i++) {
-		if (strs[i] === 'd') {
-			id = strs[i+1];
-			break;
-		}
-	}
-	if (id === '' || id.length < 25) {
-		//retry with short link e.g. https://drive.google.com/open?id=17cgCGpOo-91kSkMe9limNZtKIV7LtIaq
-		strs = url.split('=');
-		console.log(strs);
-		for (var i=0; i < strs.length-1; i++) {
-			if (strs[i].indexOf('?id') !== -1) {
-				id = strs[i+1];
-				break;
-			}
-		}
-	}
-	
-	return id;
 }
 
 function processUploadLink(io, data) {
@@ -64,7 +41,7 @@ function processUploadLink(io, data) {
 	var service = '';
 	
 	if (url.indexOf("google") !== -1) {
-		id = extractGoogleId(url);
+		id = myutils.extractGoogleId(url);
 		service = "google";
 	}
 	
@@ -96,7 +73,37 @@ function processUploadLink(io, data) {
 		data.file = id + '.' + data.ext;
 		processUploadFile(io, data);
     });
+}
+
+function processUploadMytardis(io, data) {
+
+	var host = data.auth.host;
+	var apikey = data.auth.apiKey;
+	var fileid = data.fileid;
+	var filename = data.filename;
+	var destfile =  config.tags_data_dir + fileid + '_' + filename;
 	
+	// download file
+	var url = 'https://' + host + '/api/v1/dataset_file/' + fileid + '/download/';
+	console.log(url);
+	myutils.packAndSend(io, 'processupload', {status: 'working', result: 'Downloading file from mytardis...'})
+	myutils.downloadFileHttps(url, apikey, destfile, function(err) {
+		if(err) {
+			console.log(err);
+			myutils.packAndSend(io, 'processupload', {status: 'error', result: 'Fail to download file ' + fileid});
+			return;
+		}
+
+	   //check file exist
+		if(myutils.fileExists(destfile) === false) {
+			myutils.packAndSend(io, 'processupload', {status: 'error', result: 'cannot download file from mytardis'});
+			return;
+		}
+		
+		myutils.packAndSend(io, 'processupload', {status: 'working', result: 'Processing downloaded file...'});
+		data.file = fileid + '_' + filename;
+		processUploadFile(io, data);
+	});
 }
 
 function processUploadFile(io, data) {

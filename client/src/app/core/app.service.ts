@@ -5,6 +5,7 @@ import { Observable, Subject } from 'rxjs/Rx';
 @Injectable()
 export class AppService {
   
+  // ===== Websocket ====
   messages: Subject<any>;
 
   constructor(private wsService: WebsocketService) {
@@ -13,6 +14,8 @@ export class AppService {
       .map((response: any): any => {
         return response;
       })
+      
+    this.locked = false;
   }
   
   sendMsg(msg) {
@@ -30,8 +33,13 @@ export class AppService {
     this.menuidx = id;
   }
   
-  // ===== REVIEW ====
-  private review_data;
-  
+  // ===== OTHERS =====
+  private locked; // to check if dataset is being processed
+  isLocked() {
+    return this.locked;
+  }
+  setLock(locked) {
+    this.locked = locked;
+  }
 
 }

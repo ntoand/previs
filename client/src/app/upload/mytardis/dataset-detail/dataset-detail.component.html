@@ -1,0 +1,36 @@
+<button (click)="onBackClick($event)">Back to datasets</button>
+
+<div *ngIf="!dataset">
+  <mat-spinner diameter=50></mat-spinner>
+</div>
+<div *ngIf='dataset'>
+    <h3>Dataset {{dataset.id}}</h3>
+    <p>Description: {{dataset.description}}</p>
+</div>
+
+<div class="alert-box error" *ngIf="errMsg !== ''">
+    <span>Error: </span>{{errMsg}}
+</div>
+  
+<h3>{{totalItems}} datafiles in total</h3>
+
+<div *ngIf="!datafiles">
+  <mat-spinner diameter=50></mat-spinner>
+</div>
+<ul class="list-view">
+  <li *ngFor="let item of datafiles">
+    <button (click)="onDetailClick($event, item.id)"><b>Detail</b></button> 
+    <button (click)="onRunClick($event, item.id, item.filename)"><b>Run</b></button> {{item.id}}: {{item.filename}}
+    <span *ngIf="detailId === item.id"><b>{{detailStr}}</b></span>
+  </li>
+</ul>
+
+<div *ngIf='datafiles'>
+    <span class="spacing-right">Page {{pageIdx}}/{{numPages}}</span>
+    <span class='spacing-right'><button *ngIf="prevStr" (click)="onPrevClick($event)">Previous page</button></span>
+    <span class='spacing-right'><button *ngIf="nextStr" (click)="onNextClick($event)">Next page</button></span>
+</div>
+
+<div class="alert-box error" *ngIf="errMsg !== ''">
+    <span>Error: </span>{{errMsg}}
+</div>

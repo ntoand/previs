@@ -2,6 +2,7 @@
 'use strict';
 
 var fs = require('fs');
+var https = require('https');
 
 function fileExists(filepath){
     try
@@ -56,9 +57,69 @@ function moveFile(oldPath, newPath, callback) {
     }
 }
 
+function extractGoogleId(url) {
+	var id = '';
+	
+	// first try with full link e.g. https://drive.google.com/file/d/17cgCGpOo-91kSkMe9limNZtKIV7LtIaq/view?usp=sharing
+	var strs = url.split('/');
+	for(var i=0; i < strs.length-1; i++) {
+		if (strs[i] === 'd') {
+			id = strs[i+1];
+			break;
+		}
+	}
+	if (id === '' || id.length < 25) {
+		//retry with short link e.g. https://drive.google.com/open?id=17cgCGpOo-91kSkMe9limNZtKIV7LtIaq
+		strs = url.split('=');
+		console.log(strs);
+		for (var i=0; i < strs.length-1; i++) {
+			if (strs[i].indexOf('?id') !== -1) {
+				id = strs[i+1];
+				break;
+			}
+		}
+	}
+	
+	return id;
+}
+
+function downloadFileHttps(url, apikey, dest, cb) {
+    
+    var opts = require('url').parse(url);
+    if(typeof apikey !== 'undefined' && apikey !== '') {
+        opts.headers = {
+          'User-Agent': 'javascript',
+          "Content-Type": "application/json",
+          "Accept": "application/json",
+          "Authorization": "ApiKey " + apikey,
+        };
+    } else {
+        opts.headers = {
+          'User-Agent': 'javascript',
+          "Content-Type": "application/json",
+          "Accept": "application/json"
+        };
+    }
+    var file = fs.createWriteStream(dest);
+    var request = https.get(opts, function(response) {
+        console.log(response);
+        if (response.statusCode !== 200) {
+            return cb('Response status was ' + response.statusCode);
+        }
+        response.pipe(file);
+        file.on('finish', function() {
+            file.close(cb);  // close() is async, call cb after close completes.
+        });
+    }).on('error', function(err) { // Handle errors
+        fs.unlink(dest); // Delete the file async. (But we don't check the result)
+        if (cb) cb(err.message);
+    });
+};
 
 module.exports.fileExists = fileExists;
 module.exports.trim = trim;
 module.exports.packAndSend = packAndSend;
 module.exports.createDirSync = createDirSync;
 module.exports.moveFile = moveFile;
+module.exports.extractGoogleId = extractGoogleId;
+module.exports.downloadFileHttps = downloadFileHttps;

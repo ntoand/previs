@@ -1,6 +1,22 @@
 /* You can add global styles to this file, and also import other style files */
 @import "~@angular/material/prebuilt-themes/indigo-pink.css";
 
+.full-width {
+    width: 100%;
+}
+
+.spacing {
+   padding-top: 20px;
+}
+
+.spacing-bottom {
+   padding-bottom: 20px;
+}
+
+.spacing-right {
+  padding-right: 5px;
+}
+
 .clearfix:after {
     content: ".";
     display: block;
@@ -97,4 +113,16 @@ body {
 .working {
     background:#e3f7fc url('assets/img/notice.png') no-repeat 10px 50%;
     border:1px solid #8ed9f6;
+}
+
+button {
+  /*
+    vertical-align: text-bottom;
+    margin-bottom: 2px;
+    padding: 3px 5px;
+    */
+}
+
+button :hover {
+  cursor: pointer;
 }

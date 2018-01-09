@@ -28,6 +28,11 @@ export class UploadlinkComponent implements OnInit {
       return;
     }
     this.appService.sendMsg({action: 'processupload', data: {task: "process", url: this.urlStr, ext: this.extStr, datatype: this.dataType, uploadtype: 'link'} });
+    
+    let x = document.querySelector("#processing_anchor");
+    if (x){
+        x.scrollIntoView();
+    }
   }
 
 }

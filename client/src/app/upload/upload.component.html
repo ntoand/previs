@@ -2,12 +2,11 @@
 
 <mat-card>
   <div class="block">
-      <mat-radio-group class="type-radio-group" [(ngModel)]="dataType">
+      <mat-radio-group class="type-radio-group" [(ngModel)]="dataType" (change)="onChange($event)">
         <mat-radio-button class="type-radio-button" value="volume">Volume</mat-radio-button>
         <mat-radio-button class="type-radio-button" value="mesh">Mesh</mat-radio-button>
         <mat-radio-button class="type-radio-button" value="point">Pointcloud</mat-radio-button>
       </mat-radio-group>
-    
   </div>
   
   <div class="help-block">
@@ -85,6 +84,7 @@
    <mat-radio-group class="upload-radio-group" [(ngModel)]="uploadType">
       <mat-radio-button class="type-radio-button" value="local">Local upload</mat-radio-button>
       <mat-radio-button class="type-radio-button" value="link">Shared link</mat-radio-button>
+      <mat-radio-button class="type-radio-button" value="mytardis">Mytardis</mat-radio-button>
     </mat-radio-group> 
   </div>
   
@@ -95,11 +95,16 @@
   <div class="block" *ngIf="uploadType === 'link'">
     <app-uploadlink [dataType]="dataType"></app-uploadlink>
   </div>
+  
+  <div class="block" *ngIf="uploadType === 'mytardis'">
+    <app-mytardis></app-mytardis>
+  </div>
+  
 </mat-card>
 
 <div class="spacing"></div>
 <mat-card>
-  <div class="block">
+  <div class="block" id="processing_anchor">
     <mat-card-header>
         <mat-card-title>Selected data type: <b>{{dataType}}</b>, upload type: <b>{{uploadType}}</b></mat-card-title>
     </mat-card-header>

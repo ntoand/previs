@@ -3,6 +3,7 @@ import { AppService } from '../core/app.service';
 import { UploadfileComponent } from './uploadfile/uploadfile.component';
 import { UploadlinkComponent } from './uploadlink/uploadlink.component';
 import { Dataset } from '../shared/dataset.model';
+import { MytardisComponent } from './mytardis/mytardis.component';
 
 @Component({
   selector: 'app-upload',
@@ -35,9 +36,16 @@ export class UploadComponent implements OnInit {
           this.message.type = 'success';
           this.message.content = 'Please write down this tag ' + result.tag + ' for later use';
           this.dataset.parseResult(data);
+          this.appService.setLock(false);
         }
       }
     });
+    
+    localStorage.setItem('currentDatatype','volume');
+  }
+  
+  onChange($event) {
+    localStorage.setItem('currentDatatype', $event.value);
   }
 
 }

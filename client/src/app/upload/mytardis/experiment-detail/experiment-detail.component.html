@@ -1,0 +1,31 @@
+<button (click)="onBackClick($event)">Back to experiments</button>
+
+<div *ngIf="!experiment">
+  <mat-spinner diameter=50></mat-spinner>
+</div>
+<div *ngIf='experiment'>
+    <h3>Experiment {{experiment.id}}</h3>
+    <p>Title: {{experiment.title}}</p>
+    <p>Description: {{experiment.description}}</p>
+</div>
+
+<div class="alert-box error" *ngIf="errMsg !== ''">
+    <span>Error: </span>{{errMsg}}
+</div>
+  
+<h3>{{totalItems}} datasets in total</h3>
+
+<div *ngIf="!datasets">
+  <mat-spinner diameter=50></mat-spinner>
+</div>
+<ul class="list-view">
+  <li *ngFor="let item of datasets">
+    <a [routerLink]="['/upload/', { outlets: { auxMytardis: ['dataset',item.id]}}]">{{item.id}}: {{item.description}}</a>
+  </li>
+</ul>
+
+<div *ngIf='datasets'>
+    <span class="spacing-right">Page {{pageIdx}}/{{numPages}}</span>
+    <span class='spacing-right'><button *ngIf="prevStr" (click)="onPrevClick($event)">Previous page</button></span>
+    <span class='spacing-right'><button *ngIf="nextStr" (click)="onNextClick($event)">Next page</button></span>
+</div>

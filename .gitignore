@@ -4,6 +4,4 @@ build
 dist
 node_modules
 .git.bk
-client/sharevol
-client/viewer
 
