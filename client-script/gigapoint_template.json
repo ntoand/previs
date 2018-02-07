@@ -1,0 +1,17 @@
+{
+	"dataDir": "potree",
+	"visiblePointTarget": 30000000,
+	"minNodePixelSize": 100,
+	"material": "rgb",
+	"pointScale": [1.0,0.5,1.5],
+	"pointSizeRange": [2, 600],
+	"sizeType": "adaptive",
+	"quality": "circle",
+	"numReadThread": 6,
+	"preloadToLevel": 6,
+	"maxNodeInMem": 100000,
+	"maxLoadSize": 200,
+	"cameraSpeed": 10,
+	"cameraPosition": [0, 0, 0],
+	"cameraOrientation": [0, 0, 0, 1]
+}
