@@ -116,6 +116,34 @@ function downloadFileHttps(url, apikey, dest, cb) {
     });
 };
 
+function zipDirectory(dir, dirname, zipfile, cb) {
+    
+    var archiver = require('archiver');
+    var archive = archiver('zip');
+    
+    var output = fs.createWriteStream(zipfile);
+    
+    archive.on('error', function(err) {
+      throw err;
+      cb(err, '');
+      return;
+    });
+    
+    output.on('end', function() {
+      console.log('Data has been drained');
+      cb(null, 'end');
+    });
+    
+    archive.pipe(output);
+    if(dirname === '') {
+        archive.directory(dir, false);
+    }
+    else {
+        archive.directory(dir, dirname);
+    }
+    archive.finalize();
+}
+
 module.exports.fileExists = fileExists;
 module.exports.trim = trim;
 module.exports.packAndSend = packAndSend;
@@ -123,3 +151,4 @@ module.exports.createDirSync = createDirSync;
 module.exports.moveFile = moveFile;
 module.exports.extractGoogleId = extractGoogleId;
 module.exports.downloadFileHttps = downloadFileHttps;
+module.exports.zipDirectory = zipDirectory;

@@ -527,6 +527,9 @@ function convertPointcloud(io, data, in_file) {
 				return;
 			} 
 			myutils.packAndSend(io, 'processupload', {status: 'done', result: tag_json});
+			
+			// zip pointcloids folder
+			myutils.zipDirectory(out_dir + '/pointclouds/potree', 'potree', data.tagdir + '/point_processed.zip');
 		});
     });
 }

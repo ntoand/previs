@@ -13,6 +13,7 @@ var formidable 	  = require('formidable');
 var bodyParser 	  = require('body-parser');
 var fs 			  = require('fs');
 
+var dbmanager   = require('./src/node-mongodb');
 var config 		  = require('./src/node-config').config;
 var myadmin 	  = require('./src/node-admin');
 var myupload	  = require('./src/node-upload');
@@ -34,10 +35,6 @@ app.use(bodyParser.urlencoded({ extended: true })); // support encoded bodies
 server.listen(process.env.PORT || config.port, process.env.IP || "127.0.0.1", function(){
 	var addr = server.address();
   	console.log("previs server listening at", addr.address + ":" + addr.port);
-});
-
-app.get('*', function(req, res) {
-    res.redirect('/');
 });
 
 // ===== REST SERVICES =======
@@ -95,6 +92,27 @@ app.post('/rest/adminlogin', function (req, res) {
 	res.send(JSON.stringify({ status: "success", result: "Can login" }, null, 4));
 });
 
+//url/info?tag=tag
+app.get('/rest/info', function (req, res) {
+	var tag = req.query.tag;
+	console.log(tag);
+	
+	dbmanager.getTag(tag, function(err, info) { 
+		console.log(info);
+		if(err || !info) {
+			console.log(err);
+			res.setHeader('Content-Type', 'application/json');
+    		res.send(JSON.stringify({ status: "error", result: "cannot get info" }, null, 4));
+    		return;
+		}
+		res.setHeader('Content-Type', 'application/json');
+		res.send(info);
+	});
+});
+
+app.get('*', function(req, res) {
+    res.redirect('/');
+});
 
 // ===== SOCKET IO ===========
 io.on('connection', function (socket) {

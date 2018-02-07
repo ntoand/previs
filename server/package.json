@@ -10,6 +10,7 @@
   "author": "Michael Eager (Copy of Toan Nguyen's sharevol)",
   "license": "TBA",
   "dependencies": {
+    "archiver": "^2.1.1",
     "body-parser": "^1.14.2",
     "cors": "^2.8.4",
     "crypto": "0.0.3",
