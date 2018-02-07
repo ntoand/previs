@@ -55,8 +55,8 @@ def downloadFile(remote_file, local_file):
 
 def runViewer(info):
     os.chdir(info['tag_dir'])
-    if(input['type'] == 'point'):
-        subprocess.check_output([info['gigapoint']])
+    if(info['type'] == 'point'):
+        subprocess.check_output(['orun','-s', 'gigapoint_run.py'])
     else:
         subprocess.check_output([info['lavavr']])
     os.chdir(info['cwd'])
@@ -134,6 +134,10 @@ def runPoint(info):
     os.chdir(info['tag_dir'])
     cmd = ['unzip', '-o', 'point_processed.zip']
     subprocess.check_output(cmd)
+    if not os.path.exists(info['tag_dir'] + '/gigapoint_resource'):
+    	subprocess.check_output(['ln','-s','/home/toand/git/projects/gigapoint/gigapoint/dist/gigapoint_resource'])
+    if not os.path.exists(info['tag_dir'] + '/gigapoint.so'):
+    	subprocess.check_output(['ln','-s','/home/toand/git/projects/gigapoint/gigapoint/dist/gigapoint.so'])
     os.chdir(info['cwd'])
 
     #copy
@@ -186,7 +190,6 @@ def main(argv):
         os.makedirs(tag_dir)
     info['tag_dir'] = os.path.abspath(tag_dir)
     info['lavavr'] = 'LavaVR.sh'
-    info['gigapoint'] = 'orun -s gigapoint_run.py'
     info['cwd'] = os.getcwd()
 
     print info

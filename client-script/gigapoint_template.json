@@ -3,7 +3,7 @@
 	"visiblePointTarget": 30000000,
 	"minNodePixelSize": 100,
 	"material": "rgb",
-	"pointScale": [1.0,0.5,1.5],
+	"pointScale": [0.2,0.1,1.5],
 	"pointSizeRange": [2, 600],
 	"sizeType": "adaptive",
 	"quality": "circle",
