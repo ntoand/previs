@@ -109,7 +109,7 @@ function processUploadMytardis(io, data) {
 function processUploadFile(io, data) {
 	var file = data.file;
 	var filepath = config.tags_data_dir + file;
-	var fileext =file.split('.').pop().toLowerCase();
+	var fileext = file.split('.').pop().toLowerCase();
 	var datatype = data.datatype;
 	
 	// check zip file
@@ -240,7 +240,7 @@ function processUploadFile_Points(io, data)
 			    var found = false;
 			    for (var i=0; i<items.length; i++) {
 			        var ext = items[i].split('.').pop().toLowerCase();
-			        if (ext === 'las' || ext === 'laz' || ext === 'ptx' || ext === 'ply') {
+			        if (ext === 'las' || ext === 'laz' || ext === 'ptx' || ext === 'ply' || ext === 'xyz' || ext === 'txt') {
 			        	convertPointcloud(io, data, out_dir + '/' + items[i]);
 			        	found = true;
 			        	break;
@@ -479,10 +479,16 @@ function sendViewDataToClient_Meshes(io, data) {
 
 function convertPointcloud(io, data, in_file) {
 	var basename = data.inputfilename;
+	var fileext = in_file.split('.').pop().toLowerCase();;
 	var out_dir = data.tagdir + '/' + basename + '_result';
 	var tag_url = 'data/tags/' + data.tag + '/';
 	
-	var cmd = 'cd ' + config.potree_converter_dir + ' && ./PotreeConverter -o ' + out_dir + ' -i ' + in_file + ' -p potree';
+	var cmd = '';
+	if (fileext === 'xyz' || fileext === 'txt') {
+		cmd = 'cd ' + config.potree_converter_dir + ' && ./PotreeConverter ' + in_file + ' -o ' + out_dir + ' -p potree -f xyzrgb';
+	} else {
+		cmd = 'cd ' + config.potree_converter_dir + ' && ./PotreeConverter ' + in_file + ' -o ' + out_dir + ' -p potree';
+	} 
 	console.log(cmd);
 	myutils.packAndSend(io, 'processupload', {status: 'working', result: 'Converting pointcloud...(it takes long time to process big data e.g. ~10min for 100k points)'});
 	exec(cmd, function(err, stdout, stderr) {

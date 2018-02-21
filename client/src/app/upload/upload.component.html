@@ -65,10 +65,11 @@
     <div *ngIf="dataType === 'point'">
       <details>
         <summary>
-          Upload one pointcloud file. Support .las, .laz, .ptx or .ply
+          Upload one pointcloud file. Support .las, .laz, .ptx, .ply, .xyz, .txt
         </summary>
         <p>
-          <li>You can also upload a zip file containing a .las, .laz, .ptx or .ply to reduce file size</li>
+          <li>You can also upload a zip file containing a .las, .laz, .ptx, .ply, .xyz, or .txt to reduce file size</li>
+          <li>In .xyz/.txt file, each line contains a point data in format X Y Z R G B with R,G,B in range [0 255] </li>
           <li>It may take long to process big data (~10min for 100k points). Please contact us if you have big data.</li>
           <li>Example data <a href="data/example/ripple.las.zip">ripple.las.zip</a> (65KB)</li>
         </p>

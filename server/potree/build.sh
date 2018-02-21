@@ -19,4 +19,5 @@ cmake -DCMAKE_BUILD_TYPE=Release -DLASZIP_INCLUDE_DIRS=${dir}/LAStools/LASzip/dl
 make
 cd PotreeConverter
 unlink resources
-ln -s ../../PotreeConverter/resources .
+cp -r ../../PotreeConverter/resources .
+

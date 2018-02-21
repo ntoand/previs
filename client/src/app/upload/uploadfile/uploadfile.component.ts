@@ -73,8 +73,8 @@ export class UploadfileComponent implements OnInit {
       }
     }
     else {
-      if (fileext !== 'las' && fileext !== 'laz' && fileext !== 'ptx' && fileext !== 'ply' && fileext !== 'zip' ) {
-        this.errMsg = "Pointcloud requies las/laz, ptx, ply or zip file";
+      if (fileext !== 'las' && fileext !== 'laz' && fileext !== 'ptx' && fileext !== 'ply' && fileext !== 'xyz' && fileext !== 'txt' && fileext !== 'zip' ) {
+        this.errMsg = "Pointcloud requies las/laz, ptx, ply, xyz/txt, or zip file";
         this.renderer.selectRootElement('.uploadfile').value = '';
         return;
       }

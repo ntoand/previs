@@ -7,3 +7,6 @@
 [submodule "server/potree/PotreeConverter"]
 	path = server/potree/PotreeConverter
 	url = https://github.com/potree/PotreeConverter.git
+[submodule "server/potree/potree"]
+	path = server/potree/potree
+	url = https://github.com/ntoand/potree.git
