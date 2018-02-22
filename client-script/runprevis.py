@@ -143,18 +143,15 @@ def runPoint(info):
     #copy
     cmd = ['cp', 'gigapoint_run.py', info['tag_dir']]
     subprocess.check_output(cmd)
+    
+    # download gigapoint.json file
+    file_url = host + '/data/tags/' + info['tag'] + '/gigapoint.json'
+    file_local = info['tag_dir'] + '/gigapoint.json'
+    print 'download', file_url
+    downloadFile(file_url, file_local)
 
-    # get center point of the pointcloud
-    cloud = json.load(open(info['tag_dir'] + '/potree/cloud.js'))
-    tbb = cloud['tightBoundingBox']
-    center = [(tbb['lx']+tbb['ux'])/2, (tbb['ly']+tbb['uy'])/2, (tbb['lz']+tbb['uz'])/2]
-    template = json.load(open(info['cwd'] + '/gigapoint_template.json'))
-    template['cameraPosition'] = center
-    with open(info['tag_dir']+'/gigapoint.json', 'w') as outfile:
-        json.dump(template, outfile, sort_keys=False, indent=4, ensure_ascii=False)
     # run
     runViewer(info)
-
 
 
 def help():

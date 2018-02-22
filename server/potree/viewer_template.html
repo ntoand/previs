@@ -14,9 +14,34 @@
 	<link rel="stylesheet" type="text/css" href="libs/spectrum/spectrum.css">
 	<link rel="stylesheet" type="text/css" href="libs/jstree/themes/mixed/style.css">
 	<link rel="stylesheet" type="text/css" href="libs/dat.gui/dat.gui.css">
+	
+	<style>
+		.toolbox {
+		  z-index: 2000;
+		  background: #bba; 
+		  color: #000; 
+		  padding: 7px 10px 11px 10px; 
+		  position: absolute; 
+		  border: 1px solid #444; 
+		  min-width: 300px;
+		  max-height: 400px;
+		}
+		.toolbox h3 {
+		  font-size: 12pt;
+		  font-weight: bold;
+		  margin: 2px 0px; padding: 0;
+		  display: inline;
+		}
+	</style>
 </head>
 
 <body>
+	<div class="toolbox" id="info"><div>
+	  <h3 id="status">Loading...</h3>
+	</div></div>
+		
+	<script src="https://cdn.socket.io/socket.io-1.4.3.js"></script>
+	
 	<script src="libs/jquery/jquery-3.1.1.min.js"></script>
 	<script src="libs/spectrum/spectrum.js"></script>
 	<script src="libs/perfect-scrollbar/js/perfect-scrollbar.jquery.js"></script>

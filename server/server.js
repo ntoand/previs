@@ -157,6 +157,16 @@ io.on('connection', function (socket) {
 		console.log(data);
 		saveParams(io, data);
 	});
+	
+	// potree viewer
+	socket.on('savepotreesettings', function(data) {
+		console.log(data);
+		myupload.savePotreeSettings(io, data);
+	});
+	socket.on('loadpotreesettings', function(data) {
+		console.log(data);
+		myupload.loadPotreeSettings(io, data);
+	});
 });
 
 function saveDataJson(io, data) {

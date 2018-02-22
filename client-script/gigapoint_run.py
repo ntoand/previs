@@ -85,12 +85,26 @@ menu = mm.getMainMenu()
 mm.setMainMenu(menu)
 campos = [0, 0, 0]
 camori = [1, 0, 0, 0]
+camtarget = [0, 0, -2]
+camup = [0, 1, 0]
 if "cameraPosition" in config:
 	campos = config["cameraPosition"]
 if "cameraOrientation" in config:
 	camori = config["cameraOrientation"]
-cmd = 'cam.setPosition(Vector3(' + str(campos[0]) + ',' + str(campos[1]) + ',' + str(campos[2]) + ')),' + \
+if "cameraTarget" in config:
+	camtarget = config["cameraTarget"]
+if "cameraUp" in config:
+	camup = config["cameraUp"]
+	
+cmd = '';
+if config["version"] == 1:
+	cmd = 'cam.setPosition(Vector3(' + str(campos[0]) + ',' + str(campos[1]) + ',' + str(campos[2]) + ')),' + \
 		'cam.setOrientation(Quaternion(' + str(camori[0]) + ',' + str(camori[1]) + ',' + str(camori[2]) + ',' + str(camori[3]) + '))'
+else:
+	cmd = 'cam.setPosition(Vector3(' + str(campos[0]) + ',' + str(campos[1]) + ',' + str(campos[2]) + ')),' + \
+		'cam.lookAt(Vector3(' + str(camtarget[0]) + ',' + str(camtarget[1]) + ',' + str(camtarget[2]) + '), Vector3(' + \
+		str(camup[0]) + ',' + str(camup[1]) + ',' + str(camup[2]) + '))'
+print cmd
 menu.addButton("Go to camera 1", cmd)
 
 lscale = menu.addLabel("Point scale")

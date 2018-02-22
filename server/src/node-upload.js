@@ -499,46 +499,168 @@ function convertPointcloud(io, data, in_file) {
 			return;
 		}
 		
-		stdout = myutils.trim(stdout).trim();
-		stdout = stdout.split(' ');
-		var numpoints = '0';
-		for(var i=1; i < stdout.length; i++) {
-			var item = stdout[i].trim();
-			if(item === 'points')
-				numpoints = stdout[i-1];
-		}
-		console.log(numpoints);
-
-		//save to database
-		var tag_json = {};
-		tag_json.tag=data.tag;
-		tag_json.type='point'
-		tag_json.source='localupload';
-		tag_json.date=Date.now();
-		tag_json.data = tag_url + data.inputfilename + '.' + data.inputfileext;
-			
-		var potree_url = tag_url + basename + '_result/potree.html';
-		var volumes = [];
-		var volume = {};
-		volume.data_dir = tag_url + basename + '_result';
-		volume.potree_url = potree_url;
-		volume.res = [numpoints];
-		volumes.push(volume);
-		tag_json.volumes=volumes;
-		
-		dbmanager.insertNewTag(tag_json, function(err, res) {
-			if (err) {
-				myutils.packAndSend(io, 'processupload', {status: 'error', result: 'cannot_generate_tag_json'});
-				//throw err;
+		saveDefaultPotreeSetting(data, function(err){
+			if(err) {
+				myutils.packAndSend(io, 'processupload', {status: 'error', result: "cannot_save_default_json"});
 				return;
-			} 
-			myutils.packAndSend(io, 'processupload', {status: 'done', result: tag_json});
+			}
 			
-			// zip pointcloids folder
-			myutils.zipDirectory(out_dir + '/pointclouds/potree', 'potree', data.tagdir + '/point_processed.zip');
+			stdout = myutils.trim(stdout).trim();
+			stdout = stdout.split(' ');
+			var numpoints = '0';
+			for(var i=1; i < stdout.length; i++) {
+				var item = stdout[i].trim();
+				if(item === 'points')
+					numpoints = stdout[i-1];
+			}
+			console.log(numpoints);
+	
+			//save to database
+			var tag_json = {};
+			tag_json.tag=data.tag;
+			tag_json.type='point'
+			tag_json.source='localupload';
+			tag_json.date=Date.now();
+			tag_json.data = tag_url + data.inputfilename + '.' + data.inputfileext;
+				
+			var potree_url = tag_url + basename + '_result/potree.html';
+			var volumes = [];
+			var volume = {};
+			volume.data_dir = tag_url + basename + '_result';
+			volume.potree_url = potree_url;
+			volume.res = [numpoints];
+			volumes.push(volume);
+			tag_json.volumes=volumes;
+			
+			dbmanager.insertNewTag(tag_json, function(err, res) {
+				if (err) {
+					myutils.packAndSend(io, 'processupload', {status: 'error', result: 'cannot_generate_tag_json'});
+					//throw err;
+					return;
+				} 
+				myutils.packAndSend(io, 'processupload', {status: 'done', result: tag_json});
+				// zip pointcloids folder
+				myutils.zipDirectory(out_dir + '/pointclouds/potree', 'potree', data.tagdir + '/point_processed.zip');
+			});
 		});
     });
 }
 
+function saveDefaultPotreeSetting(data, callback) {
+	var tag = data.tag;
+	var destfile = config.tags_data_dir + tag + '/gigapoint.json';
+	var jsonObj = {
+		version: 2,
+		dataDir: "potree",
+		visiblePointTarget: 30000000,
+		minNodePixelSize: 100,
+		material: "rgb",
+		pointScale: [0.2,0.05,1.5],
+		pointSizeRange: [2, 600],
+		sizeType: "adaptive",
+		quality: "circle",
+		elevationDirection: 2,
+		elevationRange: [0, 1],
+		filter: "none",
+		filterEdl: [0.4, 1.4],
+		numReadThread: 6,
+		preloadToLevel: 5,
+		maxNodeInMem: 100000,
+		maxLoadSize: 200,
+		cameraSpeed: 10,
+		cameraUpdatePosOri: 1,
+		cameraPosition: [0, 0, 0],
+		cameraTarget: [0, 0, -2],
+		cameraUp: [0, 1, 0]
+	};
+	var cloudfile = config.tags_data_dir + tag + "/point_result/pointclouds/potree/cloud.js";
+	fs.readFile(cloudfile, 'utf8', function (err, data) {
+	    if (err) {
+	    	callback(err);
+	    	return;
+	    }
+	    //console.log(data);
+	    var obj = JSON.parse(data);
+	    var tbb = obj.tightBoundingBox;
+	    var center = [(tbb.ux+tbb.lx)/2, (tbb.uy+tbb.ly)/2, (tbb.uz+tbb.lz)/2];
+	    var target = [center[0], center[1], center[2]-2];
+	    jsonObj.cameraPosition = center;
+	    jsonObj.cameraTarget = target;
+	    
+	    var json = JSON.stringify(jsonObj, null, 4);
+		//console.log(json);
+		fs.writeFile(destfile, json, 'utf8', function(err) {
+			if (err) {
+				callback(err);
+				return;
+			}
+			callback(null);
+		});
+	});
+}
+
+// ==== for potree viewer ====
+function savePotreeSettings(io, data) {
+	var tag = data.Tag;
+	var destfile = config.tags_data_dir + tag + '/gigapoint.json';
+	if(myutils.fileExists(destfile)) {
+		fs.unlinkSync(destfile);
+	}
+	//console.log(destfile);
+	
+	var range_min = Math.min(data.ElevRangeMin, data.ElevRangeMax);
+	var range_max = Math.max(data.ElevRangeMin, data.ElevRangeMax);
+	var jsonObj = {
+		version: 2,
+		dataDir: "potree",
+		visiblePointTarget: 30000000,
+		minNodePixelSize: 100,
+		material: data.PointColorType.toLowerCase(),
+		pointScale: [0.2,0.05,1.5],
+		pointSizeRange: [2, 600],
+		sizeType: data.PointSizing.toLowerCase(),
+		quality: data.PointShape.toLowerCase(),
+		elevationDirection: 1,
+		elevationRange: [range_min, range_max],
+		filter: data.EDL ? "edl" : "none",
+		filterEdl: [data.EDLStrength, data.EDLRadius],
+		numReadThread: 6,
+		preloadToLevel: 5,
+		maxNodeInMem: 100000,
+		maxLoadSize: 200,
+		cameraSpeed: 10,
+		cameraUpdatePosOri: 1,
+		cameraPosition: data.CamLocation,
+		cameraTarget: data.CamTarget,
+		cameraUp: [0, 1, 0]
+	};
+	
+	var json = JSON.stringify(jsonObj, null, 4);
+	//console.log(json);
+	fs.writeFile(destfile, json, 'utf8', function(err) {
+		if (err) {
+			io.emit('savepotreesettings', {status: 'error', result: 'cannot_save_json_file'});
+			return;
+		}
+		io.emit('savepotreesettings', {status: 'done', result: jsonObj});
+	});
+}
+
+// for potree viewer
+function loadPotreeSettings(io, data) {
+	var tag = data.Tag;
+	var jsonfile = config.tags_data_dir + tag + '/gigapoint.json';
+	fs.readFile(jsonfile, 'utf8', function (err, data) {
+	    if (err) {
+	    	io.emit('loadpotreesettings', {status: 'error', result: 'cannot_load_json_file'});
+	    	return;
+	    }
+	    var obj = JSON.parse(data);
+	    io.emit('loadpotreesettings', {status: 'done', result: obj});
+	});
+}
+
 // EXPORT
 module.exports.processUpload = processUpload;
+module.exports.savePotreeSettings = savePotreeSettings;
+module.exports.loadPotreeSettings = loadPotreeSettings;
