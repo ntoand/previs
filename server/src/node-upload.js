@@ -571,7 +571,7 @@ function saveDefaultPotreeSetting(data, callback) {
 		cameraUpdatePosOri: 1,
 		cameraPosition: [0, 0, 0],
 		cameraTarget: [0, 0, -2],
-		cameraUp: [0, 1, 0]
+		cameraUp: [0, 0, 1]
 	};
 	var cloudfile = config.tags_data_dir + tag + "/point_result/pointclouds/potree/cloud.js";
 	fs.readFile(cloudfile, 'utf8', function (err, data) {
@@ -632,7 +632,7 @@ function savePotreeSettings(io, data) {
 		cameraUpdatePosOri: 1,
 		cameraPosition: data.CamLocation,
 		cameraTarget: data.CamTarget,
-		cameraUp: [0, 1, 0]
+		cameraUp: [0, 0, 1]
 	};
 	
 	var json = JSON.stringify(jsonObj, null, 4);

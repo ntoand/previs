@@ -86,7 +86,7 @@ mm.setMainMenu(menu)
 campos = [0, 0, 0]
 camori = [1, 0, 0, 0]
 camtarget = [0, 0, -2]
-camup = [0, 1, 0]
+camup = [0, 0, 1]
 if "cameraPosition" in config:
 	campos = config["cameraPosition"]
 if "cameraOrientation" in config:
@@ -162,8 +162,8 @@ b41 = menu.addButton("none", "updateFilter('none')")
 b42 = menu.addButton("edl", "updateFilter('edl')")
 b41.getButton().setCheckable(True)
 b42.getButton().setCheckable(True)
-if "filter" in config:
-	updateFilter(config["filter"])
+if "filter" in config and config["filter"] == "edl":
+	updateFilter("edl")
 else:
 	updateFilter("none")
 
