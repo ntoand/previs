@@ -5,6 +5,9 @@ import { UploadlinkComponent } from './uploadlink/uploadlink.component';
 import { Dataset } from '../shared/dataset.model';
 import { MytardisComponent } from './mytardis/mytardis.component';
 
+import { AuthService } from '../core/auth.service';
+import { LoginComponent } from '../login/login.component';
+
 @Component({
   selector: 'app-upload',
   templateUrl: './upload.component.html',
@@ -17,8 +20,10 @@ export class UploadComponent implements OnInit {
   
   message = { type: "", content: "" };
   dataset: Dataset = new Dataset();
+  
+  navPath = "upload";
 
-  constructor(private appService: AppService) { }
+  constructor(private appService: AppService, private authService: AuthService) { }
 
   ngOnInit() {
     this.appService.setMenuIdx(1);

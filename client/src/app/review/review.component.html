@@ -1,5 +1,10 @@
-<div class="with-min-height">
-  <h2>Review your data on your web browser</h2>
+<h2 *ngIf="authService.isLoggedIn()">Review your data on your web browser</h2>
+
+<div>
+  <app-login [navPath]="navPath"></app-login>
+</div>
+
+<div *ngIf="authService.isLoggedIn()" class="with-min-height">
   <form class="review-form">
     <mat-form-field class="example-full-width">
       <input matInput placeholder="Input tag e.g. abc123" [(ngModel)]="input_tag" name="input_tag">

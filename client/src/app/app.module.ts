@@ -24,6 +24,13 @@ import { ExperimentListComponent } from './upload/mytardis/experiment-list/exper
 import { ExperimentDetailComponent } from './upload/mytardis/experiment-detail/experiment-detail.component';
 import { DatasetDetailComponent } from './upload/mytardis/dataset-detail/dataset-detail.component';
 
+import { AngularFireModule } from 'angularfire2';
+import { AngularFirestoreModule } from 'angularfire2/firestore';
+import { AngularFireAuthModule } from 'angularfire2/auth';
+import { environment } from '../environments/environment';
+import { LoginComponent } from './login/login.component';
+import { AuthService } from './core/auth.service';
+
 @NgModule({
   declarations: [
     AppComponent,
@@ -37,7 +44,8 @@ import { DatasetDetailComponent } from './upload/mytardis/dataset-detail/dataset
     MytardisComponent,
     ExperimentListComponent,
     ExperimentDetailComponent,
-    DatasetDetailComponent
+    DatasetDetailComponent,
+    LoginComponent
   ],
   imports: [
     BrowserModule,
@@ -54,9 +62,12 @@ import { DatasetDetailComponent } from './upload/mytardis/dataset-detail/dataset
     MatRadioModule,
     MatProgressBarModule,
     MatProgressSpinnerModule,
-    MatSelectModule
+    MatSelectModule,
+    AngularFireModule.initializeApp(environment.firebase),
+    AngularFirestoreModule, // imports firebase/firestore, only needed for database features
+    AngularFireAuthModule // imports firebase/auth, only needed for auth features,
   ],
-  providers: [AppService, WebsocketService],
+  providers: [AppService, WebsocketService, AuthService],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

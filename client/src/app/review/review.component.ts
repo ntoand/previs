@@ -2,6 +2,9 @@ import { Component, OnInit } from '@angular/core';
 import { AppService } from '../core/app.service';
 import { Dataset } from '../shared/dataset.model';
 
+import { AuthService } from '../core/auth.service';
+import { LoginComponent } from '../login/login.component';
+
 
 @Component({
   selector: 'app-review',
@@ -10,12 +13,13 @@ import { Dataset } from '../shared/dataset.model';
 })
 export class ReviewComponent implements OnInit {
 
-  constructor(private appService: AppService) { }
+  constructor(private appService: AppService, private authService: AuthService) { }
   
   input_tag;
   dataset: Dataset = new Dataset();
   
   message = { type: "", content: "" };
+  navPath = "review";
 
   ngOnInit() {
     this.appService.setMenuIdx(2);

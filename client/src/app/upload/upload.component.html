@@ -1,129 +1,137 @@
-<h2>Upload your data (volume, mesh or pointcloud)</h2>
+<h2 *ngIf="authService.isLoggedIn()">Upload your data (volume, mesh or pointcloud)</h2>
 
-<mat-card>
-  <div class="block">
-      <mat-radio-group class="type-radio-group" [(ngModel)]="dataType" (change)="onChange($event)">
-        <mat-radio-button class="type-radio-button" value="volume">Volume</mat-radio-button>
-        <mat-radio-button class="type-radio-button" value="mesh">Mesh</mat-radio-button>
-        <mat-radio-button class="type-radio-button" value="point">Pointcloud</mat-radio-button>
-      </mat-radio-group>
-  </div>
-  
-  <div class="help-block">
-    <div *ngIf="dataType === 'volume'" class="collapse-able">
-      <details>
-        <summary>
-          Upload a TIFF Image Stack (.zip file of an indexed TIFF image stack)
-        </summary>
-        <p>Example data <a href="data/example/tiffstack-foot.zip">tiffstack-foot.zip</a></p>
-        <p><b>How to prepare data:</b></p>
-        <li>Create a directory to store slices</li>
-        <li>Convert slices to tiff format if needed using image editors (e.g. ImageMagick)</li>
-        <li>Slices (tiff images) are named in order (e.g. 0001.tif, 0002.tif, ...)</li>
-        <li>Compress the directory into a zip file</li>
-        <p>Your zip should look something like this:</p>
-        <ul class="example-code">
-          <li>tiffs/</li>
-          <li>tiffs/0001.tif</li>
-          <li>tiffs/0002.tif</li>
-          <li>tiffs/0003.tif</li>
-          <li>tiffs/0004.tif</li>
-        </ul>
-      </details>
+<div>
+  <app-login [navPath]="navPath"></app-login>
+  <div class="spacing"></div>
+</div>
+
+<div *ngIf="authService.isLoggedIn()">
+  <mat-card>
+    <div class="block">
+        <mat-radio-group class="type-radio-group" [(ngModel)]="dataType" (change)="onChange($event)">
+          <mat-radio-button class="type-radio-button" value="volume">Volume</mat-radio-button>
+          <mat-radio-button class="type-radio-button" value="mesh">Mesh</mat-radio-button>
+          <mat-radio-button class="type-radio-button" value="point">Pointcloud</mat-radio-button>
+        </mat-radio-group>
     </div>
     
-    <div *ngIf="dataType === 'mesh'">
-      <details>
-        <summary>
-          Upload a Wavefront OBJ zip tree
-        </summary>
-        <p>
-          <li>A .zip file containing an object or scene made up of one or more .OBJ files</li>
-          <li>Each directory in the .zip file will produce a group in your 3D scene (only one directory deep is supported)</li>
-          <li>Group names come from their directory names; the names of mesh files are not important</li>
-        </p>
-        <p>Example data <a href="data/example/heart-bp3.0.zip">heart-bp3.0.zip</a></p>
-        <p><b>How to prepare data:</b></p>
-        <li>Create a directory to store OBJ files</li>
-        <li>Add subdirectories for each group, named as the group should be named (only a depth of one directory is currently supported)</li>
-        <li>Add OBJ files to the appropriate group subdirectories</li>
-        <li>Compress all subdirectories into one zip file</li>
-        <p>Your zip should look something like this:</p>
-        <ul class="example-code">
-          <li>group1/</li>
-          <li>group1/first-mesh.obj</li>
-          <li>group1/other-mesh.obj</li>
-          <li>group2/</li>
-          <li>group2/another-mesh.obj</li>
-          <li>group3/</li>
-          <li>group3/yet-another-mesh.obj</li>
-          <li>group3/and-another-mesh.obj</li>
-        </ul>
-      </details>
+    <div class="help-block">
+      <div *ngIf="dataType === 'volume'" class="collapse-able">
+        <details>
+          <summary>
+            Upload a TIFF Image Stack (.zip file of an indexed TIFF image stack)
+          </summary>
+          <p>Example data <a href="data/example/tiffstack-foot.zip">tiffstack-foot.zip</a></p>
+          <p><b>How to prepare data:</b></p>
+          <li>Create a directory to store slices</li>
+          <li>Convert slices to tiff format if needed using image editors (e.g. ImageMagick)</li>
+          <li>Slices (tiff images) are named in order (e.g. 0001.tif, 0002.tif, ...)</li>
+          <li>Compress the directory into a zip file</li>
+          <p>Your zip should look something like this:</p>
+          <ul class="example-code">
+            <li>tiffs/</li>
+            <li>tiffs/0001.tif</li>
+            <li>tiffs/0002.tif</li>
+            <li>tiffs/0003.tif</li>
+            <li>tiffs/0004.tif</li>
+          </ul>
+        </details>
+      </div>
+      
+      <div *ngIf="dataType === 'mesh'">
+        <details>
+          <summary>
+            Upload a Wavefront OBJ zip tree
+          </summary>
+          <p>
+            <li>A .zip file containing an object or scene made up of one or more .OBJ files</li>
+            <li>Each directory in the .zip file will produce a group in your 3D scene (only one directory deep is supported)</li>
+            <li>Group names come from their directory names; the names of mesh files are not important</li>
+          </p>
+          <p>Example data <a href="data/example/heart-bp3.0.zip">heart-bp3.0.zip</a></p>
+          <p><b>How to prepare data:</b></p>
+          <li>Create a directory to store OBJ files</li>
+          <li>Add subdirectories for each group, named as the group should be named (only a depth of one directory is currently supported)</li>
+          <li>Add OBJ files to the appropriate group subdirectories</li>
+          <li>Compress all subdirectories into one zip file</li>
+          <p>Your zip should look something like this:</p>
+          <ul class="example-code">
+            <li>group1/</li>
+            <li>group1/first-mesh.obj</li>
+            <li>group1/other-mesh.obj</li>
+            <li>group2/</li>
+            <li>group2/another-mesh.obj</li>
+            <li>group3/</li>
+            <li>group3/yet-another-mesh.obj</li>
+            <li>group3/and-another-mesh.obj</li>
+          </ul>
+        </details>
+      </div>
+      
+      <div *ngIf="dataType === 'point'">
+        <details>
+          <summary>
+            Upload one pointcloud file. Support .las, .laz, .ptx, .ply, .xyz, .txt
+          </summary>
+          <p>
+            <li>You can also upload a zip file containing a .las, .laz, .ptx, .ply, .xyz, or .txt to reduce file size</li>
+            <li>In .xyz/.txt file, each line contains a point data in format X Y Z R G B with R,G,B in range [0 255] </li>
+            <li>It may take long to process big data (~10min for 100k points). Please contact us if you have big data.</li>
+            <li>Example data <a href="data/example/ripple.las.zip">ripple.las.zip</a> (65KB)</li>
+          </p>
+        </details>
+      </div>
+    </div>
+  </mat-card>
+  
+  <div class="spacing"></div>
+  
+  <mat-card>
+    <div class="block">
+     <mat-radio-group class="upload-radio-group" [(ngModel)]="uploadType">
+        <mat-radio-button class="type-radio-button" value="local">Local upload</mat-radio-button>
+        <mat-radio-button class="type-radio-button" value="link">Shared link</mat-radio-button>
+        <mat-radio-button class="type-radio-button" value="mytardis">Mytardis</mat-radio-button>
+      </mat-radio-group> 
     </div>
     
-    <div *ngIf="dataType === 'point'">
-      <details>
-        <summary>
-          Upload one pointcloud file. Support .las, .laz, .ptx, .ply, .xyz, .txt
-        </summary>
-        <p>
-          <li>You can also upload a zip file containing a .las, .laz, .ptx, .ply, .xyz, or .txt to reduce file size</li>
-          <li>In .xyz/.txt file, each line contains a point data in format X Y Z R G B with R,G,B in range [0 255] </li>
-          <li>It may take long to process big data (~10min for 100k points). Please contact us if you have big data.</li>
-          <li>Example data <a href="data/example/ripple.las.zip">ripple.las.zip</a> (65KB)</li>
-        </p>
-      </details>
-    </div>
-  </div>
-</mat-card>
-
-<div class="spacing"></div>
-
-<mat-card>
-  <div class="block">
-   <mat-radio-group class="upload-radio-group" [(ngModel)]="uploadType">
-      <mat-radio-button class="type-radio-button" value="local">Local upload</mat-radio-button>
-      <mat-radio-button class="type-radio-button" value="link">Shared link</mat-radio-button>
-      <mat-radio-button class="type-radio-button" value="mytardis">Mytardis</mat-radio-button>
-    </mat-radio-group> 
-  </div>
-  
-  <div class="block" *ngIf="uploadType === 'local'">
-    <app-uploadfile [dataType]="dataType"></app-uploadfile>
-  </div>
-  
-  <div class="block" *ngIf="uploadType === 'link'">
-    <app-uploadlink [dataType]="dataType"></app-uploadlink>
-  </div>
-  
-  <div class="block" *ngIf="uploadType === 'mytardis'">
-    <app-mytardis></app-mytardis>
-  </div>
-  
-</mat-card>
-
-<div class="spacing"></div>
-<mat-card>
-  <div class="block" id="processing_anchor">
-    <mat-card-header>
-        <mat-card-title>Selected data type: <b>{{dataType}}</b>, upload type: <b>{{uploadType}}</b></mat-card-title>
-    </mat-card-header>
-    
-    <div class="progress" *ngIf="message.type === 'working'">
-      <mat-spinner diameter=50></mat-spinner>
+    <div class="block" *ngIf="uploadType === 'local'">
+      <app-uploadfile [dataType]="dataType"></app-uploadfile>
     </div>
     
-    <div class="alert-box {{message.type}}" *ngIf="message.content !== ''">
-      <span>{{message.type}}: </span>{{message.content}}
+    <div class="block" *ngIf="uploadType === 'link'">
+      <app-uploadlink [dataType]="dataType"></app-uploadlink>
     </div>
-    <div class="result" *ngIf="dataset.tag !== ''">
-      <p>{{dataset.tag}} ({{dataset.type | lowercase}})</p>
-      <p>Date: {{dataset.dateStr}}</p>
-      <p>Size: {{dataset.size}}</p>
-      <a href={{dataset.viewUrl}} target="_blank"><button mat-button color='primary'>VIEW ON WEB</button></a>
+    
+    <div class="block" *ngIf="uploadType === 'mytardis'">
+      <app-mytardis></app-mytardis>
     </div>
-  </div>
-</mat-card>
+    
+  </mat-card>
+  
+  <div class="spacing"></div>
+  <mat-card>
+    <div class="block" id="processing_anchor">
+      <mat-card-header>
+          <mat-card-title>Selected data type: <b>{{dataType}}</b>, upload type: <b>{{uploadType}}</b></mat-card-title>
+      </mat-card-header>
+      
+      <div class="progress" *ngIf="message.type === 'working'">
+        <mat-spinner diameter=50></mat-spinner>
+      </div>
+      
+      <div class="alert-box {{message.type}}" *ngIf="message.content !== ''">
+        <span>{{message.type}}: </span>{{message.content}}
+      </div>
+      <div class="result" *ngIf="dataset.tag !== ''">
+        <p>{{dataset.tag}} ({{dataset.type | lowercase}})</p>
+        <p>Date: {{dataset.dateStr}}</p>
+        <p>Size: {{dataset.size}}</p>
+        <a href={{dataset.viewUrl}} target="_blank"><button mat-button color='primary'>VIEW ON WEB</button></a>
+      </div>
+    </div>
+  </mat-card>
+  
+  <div class="spacing"></div>
 
-<div class="spacing"></div>
+</div>

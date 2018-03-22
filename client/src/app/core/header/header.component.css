@@ -1,5 +1,9 @@
+.header-area {
+  background-color: #eee;
+}
 .toolbar {
   background-color: #eee;
+  padding: 0 0;
 }
 
 .menu-item {

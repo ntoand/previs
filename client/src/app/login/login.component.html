@@ -1,0 +1,11 @@
+<div>
+    <div *ngIf="authService.isLoggedIn() === false" style="min-height: 300px;">
+        <h2>Please login</h2>
+        <button mat-raised-button color='primary' (click)="signIn()">
+            <img src="assets/img/google-icon.png" alt="google" height="24" width="24"/> Login with Google account</button>
+    </div>
+    <div *ngIf="authService.isLoggedIn()">
+        <span>Logged in as {{authService.userDetails.displayName}} ({{authService.userDetails.email}}) </span>
+        <!-- <span><a href="#" (click)="signOut($event)"><b>Sign out</b></a></span> -->
+    </div>
+</div>

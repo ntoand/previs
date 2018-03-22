@@ -1,13 +1,25 @@
-<mat-toolbar class="toolbar">
+<div class="header-area">
   <div class="container">
-    <!--<span class="header-title">CAVE2 Portal</span>-->
-    <span><a mat-button color={{getColor(0)}} routerLink="/" (click)="onMenuClick(0)"><mat-icon class="header-icon">home</mat-icon><b>HOME</b></a></span>
-    <span><a mat-button color={{getColor(1)}} routerLink="/upload" (click)="onMenuClick(1)"><mat-icon class="header-icon">cloud_upload</mat-icon><b>UPLOAD</b></a></span>
-    <!--<span><a mat-button color={{getColor(3)}} routerLink="/mytardis" (click)="onMenuClick(3)"><mat-icon class="header-icon">storage</mat-icon><b>MYTARDIS</b></a></span>-->
-    <span><a mat-button color={{getColor(2)}} routerLink="/review" (click)="onMenuClick(2)"><mat-icon class="header-icon">laptop</mat-icon><b>REVIEW</b></a></span>
-    <!--<span class="header-spacer"></span>-->
-    <!--
-    <span class="header-right"><a mat-button color="primary" href="http://monash.edu/mivp" target="_blank"><mat-icon class="header-icon">open_in_new</mat-icon><b>MIVP</b></a></span>
-    -->
+    <mat-toolbar class="toolbar">
+      <!-- <div class="container"> -->
+        <!--<span class="header-title">CAVE2 Portal</span>-->
+        <span><a mat-button color={{getColor(0)}} routerLink="/" (click)="onMenuClick(0)"><mat-icon class="header-icon">home</mat-icon><b>HOME</b></a></span>
+        <span><a mat-button color={{getColor(1)}} routerLink="/upload" (click)="onMenuClick(1)"><mat-icon class="header-icon">cloud_upload</mat-icon><b>UPLOAD</b></a></span>
+        <!--<span><a mat-button color={{getColor(3)}} routerLink="/mytardis" (click)="onMenuClick(3)"><mat-icon class="header-icon">storage</mat-icon><b>MYTARDIS</b></a></span>-->
+        <span><a mat-button color={{getColor(2)}} routerLink="/review" (click)="onMenuClick(2)"><mat-icon class="header-icon">laptop</mat-icon><b>REVIEW</b></a></span>
+        
+        <span class="header-spacer"></span>
+        <span>
+          <a *ngIf="authService.isLoggedIn() == false" routerLink="/login"><mat-icon class="header-icon">account_circle</mat-icon></a>
+          <a *ngIf="authService.isLoggedIn()" href="#" (click)="signOut($event)">
+            <img src="{{authService.userDetails.photoURL}}" width="24" height="24" style="border-radius: 25px;"/></a>
+        </span>
+        <!--<span class="header-spacer"></span>-->
+        <!--
+        <span class="header-right"><a mat-button color="primary" href="http://monash.edu/mivp" target="_blank"><mat-icon class="header-icon">open_in_new</mat-icon><b>MIVP</b></a></span>
+        -->
+      <!-- </div> -->
+    </mat-toolbar>
   </div>
-</mat-toolbar>
+</div>
+
