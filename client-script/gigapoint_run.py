@@ -34,10 +34,13 @@ def updateQuality(quality):
 	print quality
 	b21.getButton().setChecked(False)
 	b22.getButton().setChecked(False)
+	b23.getButton().setChecked(False)
 	if quality == "square":
 		b21.getButton().setChecked(True)
-	else:
+	elif quality == "circle":
 		b22.getButton().setChecked(True)
+	else:
+		b23.getButton().setChecked(True)
 	gp.updateQuality(quality)
 
 def updateSizeType(type):
@@ -79,6 +82,30 @@ def printInfo():
         print 'Camera orientation: ' + str(cam.getOrientation())
         gp.printInfo()
 
+def updateElevationDirection(direction):
+	print direction
+	bEle11.getButton().setChecked(False)
+	bEle12.getButton().setChecked(False)
+	bEle13.getButton().setChecked(False)
+
+	if direction == 0:
+		bEle11.getButton().setChecked(True)
+	elif direction == 1:
+		bEle12.getButton().setChecked(True)
+	else:
+		bEle13.getButton().setChecked(True)
+	gp.updateElevationDirection(direction)
+
+def updateElevationMin(val):
+	v = val/100.0
+	lEleMin.setText('Min: ' + str(v))
+	gp.updateElevationMin(v)
+
+def updateElevationMax(val):
+	v = val/100.0
+	lEleMax.setText('Max: ' + str(v))
+	gp.updateElevationMax(v)
+
 
 mm = MenuManager.createAndInitialize()
 menu = mm.getMainMenu()
@@ -110,9 +137,9 @@ menu.addButton("Go to camera 1", cmd)
 lscale = menu.addLabel("Point scale")
 #l3.getWidget().setStyleValue('border-top', '1 white')
 pscale = config["pointScale"]
-pscale_value = 0.1
-pscale_min = 0.01
-pscale_max = 1.0
+pscale_value = 10
+pscale_min = 1
+pscale_max = 100
 if "pointScale" in config:
 	pscale_value = int(100*float(pscale[0]))
 	pscale_min = int(100*float(pscale[1]))
@@ -134,12 +161,49 @@ if "material" in config:
 else:
 	updateMaterial("rgb")
 
+# elevation setttings
+eleMenu = menu.addSubMenu("Elevation options")
+lEle1 = eleMenu.addLabel("Direction")
+bEle11 = eleMenu.addButton("X", "updateElevationDirection(0)")
+bEle12 = eleMenu.addButton("Y", "updateElevationDirection(1)")
+bEle13 = eleMenu.addButton("Z", "updateElevationDirection(2)")
+bEle11.getButton().setCheckable(True)
+bEle12.getButton().setCheckable(True)
+bEle13.getButton().setCheckable(True)
+if "elevationDirection" in config:
+	updateElevationDirection(config["elevationDirection"])
+else:
+	updateElevationDirection(2)
+
+# range
+elevMin = 0
+elevMax = 100
+if "elevationRange" in config:
+	elevMin = int(100*float(config["elevationRange"][0]))
+	elevMax = int(100*float(config["elevationRange"][1]))
+
+lEleMin = eleMenu.addLabel("Min: " + str(elevMin/100.0))
+sliderElevMin = eleMenu.addSlider(100, "updateElevationMin(%value%)")
+sliderElevMin.getSlider().setValue(elevMin)
+sliderElevMin.getWidget().setWidth(200)
+updateElevationMin(elevMin)
+
+lEleMax = eleMenu.addLabel("Max: " + str(elevMax/100.0))
+sliderElevMax = eleMenu.addSlider(100, "updateElevationMax(%value%)")
+sliderElevMax.getSlider().setValue(elevMax)
+sliderElevMax.getWidget().setWidth(200)
+updateElevationMax(elevMax)
+# end elevation setttings
+
+
 l2 = menu.addLabel("Quality")
 #l2.getWidget().setStyleValue('border-top', '1 white')
 b21 = menu.addButton("square", "updateQuality('square')")
 b22 = menu.addButton("circle", "updateQuality('circle')")
+b23 = menu.addButton("sphere", "updateQuality('sphere')")
 b21.getButton().setCheckable(True)
 b22.getButton().setCheckable(True)
+b23.getButton().setCheckable(True)
 if "quality" in config:
 	updateQuality(str(config["quality"]))
 else:
