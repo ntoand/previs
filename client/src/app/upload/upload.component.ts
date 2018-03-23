@@ -23,7 +23,7 @@ export class UploadComponent implements OnInit {
   
   navPath = "upload";
 
-  constructor(private appService: AppService, private authService: AuthService) { }
+  constructor(private appService: AppService, public authService: AuthService) { }
 
   ngOnInit() {
     this.appService.setMenuIdx(1);

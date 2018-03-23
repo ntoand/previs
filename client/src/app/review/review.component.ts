@@ -15,7 +15,7 @@ import { ConfirmdialogComponent } from '../core/confirmdialog/confirmdialog.comp
 })
 export class ReviewComponent implements OnInit {
 
-  constructor(private appService: AppService, private authService: AuthService, 
+  constructor(private appService: AppService, public authService: AuthService, 
               private dialog: MatDialog) { }
   
   message = { type: "", content: "" };

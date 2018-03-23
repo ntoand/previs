@@ -9,7 +9,7 @@ import { AuthService } from '../../core/auth.service';
 })
 export class UploadlinkComponent implements OnInit {
 
-  constructor(private appService: AppService, private authService: AuthService) { }
+  constructor(private appService: AppService, public authService: AuthService) { }
   
   urlStr = '';
   extStr = 'zip';

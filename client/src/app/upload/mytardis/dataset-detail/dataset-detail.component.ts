@@ -25,7 +25,8 @@ export class DatasetDetailComponent implements OnInit {
   pageIdx = 1;
   numPages = 1;
 
-  constructor(private appService: AppService, private activeRoute: ActivatedRoute, private location: Location, private authService: AuthService) { }
+  constructor(private appService: AppService, private activeRoute: ActivatedRoute, 
+              private location: Location, public authService: AuthService) { }
 
   ngOnInit() {
     //this.appService.setMenuIdx(3);

@@ -11,7 +11,8 @@ import { AuthService } from '../../core/auth.service';
 })
 export class UploadfileComponent implements OnInit {
 
-  constructor(private http: HttpClient, private renderer: Renderer2, private appService: AppService, private authService: AuthService ) { }
+  constructor(private http: HttpClient, private renderer: Renderer2, 
+              private appService: AppService, public authService: AuthService ) { }
   
   uploadPercent = 0;
   selectedFile = '';

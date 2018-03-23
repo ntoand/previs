@@ -10,7 +10,7 @@ import { AuthService } from '../core/auth.service';
 })
 export class LoginComponent implements OnInit {
 
-  constructor(private authService: AuthService, private router: Router) { }
+  constructor(public authService: AuthService, private router: Router) { }
   
   @Input() navPath: string = "";
   
