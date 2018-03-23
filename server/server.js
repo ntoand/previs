@@ -8,17 +8,18 @@ var express 	  = require('express');
 var cors		  = require('cors')
 
 var path          = require('path');
-var exec          = require('child_process').exec;
 var formidable 	  = require('formidable');
 var bodyParser 	  = require('body-parser');
 var fs 			  = require('fs');
 
-var dbmanager   = require('./src/node-mongodb');
 var config 		  = require('./src/node-config').config;
 var myadmin 	  = require('./src/node-admin');
 var myupload	  = require('./src/node-upload');
 var preview 	  = require('./src/node-preview');
 var mytardis	  = require('./src/node-mytardis');
+
+var FilebaseManager   = require('./src/node-firebase');
+var fbmanager = new FilebaseManager();
 
 
 // ===== INITIALISATION ======
@@ -97,7 +98,7 @@ app.get('/rest/info', function (req, res) {
 	var tag = req.query.tag;
 	console.log(tag);
 	
-	dbmanager.getTag(tag, function(err, info) { 
+	fbmanager.getTag(tag, function(err, info) { 
 		console.log(info);
 		if(err || !info) {
 			console.log(err);
@@ -125,65 +126,61 @@ io.on('connection', function (socket) {
   	socket.on('message', function(msg) {
   		msg = JSON.parse(msg);
   		console.log(msg);
+  		msg.data.db = fbmanager;
+  		if(msg.data.userId === undefined) msg.data.userId = 'none';
+  		if(msg.data.userEmail === undefined) msg.data.userEmail = 'none';
   		if(msg.action === 'processtag') {
-  			preview.processTag(io, msg.data);
+  			preview.processTag(socket, msg.data);
+  		}
+  		else if(msg.action === 'admindeletetags') {
+  			myadmin.deleteTags(socket, msg.data);
   		}
   		else if (msg.action === 'processupload') {
-  			myupload.processUpload(io, msg.data);
+  			myupload.processUpload(socket, msg.data);
   		}
   		else if (msg.action === 'processmytardis') {
-  			mytardis.processMytardis(io, msg.data);
+  			mytardis.processMytardis(socket, msg.data);
   		}
   	});
   	
-  	// admin
-  	socket.on('admingettags', function(data) {
-		console.log(data);
-		myadmin.getTags(io, data);
-	});
-	socket.on('admindeletetags', function(data) {
-		console.log(data);
-		myadmin.deleteTags(io, data);
-	});
-
     // sharevol
 	socket.on('savedatajson', function(data) {
 		console.log(data);
-		saveDataJson(io, data);
+		saveDataJson(socket, data);
 	});
 
 	// meshviewer
 	socket.on('saveparams', function(data) {
 		console.log(data);
-		saveParams(io, data);
+		saveParams(socket, data);
 	});
 	
 	// potree viewer
 	socket.on('savepotreesettings', function(data) {
 		console.log(data);
-		myupload.savePotreeSettings(io, data);
+		myupload.savePotreeSettings(socket, data);
 	});
 	socket.on('loadpotreesettings', function(data) {
 		console.log(data);
-		myupload.loadPotreeSettings(io, data);
+		myupload.loadPotreeSettings(socket, data);
 	});
 });
 
-function saveDataJson(io, data) {
+function saveDataJson(socket, data) {
 	var filename = config.public_dir + "/" + data.file;
 	//write
 	fs.writeFile( filename, data.json, function(err) {
 		if (err) {
 			console.log(err);
-			io.emit('savedatajson', {status: 'error', result: 'cannot_save_json', detail: err });
+			socket.emit('savedatajson', {status: 'error', result: 'cannot_save_json', detail: err });
 			//throw err;
 			return;
 		}
-		io.emit('savedatajson', { status: 'done', result: data.file });
+		socket.emit('savedatajson', { status: 'done', result: data.file });
 	});
 }
 
-function saveParams(io, data)
+function saveParams(socket, data)
 {
 	console.log("Received saveparams from JS");
 	console.log(data);
@@ -197,7 +194,7 @@ function saveParams(io, data)
 			console.log("Error: " + err);
 
 			// send a message to the viewer
-			io.emit('saveparams', { status: 'error' });
+			socket.emit('saveparams', { status: 'error' });
 
 			return;
 		}

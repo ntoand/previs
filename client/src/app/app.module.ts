@@ -15,7 +15,8 @@ import { FooterComponent } from './core/footer/footer.component';
 import { FlexLayoutModule } from "@angular/flex-layout";
 
 import { MatToolbarModule, MatButtonModule, MatIconModule, MatInputModule, 
-         MatCardModule, MatRadioModule, MatProgressBarModule, MatProgressSpinnerModule, MatSelectModule } from '@angular/material';
+         MatCardModule, MatRadioModule, MatProgressBarModule, MatProgressSpinnerModule, MatSelectModule,
+         MatDialogModule, MatTooltipModule } from '@angular/material';
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 import { AppService } from './core/app.service';
 import { WebsocketService } from './core/websocket.service';
@@ -30,6 +31,7 @@ import { AngularFireAuthModule } from 'angularfire2/auth';
 import { environment } from '../environments/environment';
 import { LoginComponent } from './login/login.component';
 import { AuthService } from './core/auth.service';
+import { ConfirmdialogComponent } from './core/confirmdialog/confirmdialog.component';
 
 @NgModule({
   declarations: [
@@ -45,7 +47,8 @@ import { AuthService } from './core/auth.service';
     ExperimentListComponent,
     ExperimentDetailComponent,
     DatasetDetailComponent,
-    LoginComponent
+    LoginComponent,
+    ConfirmdialogComponent
   ],
   imports: [
     BrowserModule,
@@ -62,12 +65,15 @@ import { AuthService } from './core/auth.service';
     MatRadioModule,
     MatProgressBarModule,
     MatProgressSpinnerModule,
+    MatTooltipModule,
     MatSelectModule,
+    MatDialogModule,
     AngularFireModule.initializeApp(environment.firebase),
     AngularFirestoreModule, // imports firebase/firestore, only needed for database features
     AngularFireAuthModule // imports firebase/auth, only needed for auth features,
   ],
   providers: [AppService, WebsocketService, AuthService],
-  bootstrap: [AppComponent]
+  bootstrap: [AppComponent],
+  entryComponents: [ConfirmdialogComponent]
 })
 export class AppModule { }

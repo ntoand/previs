@@ -6,6 +6,6 @@
     </div>
     <div *ngIf="authService.isLoggedIn()">
         <span>Logged in as {{authService.userDetails.displayName}} ({{authService.userDetails.email}}) </span>
-        <!-- <span><a href="#" (click)="signOut($event)"><b>Sign out</b></a></span> -->
+        <span><a href="#" (click)="signOut($event)">Logout</a></span>
     </div>
 </div>

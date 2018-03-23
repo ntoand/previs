@@ -8,7 +8,6 @@ var execSync	= require('child_process').execSync;
 
 var myutils 	= require('./node-utils');
 var config		= require('./node-config').config; 
-var dbmanager   = require('./node-mongodb');
 var extract 	= require('extract-zip')
 
 function processUpload(io, data) {
@@ -142,7 +141,7 @@ function processUploadFile(io, data) {
 		}
 	}
 	
-	dbmanager.createNewTag(function(err, tag_str) {
+	data.db.createNewTag(function(err, tag_str) {
 		if(err) {
 			myutils.packAndSend(io, 'processupload', {status: 'error', result: 'cannot create tag'});
 			return;
@@ -377,6 +376,8 @@ function sendViewDataToClient(io, data) {
 				tag_json.source='localupload';
 				tag_json.date=Date.now();
 				tag_json.data = data.tagdir + '/' + data.inputfilename + '.' + data.inputfileext;
+				tag_json.userId = data.userId;
+				tag_json.userEmail = data.userEmail;
 					
 				var volumes = [];
 				var volume = {};
@@ -391,7 +392,7 @@ function sendViewDataToClient(io, data) {
 				volumes.push(volume);
 				tag_json.volumes=volumes;
 				
-				dbmanager.insertNewTag(tag_json, function(err, res) {
+				data.db.insertNewTag(tag_json, function(err, res) {
 					if (err) {
 						io.emit('processupload', {status: 'error', result: 'cannot_generate_tag_json'});
 						//throw err;
@@ -449,6 +450,8 @@ function sendViewDataToClient_Meshes(io, data) {
 			tag_json.source='localupload';
 			tag_json.date=Date.now();
 			tag_json.data = data.file;
+			tag_json.userId = data.userId;
+			tag_json.userEmail = data.userEmail;
 
 			var volumes = [];
 			var volume = {};
@@ -463,7 +466,7 @@ function sendViewDataToClient_Meshes(io, data) {
 			volumes.push(volume);
 			tag_json.volumes=volumes;
 			
-			dbmanager.insertNewTag(tag_json, function(err, res) {
+			data.db.insertNewTag(tag_json, function(err, res) {
 				if (err) {
 					myutils.packAndSend(io, 'processupload', {status: 'error', result: 'cannot_generate_tag_json'});
 					//throw err;
@@ -522,6 +525,8 @@ function convertPointcloud(io, data, in_file) {
 			tag_json.source='localupload';
 			tag_json.date=Date.now();
 			tag_json.data = tag_url + data.inputfilename + '.' + data.inputfileext;
+			tag_json.userId = data.userId;
+			tag_json.userEmail = data.userEmail;
 				
 			var potree_url = tag_url + basename + '_result/potree.html';
 			var volumes = [];
@@ -532,7 +537,7 @@ function convertPointcloud(io, data, in_file) {
 			volumes.push(volume);
 			tag_json.volumes=volumes;
 			
-			dbmanager.insertNewTag(tag_json, function(err, res) {
+			data.db.insertNewTag(tag_json, function(err, res) {
 				if (err) {
 					myutils.packAndSend(io, 'processupload', {status: 'error', result: 'cannot_generate_tag_json'});
 					//throw err;

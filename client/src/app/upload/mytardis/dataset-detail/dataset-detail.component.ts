@@ -4,6 +4,7 @@ import { Location } from '@angular/common';
 
 import { AppService } from '../../../core/app.service';
 import { Dataset, Datafile } from "../mytardis.model";
+import { AuthService } from '../../../core/auth.service';
 
 @Component({
   selector: 'app-dataset-detail',
@@ -24,7 +25,7 @@ export class DatasetDetailComponent implements OnInit {
   pageIdx = 1;
   numPages = 1;
 
-  constructor(private appService: AppService, private activeRoute: ActivatedRoute, private location: Location) { }
+  constructor(private appService: AppService, private activeRoute: ActivatedRoute, private location: Location, private authService: AuthService) { }
 
   ngOnInit() {
     //this.appService.setMenuIdx(3);
@@ -154,7 +155,8 @@ export class DatasetDetailComponent implements OnInit {
     console.log(dataType);
     this.appService.setLock(true);
     this.appService.sendMsg({action: 'processupload', data: {task: "process", datatype: dataType, uploadtype: 'mytardis', 
-                             fileid: id, filename: filename, auth: info} });
+                             fileid: id, filename: filename, auth: info,
+                             userId: this.authService.userDetails.uid, userEmail: this.authService.userDetails.email } });
                              
     let x = document.querySelector("#processing_anchor");
     if (x){

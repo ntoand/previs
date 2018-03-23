@@ -6,7 +6,7 @@
 export const environment = {
   production: false,
   ws_url: 'https://mivp-dws1.erc.monash.edu:3000',
-  version: 'v0.2 dev',
+  version: 'v0.3 dev',
   firebase: {
     apiKey: 'AIzaSyCClh2ceNqqWi1D3xAxPksVXlGtHE-83rA',
     authDomain: 'previs2018.firebaseapp.com',

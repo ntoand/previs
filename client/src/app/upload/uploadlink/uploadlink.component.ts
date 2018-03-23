@@ -1,5 +1,6 @@
 import { Component, OnInit, Input } from '@angular/core';
 import { AppService } from '../../core/app.service';
+import { AuthService } from '../../core/auth.service';
 
 @Component({
   selector: 'app-uploadlink',
@@ -8,7 +9,7 @@ import { AppService } from '../../core/app.service';
 })
 export class UploadlinkComponent implements OnInit {
 
-  constructor(private appService: AppService) { }
+  constructor(private appService: AppService, private authService: AuthService) { }
   
   urlStr = '';
   extStr = 'zip';
@@ -27,7 +28,8 @@ export class UploadlinkComponent implements OnInit {
       this.errMsg = 'Please provide valid Google Drive shared link';
       return;
     }
-    this.appService.sendMsg({action: 'processupload', data: {task: "process", url: this.urlStr, ext: this.extStr, datatype: this.dataType, uploadtype: 'link'} });
+    this.appService.sendMsg({action: 'processupload', data: {task: "process", url: this.urlStr, ext: this.extStr, datatype: this.dataType, uploadtype: 'link',
+                                                              userId: this.authService.userDetails.uid, userEmail: this.authService.userDetails.email } });
     
     let x = document.querySelector("#processing_anchor");
     if (x){

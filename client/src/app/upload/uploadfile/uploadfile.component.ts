@@ -2,6 +2,7 @@ import { Component, OnInit, Input, ElementRef, Renderer2 } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpResponse, HttpRequest, HttpEvent, HttpEventType } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
 import { AppService } from '../../core/app.service';
+import { AuthService } from '../../core/auth.service';
 
 @Component({
   selector: 'app-uploadfile',
@@ -10,7 +11,7 @@ import { AppService } from '../../core/app.service';
 })
 export class UploadfileComponent implements OnInit {
 
-  constructor(private http: HttpClient, private renderer: Renderer2, private appService: AppService ) { }
+  constructor(private http: HttpClient, private renderer: Renderer2, private appService: AppService, private authService: AuthService ) { }
   
   uploadPercent = 0;
   selectedFile = '';
@@ -118,7 +119,8 @@ export class UploadfileComponent implements OnInit {
             return;
           }
           this.renderer.selectRootElement('.uploadfile').value = '';
-          this.appService.sendMsg({action: 'processupload', data: {task: "process", file: result.file, datatype: this.dataType, uploadtype: 'local'} });
+          this.appService.sendMsg({action: 'processupload', data: {task: "process", file: result.file, datatype: this.dataType, uploadtype: 'local',
+                                                                    userId: this.authService.userDetails.uid, userEmail: this.authService.userDetails.email} });
           
           let x = document.querySelector("#processing_anchor");
           if (x){

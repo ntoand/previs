@@ -16,6 +16,7 @@
     "crypto": "0.0.3",
     "express": "^4.13.3",
     "extract-zip": "^1.6.6",
+    "firebase-admin": "^5.11.0",
     "formidable": "^1.0.17",
     "mongodb": "^2.2.5",
     "socket.io": "^1.4.4",

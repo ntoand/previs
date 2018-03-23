@@ -4,4 +4,4 @@ build
 dist
 node_modules
 .git.bk
-
+server/private

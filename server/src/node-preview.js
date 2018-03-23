@@ -1,19 +1,29 @@
 // require variables to be declared
 'use strict';
 
-var dbmanager   = require('./node-mongodb');
+var myutils 	= require('./node-utils');
 
 function processTag(io, data) {
     
     console.log('node-preview - processTag');
-    dbmanager.getTag(data.tag, function(err, res){
-        if (err) {
-			io.emit('message', { action: 'processtag', data: {status: 'error', result: err } });
-			//throw err;
-			return;
-		} 
-		io.emit('message', { action: 'processtag', data: { status: 'done', result: res } });
-    });
+    if(data.userEmail !== undefined) {
+        data.db.getTagsByUserEmail(data.userEmail, function(err, res){
+           if(err) {
+               myutils.packAndSend(io, 'processtag', {status: 'error', result: err});
+    		   return;
+           } 
+           myutils.packAndSend(io, 'processtag', {status: 'done', result: res});
+        });
+    }
+    else { //deprecated
+        data.db.getTag(data.tag, function(err, res){
+            if (err) {
+                myutils.packAndSend(io, 'processtag', {status: 'error', result: err});
+    			return;
+    		} 
+    		myutils.packAndSend(io, 'processtag', {status: 'done', result: res});
+        });
+    }
 }
 
 module.exports.processTag = processTag;

@@ -5,40 +5,34 @@
 </div>
 
 <div *ngIf="authService.isLoggedIn()" class="with-min-height">
-  <form class="review-form">
-    <mat-form-field class="example-full-width">
-      <input matInput placeholder="Input tag e.g. abc123" [(ngModel)]="input_tag" name="input_tag">
-    </mat-form-field>
-     <span class="hide"><button mat-raised-button (click)="onGoClick($event)" type="submit">Go</button></span>
-  </form>
+  
+  <p><button mat-raised-button color='primary' (click)="onLoadTags($event)">Load my tags</button></p>
   
   <div class="alert-box {{message.type}}" *ngIf="message.content !== ''">
     <span>{{message.type}}: </span>{{message.content}}
   </div>
   
-  <div *ngIf="dataset.tag !== ''" class='dataset'>
-    
-    <mat-card>
-      <mat-card-header>
-        <mat-card-title><b>{{dataset.tag}} ({{dataset.type | lowercase}})</b></mat-card-title>
-        <mat-card-subtitle><p>Date: {{dataset.dateStr}}</p>
-                           <p>Size: {{dataset.size}}</p></mat-card-subtitle>
-      </mat-card-header>
-      <img mat-card-image src={{dataset.imgUrl}} alt={{dataset.tag}}>
-      <!--
-      <mat-card-content>
-        <p>
-          The Shiba Inu is the smallest of the six original and distinct spitz breeds of dog from Japan.
-          A small, agile dog that copes very well with mountainous terrain, the Shiba Inu was originally
-          bred for hunting.
-        </p>
-      </mat-card-content>
-      -->
-      <mat-card-actions>
-        <a href={{dataset.viewUrl}} target="_blank"><button mat-button color='primary'>VIEW ON WEB</button></a>
-      </mat-card-actions>
-    </mat-card>
-    
+  <div *ngIf="datasets.length > 0">
+   
+    <div fxLayout="row wrap" fxLayoutAlign="start center" fxLayoutGap="10px">
+      
+      <div class = "tag-detail" *ngFor="let dataset of datasets">
+        <mat-card >
+          <mat-card-header>
+            <mat-card-title><b>{{dataset.tag}} ({{dataset.type | lowercase}})</b></mat-card-title>
+            <mat-card-subtitle><p>Date: {{dataset.dateStr}}</p>
+                               <p>Size: {{dataset.size}}</p></mat-card-subtitle>
+          </mat-card-header>
+          <img mat-card-image src={{dataset.imgUrl}} height="200" alt={{dataset.tag}}>
+          <mat-card-actions>
+            <a href={{dataset.viewUrl}} target="_blank"><button mat-button color='primary'>VIEW ON WEB</button></a>
+            <button mat-button color='warn' (click)="onDeleteTag(dataset.tag)">DELETE</button>
+          </mat-card-actions>
+        </mat-card>
+      </div>
+      
+    </div>
+      
   </div>
-
+  
 </div>

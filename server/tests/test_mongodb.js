@@ -2,7 +2,7 @@ var dbmanager   = require('../src/node-mongodb');
 
 //var testcase = 0; // create, insert, display all tags
 //var testcase = 1; // get a tag
-var testcase = 2; // delete a tag
+var testcase = 1; // delete a tag
 //var testcase = 3; // display all tags
 
 if (testcase == 0) {
@@ -18,7 +18,7 @@ if (testcase == 0) {
     });
 }
 else if (testcase == 1) {
-    var tag = '576951';
+    var tag = '8b9ace';
     dbmanager.getTag(tag, function(err, result) {
        console.log(result); 
     });

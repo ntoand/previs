@@ -1,20 +1,20 @@
 'use strict';
 
 var fs 			= require('fs');
-var dbmanager   = require('./node-mongodb');
 var path        = require('path');
 var config		= require('./node-config').config; 
+var myutils 	= require('./node-utils');
 
 // ===============================
 function getTags(io, data) {
 
     var tags = [];
   
-    dbmanager.getAllTags(function(err, rows) { 
+    data.db.getAllTags(function(err, rows) { 
         //console.log(err);
         //console.log(rows);
         if(err) {
-            io.emit('admingettags', {status: 'error', result: 'cannot_get_tags', detail: 'cannot_get_tags'});
+            myutils.packAndSend(io, 'admingettags', {status: 'error', result: 'cannot_get_tags'});
             return;
         }
         for (var i=0, l=rows.length; i < l; i++) {
@@ -33,10 +33,9 @@ function getTags(io, data) {
             tags.push(t);
         }
         //console.log(tags);
-        io.emit('admingettags', {status: 'done', result: tags});
+        myutils.packAndSend(io, 'admingettags', {status: 'done', result: tags});
     });
 }
-
 
 var deleteFolderRecursive = function(dir) {
   if( fs.existsSync(dir) ) {
@@ -52,22 +51,45 @@ var deleteFolderRecursive = function(dir) {
   }
 };
 
-// ===============================
-function deleteTags(io, data) {
-    for (var i=0, l=data.length; i < l; i++) {
-        var tag =  data[i].tag;
-        console.log(tag);
-        var tag_dir = config.tags_data_dir + tag;
+function deleteTag(io, data, item) {
+    var tag = item.tag;
+    var userId = item.userId;
+    data.db.getTag(tag, function(err, res){
+        if (err) {
+            myutils.packAndSend(io, 'processtag', {status: 'error', result: err});
+    		return;
+    	} 
+    	if(res === null) {
+    	    myutils.packAndSend(io, 'processtag', {status: 'error', result: 'tag not found'});
+    		return;
+    	}
+    	if(res.userId !== userId) {
+    	    myutils.packAndSend(io, 'processtag', {status: 'error', result: 'userId not match'});
+    		return;
+    	}
+    	//delete tag and data
+    	var tag_dir = config.tags_data_dir + tag;
         console.log('delete ' + tag_dir);
         deleteFolderRecursive(tag_dir);
         
         //delete tag in database
-        dbmanager.deleteTag(tag, function(err) {
+        data.db.deleteTag(tag, function(err) {
             if(err)
-                io.emit('admindeletetags', {status: 'error', result: data, detail: 'failed to delete tag'});
+                myutils.packAndSend(io, 'admindeletetags', {status: 'error', result: data, detail: 'failed to delete tag'});
             else
-                io.emit('admindeletetags', {status: 'done', result: data});
+                myutils.packAndSend(io, 'admindeletetags', {status: 'done', result: data});
         });
+    });
+}
+
+
+
+// ===============================
+function deleteTags(io, data) {
+    for (var i=0, l=data.tags.length; i < l; i++) {
+        var item =  data.tags[i];
+        console.log(item);
+        deleteTag(io, data, item);
     }
 }
 
