@@ -102,9 +102,12 @@ export class ReviewComponent implements OnInit {
     this.appService.sendMsg({action: 'processtag', data: {userEmail: this.authService.userDetails.email}});
   }
   
-  onDeleteTag($event) {
-    
+  onDeleteTag($event, childtag) {
+    //console.log(childtag);
     const tag = $event;
+    if(tag !== childtag)
+      return;
+  
     console.log('delete ' + tag);
     let dialogRef = this.dialog.open(ConfirmdialogComponent, {
       width: '300px',
@@ -118,7 +121,11 @@ export class ReviewComponent implements OnInit {
     });
   }
   
-  onUpdateTag($event) {
+  onUpdateTag($event, childtag) {
+    //console.log(childtag);
+    if($event.tag !== childtag)
+      return;
+      
     this.noteStrPrev = $event.noteStrPrev;
     this.appService.sendMsg({action: 'adminupdatetag', data: {tag: $event.tag, data: {note: $event.noteStr}}});
   }
