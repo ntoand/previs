@@ -17,18 +17,7 @@
     <div fxLayout="row wrap" fxLayoutAlign="start center" fxLayoutGap="10px">
       
       <div class = "tag-detail" *ngFor="let dataset of datasets">
-        <mat-card >
-          <mat-card-header>
-            <mat-card-title><b>{{dataset.tag}} ({{dataset.type | lowercase}})</b></mat-card-title>
-            <mat-card-subtitle><p>Date: {{dataset.dateStr}}</p>
-                               <p>Size: {{dataset.size}}</p></mat-card-subtitle>
-          </mat-card-header>
-          <img mat-card-image src={{dataset.imgUrl}} height="200" alt={{dataset.tag}}>
-          <mat-card-actions>
-            <a href={{dataset.viewUrl}} target="_blank"><button mat-button color='primary'>VIEW ON WEB</button></a>
-            <button mat-button color='warn' (click)="onDeleteTag(dataset.tag)">DELETE</button>
-          </mat-card-actions>
-        </mat-card>
+        <app-tag-detail [dataset]="dataset" (deleteTagEvent)="onDeleteTag($event)" (updateTagEvent)="onUpdateTag($event)"></app-tag-detail>
       </div>
       
     </div>

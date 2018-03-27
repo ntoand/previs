@@ -1,0 +1,17 @@
+.small-button {
+    font-size: 20px;
+    vertical-align: middle;
+}
+
+.input-str {
+    width: 80%;
+    padding: 2px 2px;
+}
+
+.width-100 {
+    width: 320px;
+}
+
+.sub-title div {
+    padding: 5px 0px;
+}

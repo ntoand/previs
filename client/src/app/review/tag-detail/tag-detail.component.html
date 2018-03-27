@@ -1,0 +1,26 @@
+<mat-card *ngIf='dataset'>
+  <mat-card-header>
+    <mat-card-title><b>{{dataset.tag}} ({{dataset.type | lowercase}})</b></mat-card-title>
+    <mat-card-subtitle >
+      
+      <div class="width-100">
+        <div>Date: {{dataset.dateStr}}</div>
+        <div>Size: {{dataset.size}}</div>
+        <div *ngIf='editMode === false'>Note: {{noteStr}} 
+            <a href="#" (click)="onEnableEdit($event)"><mat-icon class="small-button">edit</mat-icon></a> 
+        </div>
+        <div *ngIf='editMode === true'>
+            <span><input [(ngModel)]="noteStr" class="input-str"></span>
+            <span><a href="#" (click)="onEditGo($event)"><mat-icon class="small-button">check</mat-icon></a></span>
+            <span><a href="#" (click)="onEditCancel($event)"><mat-icon class="small-button">close</mat-icon></a></span>
+        </div>
+      </div>
+    
+    </mat-card-subtitle>
+  </mat-card-header>
+  <img mat-card-image src={{dataset.imgUrl}} height="200" alt={{dataset.tag}}>
+  <mat-card-actions>
+    <a href={{dataset.viewUrl}} target="_blank"><button mat-button color='primary'>VIEW ON WEB</button></a>
+    <button mat-button color='warn' (click)="onDeleteTag(dataset.tag)">DELETE</button>
+  </mat-card-actions>
+</mat-card>

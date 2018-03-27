@@ -7,6 +7,7 @@ export class Dataset {
   dateStr: string;
   imgUrl: string;
   viewUrl: string;
+  note: string;
   
   constructor() { 
     this.clear();
@@ -19,6 +20,7 @@ export class Dataset {
     this.size = '';
     this.imgUrl = '';
     this.viewUrl = '';
+    this.note = '';
   }
 
   parseResult(data) {
@@ -40,8 +42,10 @@ export class Dataset {
     this.tag = result.tag;
     this.type = result.type;
     this.size = result.volumes[0].res.toString();
+    
     let d = new Date(result.date);
-    this.dateStr = d.toString();
+    //this.dateStr = d.toString();
+    this.dateStr = d.toLocaleDateString() + ' ' + d.toLocaleTimeString();
     if (this.type === 'volume') {
       this.imgUrl =  environment.ws_url + '/' + result.volumes[0].thumb;  
       this.viewUrl = environment.ws_url + '/sharevol/index.html?data=' + result.volumes[0].json_web + '&reset';
@@ -55,6 +59,11 @@ export class Dataset {
       this.imgUrl = 'assets/img/no-image-box.png';
       this.viewUrl = environment.ws_url + '/data/tags/' + result.tag + '/point_result/potree.html';
     }
+    
+    if(result.note !== undefined && result.note !== null)
+      this.note = result.note;
+    else
+      this.note = '';
     
   }
   

@@ -112,5 +112,16 @@ FilebaseManager.prototype.deleteTag = function(tag, callback) {
     });
 }
 
+FilebaseManager.prototype.updateTag = function(tag, data, callback) {
+    var tagRef = this.db.collection('tags').doc(tag);
+    tagRef.update(data)
+    .then(doc => {
+        callback(null);
+    })
+    .catch(err => {
+        callback(err);
+    });
+}
+
 // export the class
 module.exports = FilebaseManager;

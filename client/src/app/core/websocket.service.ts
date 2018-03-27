@@ -21,7 +21,8 @@ export class WebsocketService {
     // from our socket.io server.
     let observable = new Observable(observer => {
         this.socket.on('message', (data) => {
-          console.log("Received message from Websocket Server")
+          console.log("Received message from Websocket Server");
+          //console.log(data);
           observer.next(data);
         })
         return () => {

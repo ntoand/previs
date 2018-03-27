@@ -32,6 +32,7 @@ import { environment } from '../environments/environment';
 import { LoginComponent } from './login/login.component';
 import { AuthService } from './core/auth.service';
 import { ConfirmdialogComponent } from './core/confirmdialog/confirmdialog.component';
+import { TagDetailComponent } from './review/tag-detail/tag-detail.component';
 
 @NgModule({
   declarations: [
@@ -48,7 +49,8 @@ import { ConfirmdialogComponent } from './core/confirmdialog/confirmdialog.compo
     ExperimentDetailComponent,
     DatasetDetailComponent,
     LoginComponent,
-    ConfirmdialogComponent
+    ConfirmdialogComponent,
+    TagDetailComponent
   ],
   imports: [
     BrowserModule,

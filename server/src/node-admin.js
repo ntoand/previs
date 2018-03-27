@@ -56,15 +56,15 @@ function deleteTag(io, data, item) {
     var userId = item.userId;
     data.db.getTag(tag, function(err, res){
         if (err) {
-            myutils.packAndSend(io, 'processtag', {status: 'error', result: err});
+            myutils.packAndSend(io, 'admindeletetags', {status: 'error', result: err});
     		return;
     	} 
     	if(res === null) {
-    	    myutils.packAndSend(io, 'processtag', {status: 'error', result: 'tag not found'});
+    	    myutils.packAndSend(io, 'admindeletetags', {status: 'error', result: 'tag not found'});
     		return;
     	}
     	if(res.userId !== userId) {
-    	    myutils.packAndSend(io, 'processtag', {status: 'error', result: 'userId not match'});
+    	    myutils.packAndSend(io, 'admindeletetags', {status: 'error', result: 'userId not match'});
     		return;
     	}
     	//delete tag and data
@@ -82,8 +82,6 @@ function deleteTag(io, data, item) {
     });
 }
 
-
-
 // ===============================
 function deleteTags(io, data) {
     for (var i=0, l=data.tags.length; i < l; i++) {
@@ -93,5 +91,18 @@ function deleteTags(io, data) {
     }
 }
 
+function updateTag(io, data) {
+    var tag = data.tag;
+    var updatedata = data.data;
+    
+    data.db.updateTag(tag, updatedata, function(err) {
+        if (err) 
+            myutils.packAndSend(io, 'adminupdatetag', {status: 'error', result: err});
+    	else 
+    	    myutils.packAndSend(io, 'adminupdatetag', {status: 'done', result: {tag: tag, data: updatedata}});
+    });
+}
+
 module.exports.getTags = getTags;
 module.exports.deleteTags = deleteTags;
+module.exports.updateTag = updateTag;

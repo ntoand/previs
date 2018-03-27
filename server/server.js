@@ -135,6 +135,9 @@ io.on('connection', function (socket) {
   		else if(msg.action === 'admindeletetags') {
   			myadmin.deleteTags(socket, msg.data);
   		}
+  		else if(msg.action === 'adminupdatetag') {
+  			myadmin.updateTag(socket, msg.data);
+  		}
   		else if (msg.action === 'processupload') {
   			myupload.processUpload(socket, msg.data);
   		}
