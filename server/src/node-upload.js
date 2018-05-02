@@ -450,6 +450,7 @@ function sendViewDataToClient_Meshes(io, data) {
 			tag_json.source='localupload';
 			tag_json.date=Date.now();
 			tag_json.data = data.file;
+			tag_json.processedData = 'data/tags/' + data.tag + '/mesh_processed.zip';
 			tag_json.userId = data.userId;
 			tag_json.userEmail = data.userEmail;
 
@@ -524,7 +525,8 @@ function convertPointcloud(io, data, in_file) {
 			tag_json.type='point'
 			tag_json.source='localupload';
 			tag_json.date=Date.now();
-			tag_json.data = tag_url + data.inputfilename + '_processed.' + data.inputfileext;
+			tag_json.data = tag_url + data.inputfilename + data.inputfileext;
+			tag_json.processedData = 'data/tags/' + data.tag + '/point_processed.zip';
 			tag_json.userId = data.userId;
 			tag_json.userEmail = data.userEmail;
 				
