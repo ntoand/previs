@@ -5,14 +5,14 @@
 
 export const environment = {
   production: false,
-  ws_url: 'https://mivp-dws1.erc.monash.edu:3000',
+  ws_url: 'http://118.138.241.179:3000',
   version: 'v0.3 dev',
   firebase: {
-    apiKey: 'AIzaSyCClh2ceNqqWi1D3xAxPksVXlGtHE-83rA',
-    authDomain: 'previs2018.firebaseapp.com',
-    databaseURL: 'https://previs2018.firebaseio.com',
-    projectId: 'previs2018',
-    storageBucket: 'previs2018.appspot.com',
-    messagingSenderId: '12491120058'
+    apiKey: "AIzaSyDd6RZBynp_lsbJZ5N1IpO5IGPGcnFgBko",
+    authDomain: "previs-dev.firebaseapp.com",
+    databaseURL: "https://previs-dev.firebaseio.com",
+    projectId: "previs-dev",
+    storageBucket: "previs-dev.appspot.com",
+    messagingSenderId: "862413634236"
   }
 };

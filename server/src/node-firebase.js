@@ -4,10 +4,22 @@ const fbadmin = require("firebase-admin");
 
 // Constructor
 function FilebaseManager() {
-    var serviceAccount = require(config.firebase_service_acc_key);
+    var serviceAccount = null;
+    var dburl = null;
+    if (process.env.NODE_ENV === "development")  {
+        serviceAccount = require(config.firebase_service_acc_key_dev);
+        dburl = "https://previs-dev.firebaseio.com"
+        console.log("Development firebase key " + config.firebase_service_acc_key_dev);
+    }
+    else {
+        serviceAccount = require(config.firebase_service_acc_key);
+        dburl = "https://previs2018.firebaseio.com";
+        console.log("Production firebase key " + config.firebase_service_acc_key);
+    }
+            
     fbadmin.initializeApp({
         credential: fbadmin.credential.cert(serviceAccount),
-        databaseURL: "https://previs2018.firebaseio.com"
+        databaseURL: dburl
     });
     this.db = fbadmin.firestore();
 }

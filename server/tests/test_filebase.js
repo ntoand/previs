@@ -2,7 +2,7 @@ var FilebaseManager   = require('../src/node-firebase');
 
 var object = new FilebaseManager();
 
-test = 3; //0: add/get some data;  1: check and create new tag; 2: retrieve tags; 3: get a tag
+test = 1; //0: add/get some data;  1: check and create new tag; 2: retrieve tags; 3: get a tag
 
 if(test === 0) {
     var tag = '1111';

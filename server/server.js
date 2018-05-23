@@ -21,6 +21,16 @@ var mytardis	  = require('./src/node-mytardis');
 var FilebaseManager   = require('./src/node-firebase');
 var fbmanager = new FilebaseManager();
 
+if (process.env.NODE_ENV === "development")  {
+	console.log("RUN DEV MODE");
+} else {
+	console.log("RUN PROD MODE");
+}
+
+process.argv.forEach(function (val, index, array) {
+  console.log(index + ': ' + val);
+});
+
 
 // ===== INITIALISATION ======
 var app = express();

@@ -1,20 +1,15 @@
-# Previs
+# Previs web server
 
-## Tech stack
+To process data recevied from web client app
 
-- Node.js
-- MongoDB
-- Python: processing scripts
-- Javascript, html, css: web client
-- Electron: client app
+## Setup
 
-## Install:
+### Firebase firestore
 
-- Install python, node.js, mongodb
-- Go to previs directory
-- Run $ npm install
-- Make a symbol link $ ln -s public/data mesh/
+### s2plot/s2volsurf to process volume data
 
-## Run:
-- Go to previs directory
-- run ./GO.sh
+### Meshlab to process mesh data
+
+### PotreeConverter to convert pointcloud data
+
+### Python packages
