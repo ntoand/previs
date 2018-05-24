@@ -179,20 +179,21 @@ function processUploadFile_Volumes(io, data) {
 	console.log(data);
 	
 	var inputfile = data.inputfile;
-	var cmd = 'cd ' + config.scripts_dir + ' && python tiff2tga.py -i ' + inputfile + ' -o ' + data.tagdir;
+	var out_dir = data.tagdir + '/volume_result';
+	var cmd = 'cd ' + config.scripts_dir + ' && python processvolume.py -i ' + inputfile + ' -o ' + out_dir;
 	console.log(cmd);
-	myutils.packAndSend(io, 'processupload', {status: 'working', result: 'Converting tiff to tga...'})
+	myutils.packAndSend(io, 'processupload', {status: 'working', result: 'Converting image stack to xrw...'})
 	exec(cmd, function(err, stdout, stderr) 
     {
     	console.log(stdout);
     	console.log(stderr);
     	if(err)
 		{
-			myutils.packAndSend(io, 'processupload', {status: 'error', result: 'cannot convert tiff to tga', detail: stderr});
+			myutils.packAndSend(io, 'processupload', {status: 'error', result: 'cannot convert image stack to xrw', detail: stderr});
 			return;
 		}
-		myutils.packAndSend(io, 'processupload', {status: 'working', result: 'Converting tga to xrw...'});
-		convertToXRW(io, data);
+		myutils.packAndSend(io, 'processupload', {status: 'working', result: 'Converting xrw to png...'});
+		convertXRWToPNG(io, data);
     });
 }
 
@@ -207,7 +208,7 @@ function processUploadFile_Meshes(io, data) {
 	var inputfilename = data.inputfilename;
 
 	var out_dir = data.tagdir + '/mesh_result';
-	var cmd = 'cd ' + config.scripts_dir + ' && python meshprocess.py -i ' + inputfile + ' -o ' + out_dir;
+	var cmd = 'cd ' + config.scripts_dir + ' && python processmesh.py -i ' + inputfile + ' -o ' + out_dir;
 	console.log(cmd);
 	exec(cmd, function(err, stdout, stderr) 
     {
@@ -258,33 +259,9 @@ function processUploadFile_Points(io, data)
 	}
 }
 
-function convertToXRW(io, data) {
+function convertXRWToPNG(io, data) {
 	
-	var inputfilename = data.inputfilename;
-	var tga_dir = data.tagdir + '/' + inputfilename + '_tga';
-	var result_dir = data.tagdir + '/' + inputfilename + '_result';
-	
-	var cmd = 'cd ' + config.scripts_dir + ' && tgastack2xrw -f ' + tga_dir + '/%04d.tga -o ' + result_dir + '/vol.xrw && rm -rf ' + tga_dir;
-	console.log(cmd);
-
-	exec(cmd, function(err, stdout, stderr) 
-    {
-    	console.log(stdout);
-    	console.log(stderr);
-    	if(err)
-		{
-			myutils.packAndSend(io, 'processupload', {status: 'error', result: 'cannot convert tga to xwr', detail: stderr});
-			return;
-		}
-		myutils.packAndSend(io, 'processupload', {status: 'working', result: 'Converting xrw to png...'});
-		convertToPNG(io, data);
-    });
-}
-
-function convertToPNG(io, data) {
-	
-	var inputfilename = data.inputfilename;
-	var result_dir = data.tagdir + '/' + inputfilename + '_result';
+	var result_dir = data.tagdir + '/volume_result';
 	var xrwfile = result_dir + '/vol.xrw';
 	
 	var cmd = 'xrwinfo ' + xrwfile + ' | grep dimensions';
@@ -301,7 +278,9 @@ function convertToPNG(io, data) {
     	var vol_res = [parseInt(res[2]), parseInt(res[3]), parseInt(res[4])];
     	var max_val = Math.max.apply(Math, vol_res);
     	var resize_factor = 1;
-    	if(max_val > 2048)
+    	if(max_val > 4069)
+    		resize_factor = 8;
+    	else if(max_val > 2048)
     		resize_factor = 4;
     	else if (max_val > 1024)
     		resize_factor = 2;

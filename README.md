@@ -30,6 +30,13 @@ npm run build
 
 ### Server
 
+- Rebuild sharevol (if needed)
+```
+cd server/public/sharevols
+make
+cp lib/sharevol-all.js sharevol.js
+```
+
 - Build PotreeConverter 
 ```
 cd server/potree

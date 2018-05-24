@@ -13,3 +13,5 @@ To process data recevied from web client app
 ### PotreeConverter to convert pointcloud data
 
 ### Python packages
+
+- Pillow (5.1.0)
