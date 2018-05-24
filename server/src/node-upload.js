@@ -201,12 +201,13 @@ function processUploadFile_Meshes(io, data) {
 	console.log('processUploadFile_Meshes');
 	console.log(data);
 	
-	myutils.packAndSend(io, 'processupload', {status: 'working', result: 'Processing tree of meshes...'});
+	myutils.packAndSend(io, 'processupload', {status: 'working', result: 'Processing meshes...'});
 	var filename = data.file;
 	var inputfile = data.inputfile;
 	var inputfilename = data.inputfilename;
 
-	var cmd = 'cd ' + config.scripts_dir + ' && python processtree.py -f ' + inputfile + ' -o ' + data.tagdir + ' -n ' + inputfilename + '_result';
+	var out_dir = data.tagdir + '/mesh_result';
+	var cmd = 'cd ' + config.scripts_dir + ' && python meshprocess.py -i ' + inputfile + ' -o ' + out_dir;
 	console.log(cmd);
 	exec(cmd, function(err, stdout, stderr) 
     {
@@ -408,75 +409,43 @@ function sendViewDataToClient(io, data) {
 function sendViewDataToClient_Meshes(io, data) {
 	
 	var basename = data.inputfilename;
-	var jsontemp = path.dirname(process.mainModule.filename) + '/src/template.json';
-	var jsonfile = data.tagdir + '/' + basename + '_result/mesh.json';
 
 	var tag_url = 'data/tags/' + data.tag + '/';
 	var jsonurl = tag_url + basename + '_result/mesh.json';
 	var initurl = tag_url + basename + '_result/init.script';
-	var thumburl = tag_url + basename + '_result/vol_web_thumb.png';
-	var pngurl = tag_url + basename + '_result/vol_web.png';
-	var xrwurl = tag_url + basename + '_result/vol.xrw';
-	
-	var processedzip = basename + '_processed.zip';
-	var zipurl = tag_url + processedzip;
-	
 
-	fs.readFile(jsontemp, 'utf8', function (err, jsondata) {
+	// write to database
+	var tag_json = {};
+	tag_json.tag=data.tag;
+	tag_json.type='mesh'
+	tag_json.source= data.uploadtype;
+	tag_json.date=Date.now();
+	tag_json.data = data.file;
+	tag_json.processedData = 'data/tags/' + data.tag + '/mesh_processed.zip';
+	tag_json.userId = data.userId;
+	tag_json.userEmail = data.userEmail;
+
+	var volumes = [];
+	var volume = {};
+	volume.data_dir=tag_url + basename + '_result';
+	volume.json=jsonurl;
+	volume.initscr = initurl;
+	volume.res = [0, 0, 0];
+	volumes.push(volume);
+	tag_json.volumes=volumes;
+	
+	data.db.insertNewTag(tag_json, function(err, res) {
 		if (err) {
-			myutils.packAndSend(io, 'processupload', {status: 'error', result: 'cannot_generate_json'});
-			console.log(err);
+			myutils.packAndSend(io, 'processupload', {status: 'error', result: 'cannot_generate_tag_json'});
 			return;
 		} 
-		var obj = JSON.parse(jsondata);
-		obj.objects[0].volume.url = tag_url + basename + '_result/vol.png';
-
-		// normally, we would get the properties of the volume here, but this is for meshes!
-		// get any additional mesh properties if needed (e.g. mesh count, face/vertex count, group count, bounding box etc.)
-		obj.objects[0].volume.res = [0, 0, 0];
-
-		//write
-		fs.writeFile( jsonfile, JSON.stringify(obj, null, 4), function(err) {
-			if (err) {
-				myutils.packAndSend(io, 'processupload', {status: 'error', result: 'cannot_generate_json'});
-				console.log(err);
-				return;
-			} 
-			
-			// write to database
-			var tag_json = {};
-			tag_json.tag=data.tag;
-			tag_json.type='mesh'
-			tag_json.source='localupload';
-			tag_json.date=Date.now();
-			tag_json.data = data.file;
-			tag_json.processedData = 'data/tags/' + data.tag + '/mesh_processed.zip';
-			tag_json.userId = data.userId;
-			tag_json.userEmail = data.userEmail;
-
-			var volumes = [];
-			var volume = {};
-			volume.data_dir=tag_url + basename + '_result';
-			volume.json=jsonurl;
-			volume.initscr = initurl;
-			volume.thumb=thumburl;
-			volume.png=pngurl;
-			volume.xrw=xrwurl;
-			volume.zip=zipurl;
-			volume.res=obj.objects[0].volume.res;
-			volumes.push(volume);
-			tag_json.volumes=volumes;
-			
-			data.db.insertNewTag(tag_json, function(err, res) {
-				if (err) {
-					myutils.packAndSend(io, 'processupload', {status: 'error', result: 'cannot_generate_tag_json'});
-					//throw err;
-					return;
-				} 
-				myutils.packAndSend(io, 'processupload', {status: 'done', result: tag_json});
-			});
-
-	    });		
+		myutils.packAndSend(io, 'processupload', {status: 'done', result: tag_json});
+		
+		// clean up and zip mesh folder
+		myutils.zipDirectory(data.tagdir, 'mesh_result', data.tagdir + '/mesh_processed.zip');
+		if (myutils.fileExists(data.inputfile)) {
+			fs.unlink(data.inputfile);
+		}
 	});
 }
 
