@@ -10,8 +10,8 @@ import shutil
 # Date: May 2018
 
 def help():
-    print ('Usage: tiff2tga.py [-h] -i input_file -o output_dir')
-    print ('Example: tiff2tga.py -i /path/to/tiffs.zip -o /path/to/data')
+    print ('Usage: meshprocess.py [-h] -i input_file -o output_dir [-v]')
+    print ('Example: meshprocess.py -i /path/to/meshes.zip -o /path/to/data')
 
 
 def validFilename(filename):
