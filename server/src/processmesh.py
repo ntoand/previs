@@ -10,8 +10,8 @@ import shutil
 # Date: May 2018
 
 def help():
-    print ('Usage: meshprocess.py [-h] -i input_file -o output_dir [-v]')
-    print ('Example: meshprocess.py -i /path/to/meshes.zip -o /path/to/data')
+    print ('Usage: processmesh.py [-h] -i input_file -o output_dir [-v]')
+    print ('Example: processmesh.py -i /path/to/meshes.zip -o /path/to/data')
 
 
 def validFilename(filename):
@@ -136,13 +136,12 @@ def processMeshes(infile, outdir, verbose = False):
         groupjson = {}
         groupjson["name"] = key
         groupjson["visible"] = True
+        groupjson["colour"] = [255, 255, 255]
+        groupjson["alpha"] = 1
         groupjson["objects"] = []
         for objfile in groups[key]["obj"]:
             objjson = {}
             objjson["obj"] = objfile
-            objjson["colour"] = [255, 255, 255]
-            objjson["alpha"] = 1
-            objjson["visible"] = True
             mtlname = os.path.splitext(objfile)[0] + ".mtl"
             if mtlname in groups[key]["mtl"]:
                 objjson["hasmtl"] = True
