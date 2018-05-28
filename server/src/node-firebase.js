@@ -87,6 +87,14 @@ FilebaseManager.prototype.getTagsByUserEmail = function(email, callback) {
                 //console.log(doc.id, '=>', doc.data());
                 data.push({id: doc.id, data: doc.data()});
             });
+            // sort by date
+            data.sort(function(a, b){
+                var datea = a.data.date;
+                var dateb = b.data.date;
+                if(datea > dateb) return -1;
+                if(datea < dateb) return 1;
+                return 0;
+            });
             callback(null, data);
         })
         .catch(err => {
@@ -104,6 +112,14 @@ FilebaseManager.prototype.getAllTags = function(callback) {
             snapshot.forEach(doc => {
                 //console.log(doc.id, '=>', doc.data());
                 data.push({id: doc.id, data: doc.data()});
+            });
+            // sort by date
+            data.sort(function(a, b){
+                var datea = a.data.date;
+                var dateb = b.data.date;
+                if(datea > dateb) return -1;
+                if(datea < dateb) return 1;
+                return 0;
             });
             callback(null, data);
         })

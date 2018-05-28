@@ -1,6 +1,6 @@
 import os
 import sys
-import getopt
+import argparse
 import zipfile
 import os.path
 import json
@@ -8,11 +8,6 @@ import shutil
 
 # Author: Toan Nguyen
 # Date: May 2018
-
-def help():
-    print ('Usage: processmesh.py [-h] -i input_file -o output_dir [-v]')
-    print ('Example: processmesh.py -i /path/to/meshes.zip -o /path/to/data')
-
 
 def validFilename(filename):
     """
@@ -161,51 +156,43 @@ def processMeshes(infile, outdir, verbose = False):
         json.dump(metajson, outfile, sort_keys = True, indent = 4, ensure_ascii = False)
 
 
-def main(argv):
+def main():
     """
     Main function
     Input: 
     Output: 
     """
     # parse parameters
-    try:
-        opts, args = getopt.getopt(argv, "hi:o:v", ["ifile", "odir", "verbose"])
-    except getopt.GetoptError as err:
-        print (str(err))
-        help()
-        sys.exit(1)
-
-    input_file = ''
-    output_dir = ''
+    infile = ""
+    outdir = ""
     verbose = False
-    for opt, arg in opts:
-        if opt == '-h':
-            help()
-            sys.exit()
-        elif opt in ("-i", "--ifile"):
-            input_file = arg
-        elif opt in ("-o", "--odir"):
-            output_dir = arg
-        elif opt in ("-v", "--verbose"):
-            verbose = True
 
-    if (input_file == '' or output_dir == ''):
+    parser = argparse.ArgumentParser(description='Convert image to deep zoom using vips')
+    parser.add_argument('-i', '--infile', dest='infile', help='name of input file to process')
+    parser.add_argument('-o', '--outdir', dest='outdir', help='ouput directory e.g. /path/to/tags/avc233')
+    parser.add_argument('-v', '--verbose', action='store_true', help='verbose')
+
+    args = parser.parse_args()
+    infile = args.infile
+    outdir = args.outdir
+    verbose = args.verbose
+    
+    if (infile == '' or outdir == ''):
         print >> sys.stderr, "wrong_input_args"
         raise NameError("wrong_input_args")
 
     # get absopath of outdir
-    output_dir = os.path.abspath(output_dir)
-    if not os.path.exists(output_dir):
-        os.makedirs(output_dir)
+    outdir = os.path.abspath(outdir)
+    if not os.path.exists(outdir):
+        os.makedirs(outdir)
 
     if verbose:
-        print ("input: " + input_file)
-        print ("output: " + output_dir)
+        print (infile, outdir)
 
     # now process zip file
-    processMeshes(input_file, output_dir, verbose)
+    processMeshes(infile, outdir, verbose)
 
 
 # MAIN FUNCTION
 if __name__ == "__main__":
-    main(sys.argv[1:])
+    main()

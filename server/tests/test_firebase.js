@@ -2,7 +2,7 @@ var FilebaseManager   = require('../src/node-firebase');
 
 var object = new FilebaseManager();
 
-test = 1; //0: add/get some data;  1: check and create new tag; 2: retrieve tags; 3: get a tag
+test = 2; //0: add/get some data;  1: check and create new tag; 2: retrieve tags; 3: get a tag
 
 if(test === 0) {
     var tag = '1111';
@@ -46,12 +46,14 @@ else if(test === 1) {
 
 else if(test === 2) {
     
+    /*
     object.getAllTags(function(err, res) {
        if(err) console.log(err);
        else console.log(res);
     });
+    */
     
-    object.getTagsByUserEmail('a@c', function(err, res) {
+    object.getTagsByUserEmail('ntoand@gmail.com', function(err, res) {
        if(err) console.log(err);
        else console.log(res);
     });

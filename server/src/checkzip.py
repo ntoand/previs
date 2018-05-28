@@ -39,9 +39,8 @@ def isPointFile(file):
 
 def main():
     zname = ""
-    containsTiffs = False
-    containsMeshes = False
-
+    type = ""
+    
     parser = argparse.ArgumentParser(description='Checks if a zipfile has a tiff stack or OBJ files')
     parser.add_argument('-f', dest='filename', help='name of zipfile to process')
     parser.add_argument('-t', dest='type', help='type of data to check {volume, mesh, point, image}')
