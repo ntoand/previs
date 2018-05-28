@@ -111,24 +111,26 @@ function processUploadFile(io, data) {
 	var fileext = file.split('.').pop().toLowerCase();
 	var datatype = data.datatype;
 	
-	// check zip file
-	myutils.packAndSend(io, 'processupload', {status: 'working', result: 'Checking zipfile...'});
-	var cmd_test = 'cd ' + config.scripts_dir + ' && python checkzip.py -f ' + filepath + " -t " + datatype;
-	
-	try {
-		console.log(cmd_test);
-		var out = execSync(cmd_test).toString();
-		out = JSON.parse(out)
-		console.log(out);
-		if (!out.match) {
-			myutils.packAndSend(io, 'processupload', {status: 'error', result: out.err});
+	if (fileext === "zip") {
+		// check zip file
+		myutils.packAndSend(io, 'processupload', {status: 'working', result: 'Checking zipfile...'});
+		var cmd_test = 'cd ' + config.scripts_dir + ' && python checkzip.py -f ' + filepath + " -t " + datatype;
+		
+		try {
+			console.log(cmd_test);
+			var out = execSync(cmd_test).toString();
+			out = JSON.parse(out)
+			console.log(out);
+			if (!out.match) {
+				myutils.packAndSend(io, 'processupload', {status: 'error', result: out.err});
+				return;
+			}
+		}
+		catch(err) {
+			console.log("Error!: " + err.message);
+			myutils.packAndSend(io, 'processupload', {status: 'error', result: 'Checking zip file type failed!', detail: err.message});
 			return;
 		}
-	}
-	catch(err) {
-		console.log("Error!: " + err.message);
-		myutils.packAndSend(io, 'processupload', {status: 'error', result: 'Checking zip file type failed!', detail: err.message});
-		return;
 	}
 	
 	data.db.createNewTag(function(err, tag_str) {
