@@ -112,33 +112,23 @@ function processUploadFile(io, data) {
 	var datatype = data.datatype;
 	
 	// check zip file
-	if (datatype === 'volume' || datatype === 'mesh') {
-		myutils.packAndSend(io, 'processupload', {status: 'working', result: 'Checking zipfile...'});
-		var cmd_test = 'cd ' + config.scripts_dir + ' && python checkzip.py -f ' + filepath;
-		try
-		{
-			console.log(cmd_test);
-			var out = execSync(cmd_test).toString();
-			console.log(out);
-			if(datatype === 'mesh' && out.indexOf("Zip file contains meshes") == -1) {
-				myutils.packAndSend(io, 'processupload', {status: 'error', result: 'Zip file has no obj file'});
-				return;
-			}
-			if(datatype === 'volume' && out.indexOf("Zip file contains TIFF files") == -1) {
-				myutils.packAndSend(io, 'processupload', {status: 'error', result: 'Zip file has no TIFF file'});
-				return;
-			}
-			if(out.indexOf("Zip file contains meshes") != -1 && out.indexOf("Zip file contains TIFF files") != -1) {
-				myutils.packAndSend(io, 'processupload', {status: 'error', result: 'Zip file contains both images and meshes - not yet supported'});
-				return;
-			}
-		}
-		catch(err)
-		{
-			console.log("Error!: " + err.message);
-			myutils.packAndSend(io, 'processupload', {status: 'error', result: 'Checking zip file type failed!', detail: err.message});
+	myutils.packAndSend(io, 'processupload', {status: 'working', result: 'Checking zipfile...'});
+	var cmd_test = 'cd ' + config.scripts_dir + ' && python checkzip.py -f ' + filepath + " -t " + datatype;
+	
+	try {
+		console.log(cmd_test);
+		var out = execSync(cmd_test).toString();
+		out = JSON.parse(out)
+		console.log(out);
+		if (!out.match) {
+			myutils.packAndSend(io, 'processupload', {status: 'error', result: out.err});
 			return;
 		}
+	}
+	catch(err) {
+		console.log("Error!: " + err.message);
+		myutils.packAndSend(io, 'processupload', {status: 'error', result: 'Checking zip file type failed!', detail: err.message});
+		return;
 	}
 	
 	data.db.createNewTag(function(err, tag_str) {
@@ -421,7 +411,7 @@ function sendViewDataToClient_Meshes(io, data) {
 		myutils.packAndSend(io, 'processupload', {status: 'done', result: tag_json});
 		
 		// clean up and zip mesh folder
-		myutils.zipDirectory(data.tagdir, 'mesh_result', data.tagdir + '/mesh_processed.zip');
+		myutils.zipDirectory(data.tagdir + '/mesh_result', '', data.tagdir + '/mesh_processed.zip');
 		if (myutils.fileExists(data.inputfile)) {
 			fs.unlink(data.inputfile);
 		}
