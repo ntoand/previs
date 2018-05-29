@@ -319,13 +319,6 @@ var responder = function()
             allGroups.push(group);
         }
 
-        // report the scene content
-        // console.log("Groups");
-        // console.log("======");
-        // console.log(allGroups);
-        // console.log("Models");
-        // console.log("======");
-        // console.log(allModels);
     };
 };
 
@@ -340,102 +333,119 @@ main();
 render();
 
 // loadOBJ() - load a model
-function loadOBJ(filename)
+function loadOBJ(filename, groupname, object)
 {
-    var loader = new THREE.OBJLoader();
-    var obj = null;
-    var filelocation = "data/tags/" + g_tag + "/mesh_result/" + filename;
-    console.log("loadOBJ: filelocation " + filelocation);
-
-    loader.load(filelocation,
-        function(object)
-        {
-            console.log("Model loaded");
-
-            object.position.y = 0;
-            //object.scale.set(20, 20, 20);
-            object.rotation.set(1.5708, 0.0, 0.0);
-            scene.add(object);
-
-            // step through the model hierarchy and smooth everything
-            object.traverse(
-                function(node)
-                {
-                    if(node.geometry !== undefined)
-                    {
-                        console.log("Smoothing and recomputing normals..");
-                        var g = new THREE.Geometry()
-                        g.fromBufferGeometry(node.geometry);
-
-                        g.mergeVertices();
-                        g.computeVertexNormals();
-                        node.geometry.fromGeometry(g);
-                    }
-            });
-
-            var mat = new THREE.MeshBasicMaterial({ color: 0xffffff });
-
-            g_properties.attachModel(filename, object, mat);
-
-            g_sceneOBJLoaded++;
-
-            var title = document.getElementById("viewertitle");
-            if(title != null && g_sceneOBJCount > 0)
-            {
-                var amtLoaded = g_sceneOBJLoaded / g_sceneOBJCount;
-
-                title.innerHTML = "Loading, " + amtLoaded.toFixed(0) + "%";
-            }
-
-            g_allObjectsGroup.add(object);
-
-            // update the bounding box
-            g_objectBounds.setFromObject(g_allObjectsGroup);
-
-            g_lights[0].position.x = g_objectBounds.max.x;
-            g_lights[0].position.y = g_objectBounds.max.y;
-            g_lights[0].position.z = g_objectBounds.max.z;
-            g_lights[1].position.x = g_objectBounds.min.x;
-            g_lights[1].position.y = g_objectBounds.min.y;
-            g_lights[1].position.z = g_objectBounds.min.z;
-
-            console.log("Bounding box: (" +
-                g_objectBounds.min.x + ", " + g_objectBounds.min.y + ", " + g_objectBounds.min.z + ")-(" +
-                g_objectBounds.max.x + ", " + g_objectBounds.max.y + ", " + g_objectBounds.max.z + ")");
-            console.log("Simple centroid: (" +
-                ((g_objectBounds.min.x + g_objectBounds.max.x) / 2) + ", " +
-                ((g_objectBounds.min.y + g_objectBounds.max.y) / 2) + ", " +
-                ((g_objectBounds.min.z + g_objectBounds.max.z) / 2) + ")");
-
-            var maxCoord = Math.max(g_objectBounds.min.x, g_objectBounds.min.y, g_objectBounds.min.z, g_objectBounds.max.x, g_objectBounds.max.y, g_objectBounds.max.z);
-            var minCoord = Math.min(g_objectBounds.min.x, g_objectBounds.min.y, g_objectBounds.min.z, g_objectBounds.max.x, g_objectBounds.max.y, g_objectBounds.max.z);
-
-            var targetDist = Math.max(Math.abs(maxCoord), Math.abs(minCoord));
-            g_boundsSize = targetDist;
-
-            g_camDistance = targetDist * 1.5;
-
-            // change the far clipping plane
-            camera.far = targetDist * 8.0;  // arbitarily chosen for now, 8x the size of the bounding box
-
-            // reset the camera
-            placeCamera(0, 0, 0, g_camDistance);
-            camera.updateProjectionMatrix();
-
-            // update the axis lines to be at least the length of the clipping region
-            updateAxisLines(g_boundsSize * 8.0);
-
-            if(g_sceneOBJLoaded == g_sceneOBJCount && g_sceneOBJCount > 0)
-            {
-                finaliseScene();
-            }
-        }, function () {
+    var path =  "data/tags/" + g_tag + "/mesh_result/" + groupname + "/";
+    console.log('loadOBJ: path=' + path);
+    console.log(object);
+    
+    if(object.hasmtl) {
+        var mtlLoader = new THREE.MTLLoader();
+        mtlLoader.setPath(path);
+        mtlLoader.load(object.mtl, function(materials) {
+            console.log("Material loaded " + object.mtl);
+            materials.preload();
+            console.log(materials);
+            loadOBJOnly(filename, path, object, materials);
+        },
+        function () {
              // progress
         },
         function(err) {
-            console.log("OBJLoader error: " + err)
+            console.log("MTLLoader error: " + err)
+        });
+    }
+    else {
+        var mat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+        loadOBJOnly(filename, path, object, mat);
+    }
+}
+
+function loadOBJOnly(filename, path, object, materials) {
+    var loader = new THREE.OBJLoader();
+    loader.setPath(path);
+    if(object.hasmtl) {
+        loader.setMaterials(materials);
+    }
+    console.log("loadOBJOnly: path=" + path + " name=" + object.obj)
+    
+    var obj = null;
+    loader.load(object.obj, function(object) {
+        console.log("Model loaded " + name);
+        object.position.y = 0;
+        //object.scale.set(20, 20, 20);
+        object.rotation.set(1.5708, 0.0, 0.0);
+        scene.add(object);
+
+        // step through the model hierarchy and smooth everything
+        object.traverse( function(node) {
+            if(node.geometry !== undefined) {
+                console.log("Smoothing and recomputing normals..");
+                var g = new THREE.Geometry()
+                g.fromBufferGeometry(node.geometry);
+                g.mergeVertices();
+                g.computeVertexNormals();
+                node.geometry.fromGeometry(g);
+            }
+        });
+
+        g_properties.attachModel(filename, object, materials);
+        g_sceneOBJLoaded++;
+
+        var title = document.getElementById("viewertitle");
+        if(title != null && g_sceneOBJCount > 0) {
+            var amtLoaded = g_sceneOBJLoaded / g_sceneOBJCount;
+            title.innerHTML = "Loading, " + amtLoaded.toFixed(0) + "%";
         }
-    );
+
+        g_allObjectsGroup.add(object);
+
+        // update the bounding box
+        g_objectBounds.setFromObject(g_allObjectsGroup);
+
+        g_lights[0].position.x = g_objectBounds.max.x;
+        g_lights[0].position.y = g_objectBounds.max.y;
+        g_lights[0].position.z = g_objectBounds.max.z;
+        g_lights[1].position.x = g_objectBounds.min.x;
+        g_lights[1].position.y = g_objectBounds.min.y;
+        g_lights[1].position.z = g_objectBounds.min.z;
+
+        console.log("Bounding box: (" +
+            g_objectBounds.min.x + ", " + g_objectBounds.min.y + ", " + g_objectBounds.min.z + ")-(" +
+            g_objectBounds.max.x + ", " + g_objectBounds.max.y + ", " + g_objectBounds.max.z + ")");
+        console.log("Simple centroid: (" +
+            ((g_objectBounds.min.x + g_objectBounds.max.x) / 2) + ", " +
+            ((g_objectBounds.min.y + g_objectBounds.max.y) / 2) + ", " +
+            ((g_objectBounds.min.z + g_objectBounds.max.z) / 2) + ")");
+
+        var maxCoord = Math.max(g_objectBounds.min.x, g_objectBounds.min.y, g_objectBounds.min.z, g_objectBounds.max.x, g_objectBounds.max.y, g_objectBounds.max.z);
+        var minCoord = Math.min(g_objectBounds.min.x, g_objectBounds.min.y, g_objectBounds.min.z, g_objectBounds.max.x, g_objectBounds.max.y, g_objectBounds.max.z);
+
+        var targetDist = Math.max(Math.abs(maxCoord), Math.abs(minCoord));
+        g_boundsSize = targetDist;
+
+        g_camDistance = targetDist * 1.5;
+
+        // change the far clipping plane
+        camera.far = targetDist * 8.0;  // arbitarily chosen for now, 8x the size of the bounding box
+
+        // reset the camera
+        placeCamera(0, 0, 0, g_camDistance);
+        camera.updateProjectionMatrix();
+
+        // update the axis lines to be at least the length of the clipping region
+        updateAxisLines(g_boundsSize * 8.0);
+
+        if(g_sceneOBJLoaded == g_sceneOBJCount && g_sceneOBJCount > 0) {
+            finaliseScene();
+        }
+    }, 
+    function () {
+         // progress
+    },
+    function(err) {
+        console.log("OBJLoader error: " + err)
+    });
 }
 
 function updateLights()
@@ -576,7 +586,7 @@ function main()
                     var filename = objgroup.name + "/" + meshGroup[j].obj;
                     console.log("Opening " + filename + "...");
 
-                    loadOBJ(filename);
+                    loadOBJ(filename, objgroup.name, meshGroup[j]);
                     g_sceneOBJCount++;
 
                     var groupmodel = new OBJModel();
