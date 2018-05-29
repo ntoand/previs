@@ -52,7 +52,7 @@ export class Dataset {
     } 
     else if (this.type === 'mesh') {
       this.imgUrl = 'assets/img/no-image-box.png';
-      this.viewUrl = environment.ws_url + '/meshviewer?tag=data/tags/' + result.tag + '/mesh_result';
+      this.viewUrl = environment.ws_url + '/meshviewer/?tag=' + result.tag;
       this.size = 'not available';
     }
     else if (this.type === 'point') {

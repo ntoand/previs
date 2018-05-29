@@ -163,9 +163,9 @@ io.on('connection', function (socket) {
 	});
 
 	// meshviewer
-	socket.on('saveparams', function(data) {
+	socket.on('savemeshjson', function(data) {
 		console.log(data);
-		saveParams(socket, data);
+		saveMeshParams(socket, data);
 	});
 	
 	// potree viewer
@@ -193,38 +193,21 @@ function saveDataJson(socket, data) {
 	});
 }
 
-function saveParams(socket, data)
+function saveMeshParams(socket, data)
 {
-	console.log("Received saveparams from JS");
+	console.log("Received saveparams from mesh viewer");
 	console.log(data);
-
-	var filename = data.filename;
-
-	fs.writeFile(config.public_dir + "/" + filename, data.params, function(err)
-	{
-		if(err)
-		{
+	
+	var jsonfile = config.tags_data_dir + data.tag + '/mesh_result/mesh.json';
+	fs.writeFile(jsonfile, data.jsonStr, function(err) {
+		if(err) {
 			console.log("Error: " + err);
-
 			// send a message to the viewer
-			socket.emit('saveparams', { status: 'error' });
-
+			socket.emit('savemeshjson', { status: 'error', result: err });
 			return;
 		}
-
+		
 		console.log("Saved");
-	});
-
-	var scriptFilename = data.scriptFilename;
-
-	fs.writeFile(config.public_dir + "/" + scriptFilename, data.script, function(err)
-	{
-		if(err)
-		{
-			console.log("Error: " + err);
-			return;
-		}
-
-		console.log("Saved init script");
+		socket.emit('savemeshjson', { status: 'done', result: data });
 	});
 }

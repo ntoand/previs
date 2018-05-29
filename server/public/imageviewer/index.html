@@ -29,18 +29,18 @@
                     if (this.readyState == 4 && this.status == 200) {
                         console.log(this.responseText);
                         var dzifiles = JSON.parse(this.responseText);
-                        initViewer(dzifiles);
+                        initViewer(tag, dzifiles);
                     }
                 };
                 xmlhttp.open("GET", metafile, true);
                 xmlhttp.send();
             }
             
-            function initViewer(dzifiles) {
+            function initViewer(tag, dzifiles) {
                 var sequence = dzifiles.length > 1 ? true : false;
                 var source = [];
                 for (var i=0; i < dzifiles.length; i++) {
-                    var str = "data/tags/bc1a4d/image_result/" + dzifiles[i];
+                    var str = "data/tags/" + tag + "/image_result/" + dzifiles[i];
                     source.push(str);
                 }
                 
