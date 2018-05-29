@@ -74,9 +74,16 @@ export class UploadfileComponent implements OnInit {
         return;
       }
     }
-    else {
+    else if (this.dataType == "point") {
       if (fileext !== 'las' && fileext !== 'laz' && fileext !== 'ptx' && fileext !== 'ply' && fileext !== 'xyz' && fileext !== 'txt' && fileext !== 'zip' ) {
         this.errMsg = "Pointcloud requies las/laz, ptx, ply, xyz/txt, or zip file";
+        this.renderer.selectRootElement('.uploadfile').value = '';
+        return;
+      }
+    }
+    else if (this.dataType == "image") {
+      if (fileext !== 'tif' && fileext !== 'tiff' && fileext !== 'jpg' && fileext !== 'png' && fileext !== 'zip') {
+        this.errMsg = "Image(s) requies .tif, .png, .jpg, or .zip file";
         this.renderer.selectRootElement('.uploadfile').value = '';
         return;
       }
@@ -87,18 +94,6 @@ export class UploadfileComponent implements OnInit {
     this.uploadPercent = 0;
     this.selectedFile = file.name + ' (size: ' + file.size + ')';
 
-    /*
-    //this.http.post(path, formData, { headers, observe: 'response' } ).subscribe(
-    this.http.post(path, formData).subscribe(
-      data => {
-        console.log(data); 
-      },
-      error => {
-        console.log(error);
-      }
-
-    )
-    */
     const req = new HttpRequest('POST', path, formData, { reportProgress: true });
     
     this.http.request(req).subscribe((event: HttpEvent<any>) => {

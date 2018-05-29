@@ -52,12 +52,16 @@ export class Dataset {
     } 
     else if (this.type === 'mesh') {
       this.imgUrl = 'assets/img/no-image-box.png';
-      this.viewUrl = environment.ws_url + '/viewer?tag=data/tags/' + result.tag + '/mesh_result';
+      this.viewUrl = environment.ws_url + '/meshviewer?tag=data/tags/' + result.tag + '/mesh_result';
       this.size = 'not available';
     }
     else if (this.type === 'point') {
       this.imgUrl = 'assets/img/no-image-box.png';
       this.viewUrl = environment.ws_url + '/data/tags/' + result.tag + '/point_result/potree.html';
+    }
+    else if (this.type === 'image') {
+      this.imgUrl = 'assets/img/no-image-box.png';
+      this.viewUrl = environment.ws_url + '/imageviewer?tag=' + result.tag;
     }
     
     if(result.note !== undefined && result.note !== null)

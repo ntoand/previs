@@ -161,6 +161,12 @@ function processUploadFile(io, data) {
 			else if (datatype === 'point') {
 				processUploadFile_Points(io, data);
 			}
+			else if (datatype === 'image') {
+				processUploadFile_Images(io, data);
+			}
+			else {
+				myutils.packAndSend(io, 'processupload', {status: 'error', result: 'unsupported data type'});
+			}
 		});
 	});
 }
@@ -250,6 +256,60 @@ function processUploadFile_Points(io, data)
 		convertPointcloud(io, data, data.inputfile);
 	}
 }
+
+// process images file
+function processUploadFile_Images(io, data) {
+	console.log('processUploadFile_Images');
+	console.log(data);
+	
+	var inputfile = data.inputfile;
+	var out_dir = data.tagdir + '/image_result';
+	var cmd = 'cd ' + config.scripts_dir + ' && python processimage.py -i ' + inputfile + ' -o ' + out_dir;
+	console.log(cmd);
+	myutils.packAndSend(io, 'processupload', {status: 'working', result: 'Converting images...'})
+	exec(cmd, function(err, stdout, stderr) {
+    	console.log(stdout);
+    	console.log(stderr);
+    	if(err) {
+			myutils.packAndSend(io, 'processupload', {status: 'error', result: 'Failed to convert images', detail: stderr});
+			return;
+		}
+		
+		var outputimages = JSON.parse(stdout);
+		
+		//save to database
+		var tag_url = 'data/tags/' + data.tag + '/';
+		var tag_json = {};
+		tag_json.tag=data.tag;
+		tag_json.type=data.datatype;
+		tag_json.source=data.uploadtype;
+		tag_json.date=Date.now();
+		tag_json.data = tag_url + data.inputfilename + data.inputfileext;
+		tag_json.processedData = 'data/tags/' + data.tag + '/image_processed.zip';
+		tag_json.userId = data.userId;
+		tag_json.userEmail = data.userEmail;
+			
+		var volumes = [];
+		var volume = {};
+		volume.data_dir = tag_url + 'image_result';
+		volume.images = outputimages;
+		volume.res = [outputimages.length];
+		volumes.push(volume);
+		tag_json.volumes=volumes;
+		
+		data.db.insertNewTag(tag_json, function(err, res) {
+			if (err) {
+				myutils.packAndSend(io, 'processupload', {status: 'error', result: 'Cannot insert new tag'});
+				return;
+			} 
+			myutils.packAndSend(io, 'processupload', {status: 'done', result: tag_json});
+			// zip pointcloids folder
+			myutils.zipDirectory(out_dir, '', data.tagdir + '/image_processed.zip');
+		});
+		
+    });
+}
+
 
 function convertXRWToPNG(io, data) {
 	

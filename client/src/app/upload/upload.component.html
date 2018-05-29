@@ -12,6 +12,7 @@
           <mat-radio-button class="type-radio-button" value="volume">Volume</mat-radio-button>
           <mat-radio-button class="type-radio-button" value="mesh">Mesh</mat-radio-button>
           <mat-radio-button class="type-radio-button" value="point">Pointcloud</mat-radio-button>
+          <mat-radio-button class="type-radio-button" value="image">Image</mat-radio-button>
         </mat-radio-group>
     </div>
     
@@ -81,6 +82,22 @@
           </p>
         </details>
       </div>
+      
+      <div *ngIf="dataType === 'image'" class="collapse-able">
+        <details>
+          <summary>
+            Upload high resolution image(s). Support image type: .tif, .jpg, .png
+          </summary>
+          <p>If you want to upload multiple images, the images must be stored in a zip file</p>
+          <p>Your zip should look something like this:</p>
+          <ul class="example-code">
+            <li>images/</li>
+            <li>images/image01.tif</li>
+            <li>images/image02.png</li>
+          </ul>
+        </details>
+      </div>
+      
     </div>
   </mat-card>
   

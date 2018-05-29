@@ -57,11 +57,13 @@ def main():
     hasImage = False
     hasMesh = False
     hasPoint = False
+    countImg = 0
     for cmpinfo in zinfolist:
         fname = string.lower(cmpinfo.filename)
         
         if isImageFile(fname):
             hasImage = True
+            countImg = countImg + 1
         
         elif isMeshFile(fname):
             hasMesh = True
@@ -81,8 +83,16 @@ def main():
     elif (type == "point"):
         if hasPoint:
             match = True
+            
+    elif (type == "volume"):
+        if hasImage:
+            if countImg < 5:
+                errstr = "Number of images is small. Maybe you want to upload high resolution images?"
+            else:
+                if not hasMesh and not hasPoint:
+                    match = True
     
-    elif (type == "volume" or type == "image"):
+    elif (type == "image"):
         if hasImage and not hasMesh and not hasPoint:
             match = True
     

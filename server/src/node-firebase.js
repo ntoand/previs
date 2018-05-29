@@ -6,15 +6,15 @@ const fbadmin = require("firebase-admin");
 function FilebaseManager() {
     var serviceAccount = null;
     var dburl = null;
-    if (process.env.NODE_ENV === "development")  {
-        serviceAccount = require(config.firebase_service_acc_key_dev);
-        dburl = "https://previs-dev.firebaseio.com"
-        console.log("Development firebase key " + config.firebase_service_acc_key_dev);
-    }
-    else {
+    if (process.env.NODE_ENV === "production")  {
         serviceAccount = require(config.firebase_service_acc_key);
         dburl = "https://previs2018.firebaseio.com";
         console.log("Production firebase key " + config.firebase_service_acc_key);
+    }
+    else {
+        serviceAccount = require(config.firebase_service_acc_key_dev);
+        dburl = "https://previs-dev.firebaseio.com"
+        console.log("Development firebase key " + config.firebase_service_acc_key_dev);
     }
             
     fbadmin.initializeApp({
@@ -89,10 +89,8 @@ FilebaseManager.prototype.getTagsByUserEmail = function(email, callback) {
             });
             // sort by date
             data.sort(function(a, b){
-                var datea = a.data.date;
-                var dateb = b.data.date;
-                if(datea > dateb) return -1;
-                if(datea < dateb) return 1;
+                if(a.data.date >  b.data.date) return -1;
+                if(a.data.date <  b.data.date) return 1;
                 return 0;
             });
             callback(null, data);
@@ -115,10 +113,8 @@ FilebaseManager.prototype.getAllTags = function(callback) {
             });
             // sort by date
             data.sort(function(a, b){
-                var datea = a.data.date;
-                var dateb = b.data.date;
-                if(datea > dateb) return -1;
-                if(datea < dateb) return 1;
+                if(a.data.date >  b.data.date) return -1;
+                if(a.data.date <  b.data.date) return 1;
                 return 0;
             });
             callback(null, data);

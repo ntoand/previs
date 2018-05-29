@@ -4,4 +4,4 @@
 dir=`pwd`
 
 cd ${dir}/server
-NODE_ENV=development node server.js
+node server.js

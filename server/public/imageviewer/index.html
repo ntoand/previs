@@ -1,0 +1,60 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=0" />
+        <title>High resolution image viewer</title>
+        
+        <style type="text/css">
+              html,body { height: 100%; margin: 0px; padding: 0px; background-color: #333;}
+              #full { background: #0f0; height: 100% }
+        </style>
+    </head>
+    
+    <body>
+        <div id="openseadragon1" style="width: 100%; height: 100%;"></div>
+        <script src="js/openseadragon/openseadragon.min.js"></script>
+        <script type="text/javascript">
+            
+            var url = new URL(window.location.href);
+            var tag = url.searchParams.get("tag");
+            console.log(window.location);
+            console.log(tag);
+            
+            if (tag !== null && tag !== undefined) {
+                var metafile = window.location.origin + '/data/tags/' + tag + '/image_result/image.json';
+                console.log(metafile);
+                var xmlhttp = new XMLHttpRequest();
+                xmlhttp.onreadystatechange = function() {
+                    if (this.readyState == 4 && this.status == 200) {
+                        console.log(this.responseText);
+                        var dzifiles = JSON.parse(this.responseText);
+                        initViewer(dzifiles);
+                    }
+                };
+                xmlhttp.open("GET", metafile, true);
+                xmlhttp.send();
+            }
+            
+            function initViewer(dzifiles) {
+                var sequence = dzifiles.length > 1 ? true : false;
+                var source = [];
+                for (var i=0; i < dzifiles.length; i++) {
+                    var str = "data/tags/bc1a4d/image_result/" + dzifiles[i];
+                    source.push(str);
+                }
+                
+                var viewer = OpenSeadragon({
+                    id: "openseadragon1",
+                    prefixUrl: "js/openseadragon/images/",
+                    showNavigator:  true,
+                    navigatorWidth: "100px",
+                    sequenceMode: sequence,
+                    showReferenceStrip: sequence,
+                    tileSources: source
+                });
+            }
+        </script>
+        
+    </body>
+</html>

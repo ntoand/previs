@@ -21,10 +21,10 @@ var mytardis	  = require('./src/node-mytardis');
 var FilebaseManager   = require('./src/node-firebase');
 var fbmanager = new FilebaseManager();
 
-if (process.env.NODE_ENV === "development")  {
-	console.log("RUN DEV MODE");
-} else {
+if (process.env.NODE_ENV === "production")  {
 	console.log("RUN PROD MODE");
+} else {
+	console.log("RUN DEV MODE");
 }
 
 process.argv.forEach(function (val, index, array) {

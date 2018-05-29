@@ -11,15 +11,20 @@ mv ${dir}/server/dist-dev ${dir}/server/dist
 cd ${dir}/server/dist
 ln -s ${dir}/server/public/data .
 ln -s ${dir}/server/public/sharevol .
-ln -s ${dir}/server/public/viewer .
+ln -s ${dir}/server/public/meshviewer .
+ln -s ${dir}/server/public/imageviewer .
 
 cd ${dir}/server/dist/sharevol
 unlink data
 ln -s ${dir}/server/public/data .
 
-cd ${dir}/server/dist/viewer
+cd ${dir}/server/dist/meshviewer
 unlink data
 ln -s ${dir}/server/public/data .
 
+cd ${dir}/server/dist/imageviewer
+unlink data
+ln -s ${dir}/server/public/data . 
+
 cd ${dir}/server
-node server.js
+NODE_ENV=production node server.js
