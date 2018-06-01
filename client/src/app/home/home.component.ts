@@ -11,12 +11,12 @@ export class HomeComponent implements OnInit {
   
   constructor(private appService: AppService) { }
   examples = {
-    url1: environment.ws_url + '/sharevol/index.html?data=data/example/galaxy/vol_web.json&reset',
-    url2: environment.ws_url + '/sharevol/index.html?data=data/example/arteries-brain/vol.json&reset',
-    url3: environment.ws_url + '/viewer/index.html?tag=data/example/mesh-heart',
-    url4: environment.ws_url + '/viewer/index.html?tag=data/example/baybridge',
-    url5: environment.ws_url + '/data/example/hoyoverde/potree.html',
-    url6: environment.ws_url + '/data/example/hoyoverde/potree.html'
+    url1: environment.ws_url + '/sharevol/index.html?data=data/tags/000000_galaxy/vol_web.json&reset',
+    url2: environment.ws_url + '/sharevol/index.html?data=data/tags/000000_arteries_brain/vol.json&reset',
+    url3: environment.ws_url + '/meshviewer/?tag=000000_mesh_heart',
+    url4: environment.ws_url + '/meshviewer/?tag=000000_mesh_baybridge',
+    url5: environment.ws_url + '/data/tags/000000_hoyoverde/potree.html',
+    url6: environment.ws_url + '/imageviewer/?tag=000000_image_cmu1'
   };
 
   ngOnInit() {

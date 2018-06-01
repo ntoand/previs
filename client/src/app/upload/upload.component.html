@@ -48,17 +48,21 @@
             <li>A .zip file containing an object or scene made up of one or more .OBJ files</li>
             <li>Each directory in the .zip file will produce a group in your 3D scene (only one directory deep is supported)</li>
             <li>Group names come from their directory names; the names of mesh files are not important</li>
+            <li>Material texture is supported. Name of material (.mtl) must match the name of OBJ file.</li>
+            <li>Material file and texture images must be placed in the same directory of OBJ file</li>
           </p>
           <p>Example data <a href="data/example/heart-bp3.0.zip">heart-bp3.0.zip</a></p>
           <p><b>How to prepare data:</b></p>
           <li>Create a directory to store OBJ files</li>
           <li>Add subdirectories for each group, named as the group should be named (only a depth of one directory is currently supported)</li>
-          <li>Add OBJ files to the appropriate group subdirectories</li>
+          <li>Add OBJ, MTL and images files to the appropriate group subdirectories</li>
           <li>Compress all subdirectories into one zip file</li>
           <p>Your zip should look something like this:</p>
           <ul class="example-code">
             <li>group1/</li>
             <li>group1/first-mesh.obj</li>
+            <li>group1/first-mesh.mtl</li>
+            <li>group1/first-mesh-tex01.jpg (first-mesh.mtl has a reference to this file)</li>
             <li>group1/other-mesh.obj</li>
             <li>group2/</li>
             <li>group2/another-mesh.obj</li>

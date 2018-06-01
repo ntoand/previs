@@ -60,7 +60,7 @@ export class Dataset {
       this.viewUrl = environment.ws_url + '/data/tags/' + result.tag + '/point_result/potree.html';
     }
     else if (this.type === 'image') {
-      this.imgUrl = 'assets/img/no-image-box.png';
+      this.imgUrl = environment.ws_url + '/data/tags/' + result.tag + '/image_result/thumb.jpeg';
       this.viewUrl = environment.ws_url + '/imageviewer?tag=' + result.tag;
     }
     

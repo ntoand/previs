@@ -621,7 +621,9 @@ function setupGUI()
     g_responder = new responder();
     // some cheeky JS to get dat.gui to give buttons friendly names - create JS
     // object properties with friendly names that alias actual functions
-    g_responder['Save settings'] = g_responder.saveAll;
+    if(!g_tag.includes("000000_")) { // example data starts with 000000_
+        g_responder['Save settings'] = g_responder.saveAll;
+    }
     g_responder['Reload settings'] = g_responder.loadAll;
     g_responder['Reset all'] = g_responder.resetAll;
     //g_responder['Toggle axis lines'] = g_responder.toggleAxis;
@@ -633,7 +635,9 @@ function setupGUI()
     //g_gui.add(g_responder, "reportSave");
     //g_gui.add(g_responder, "resetAll");
     //g_gui.add(g_responder, "loadAll");
-    btn = g_gui.add(g_responder, ['Save settings']);
+    if(!g_tag.includes("000000_")) { // example data starts with 000000_
+        g_gui.add(g_responder, ['Save settings']);
+    }
     g_gui.add(g_responder, ['Reset all']);
     g_gui.add(g_responder, ['Reload settings']);
     //g_gui.add(g_responder, ['Toggle axis lines']);

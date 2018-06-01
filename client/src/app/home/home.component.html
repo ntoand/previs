@@ -1,23 +1,23 @@
 <div class="top-section">
     <mat-card class="gray">
         <div class="sub-section">
-            <h2>A WebGL volume, mesh and pointcloud renderer and gateway to the Monash CAVE2</h2>
+            <h2>A WebGL volume, mesh, pointcloud and high resolution image renderer and gateway to the Monash CAVE2</h2>
             <p class="gray-text">This is a service provided by MIVP to Monash University staff and affiliates.
-            It provides a way to upload volumetric data, meshes or pointclouds, visualise the data and change display settings on a web page,
-            and then allows people to visualise the volumes, meshes and pointclouds in the CAVE2.</p>
+            It provides a way to upload volumetric data, meshes, pointclouds, high-res images and visualise the data and change display settings on a web page,
+            and then allows people to visualise the proccessed data in the CAVE2.</p>
         </div>
 
         <div class="sub-section">
             <div fxLayout="row" fxLayout.xs="column" fxLayout.sm="column" fxFlex>
               <div fxFlex class="column gray-text">
                   <h3><a routerLink="/upload">Upload data</a></h3>
-                  <p>You can upload volumetric data, meshes or pointclouds from your computer or a shared link and view it in your browser with WebGL,
+                  <p>You can upload volumetric data, meshes, pointclouds or high-res images from your computer or a shared link and view it in your browser with WebGL,
                       or on location in the CAVE2</p>
               </div>
               <div fxFlex class="column gray-text">
                   <h3><a routerLink="/review">Review data</a></h3>
-                  <p>You can check and review volumes, meshes or pointclouds with a tag number. If you want to view the volumes,
-                  meshes or pointclouds on the CAVE2, please write down the tag and bring it with you</p>
+                  <p>You can check and review volumes, meshes, pointclouds or high-res images on the web. If you want to view the volumes,
+                  meshes, pointclouds or images on the CAVE2, please write down the tag and bring it with you</p>
               </div>
           </div>
       </div>
@@ -29,7 +29,7 @@
         <div fxFlex class="column">
             <mat-card class="example-card">
               <mat-card-header>
-                <mat-card-title>EXAMPLE 1: NGC 3621 GALAXY</mat-card-title>
+                <mat-card-title>VOLUME EXAMPLE: NGC 3621 GALAXY</mat-card-title>
               </mat-card-header>
               <img mat-card-image src="assets/img/vol-galaxy.jpg" alt="NGC 3621 galaxy">
               <mat-card-content>
@@ -45,7 +45,7 @@
         <div fxFlex class="column">
             <mat-card class="example-card">
               <mat-card-header>
-                <mat-card-title>EXAMPLE 2: ARTERIES IN THE BRAIN</mat-card-title>
+                <mat-card-title>VOLUME EXAMPLE: ARTERIES IN THE BRAIN</mat-card-title>
               </mat-card-header>
               <img mat-card-image src="assets/img/vol-brain.png" alt="Arteries in the brain">
               <mat-card-content>
@@ -66,7 +66,7 @@
         <div fxFlex class="column">
             <mat-card class="example-card">
               <mat-card-header>
-                <mat-card-title>EXAMPLE 3: HEART V5.0</mat-card-title>
+                <mat-card-title>MESH EXAMPLE: HEART V5.0</mat-card-title>
               </mat-card-header>
               <img mat-card-image src="assets/img/mesh-heart.png" alt="Mesh heart">
               <mat-card-content>
@@ -81,7 +81,7 @@
         <div fxFlex class="column">
             <mat-card class="example-card">
               <mat-card-header>
-                <mat-card-title>EXAMPLE 4: BAY BRIDGE</mat-card-title>
+                <mat-card-title>MESH EXAMPLE: BAY BRIDGE</mat-card-title>
               </mat-card-header>
               <img mat-card-image src="assets/img/mesh-baybridge.jpg" alt="baybridge">
               <mat-card-content>
@@ -102,7 +102,7 @@
         <div fxFlex class="column">
             <mat-card class="example-card">
               <mat-card-header>
-                <mat-card-title>EXAMPLE 5: HOYO VERDE</mat-card-title>
+                <mat-card-title>POINTCLOUD EXAMPLE: HOYO VERDE</mat-card-title>
               </mat-card-header>
               <img mat-card-image src="assets/img/point-hoyoverde.jpg" alt="Hoyo-Verde">
               <mat-card-content>
@@ -116,11 +116,11 @@
         <div fxFlex class="column">
             <mat-card class="example-card">
               <mat-card-header>
-                <mat-card-title>EXAMPLE 5: HOYO VERDE</mat-card-title>
+                <mat-card-title>IMAGE EXAMPLE: CMU-1 BRIGHTFIELD</mat-card-title>
               </mat-card-header>
-              <img mat-card-image src="assets/img/point-hoyoverde.jpg" alt="Hoyo-Verde">
+              <img mat-card-image src="assets/img/image-cmu1.png" alt="CMU1">
               <mat-card-content>
-                <p>Data courtesy tba</p>
+                <p>OpenSlide free test data</p>
               </mat-card-content>
               <mat-card-actions>
                 <a href={{examples.url6}} target="_blank"><button mat-button color="primary">VIEW ON WEB</button></a>

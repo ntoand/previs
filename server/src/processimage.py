@@ -47,6 +47,7 @@ def processZipFile(infile, outdir, verbose):
         os.makedirs(tmpdir)
 
     outputfiles = []
+    thumb = True
     for cmpinfo in zinfolist:
         fname = cmpinfo.filename
         if not validFilename(fname):
@@ -66,7 +67,8 @@ def processZipFile(infile, outdir, verbose):
         # then process tmp image file
         if verbose:
             print('processZipFile', filename, tmpfile, outdir)
-        processImageFile(tmpfile, outdir, verbose)
+        processImageFile(tmpfile, outdir, verbose, thumb)
+        thumb = False
 
         outputfiles.append(filename + ".dzi")
 
@@ -77,7 +79,7 @@ def processZipFile(infile, outdir, verbose):
     return outputfiles
 
 
-def processImageFile(infile, outdir, verbose):
+def processImageFile(infile, outdir, verbose, thumb = True):
     """
     Process image file
     :param infile: 
@@ -94,6 +96,12 @@ def processImageFile(infile, outdir, verbose):
     ret = subprocess.check_output(['vips','dzsave',infile,outfile])
     if verbose:
         print(ret)
+        
+    if(thumb):
+        path_to_file = os.path.join(outdir, filename + "_files/8/0_0.jpeg")
+        if os.path.isfile(path_to_file):
+            shutil.copyfile(path_to_file, outdir+'/thumb.jpeg')
+        
 
     return [filename + ".dzi"]
 
