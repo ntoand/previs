@@ -57,8 +57,15 @@ def runViewer(info):
     os.chdir(info['tag_dir'])
     if(info['type'] == 'point'):
         subprocess.check_output(['orun','-s', 'gigapoint_run.py'])
+    elif (info['type'] == 'mesh'):
+        subprocess.check_output(info['lavavu'])
+    elif (info['type'] == 'image'):
+        print ('Run: ' + str(info['imagecmd']))
+        subprocess.check_output(info['imagecmd'])
+    elif (info['type'] == 'volume'):
+        subprocess.check_output([info['lavavu']])
     else:
-        subprocess.check_output([info['lavavr']])
+        print 'Invalid type'
     os.chdir(info['cwd'])
 
 
@@ -110,11 +117,13 @@ def runMesh(info):
     cmd = ['unzip', '-o', 'mesh_processed.zip']
     subprocess.check_output(cmd)
     os.chdir(info['cwd'])
-    #download init.script
-    file_url = host + '/data/tags/' + info['tag'] + '/mesh_result/init.script'
-    file_local = info['tag_dir'] + '/init.script'
-    print 'download', file_url
-    downloadFile(file_url, file_local)
+
+    # clean
+    os.remove(file_local)
+
+    cmd = ['cp', 'mesh_run.py', info['tag_dir'] + '/init.py']
+    subprocess.check_output(cmd)
+
     #run
     runViewer(info)
 
@@ -135,9 +144,9 @@ def runPoint(info):
     cmd = ['unzip', '-o', 'point_processed.zip']
     subprocess.check_output(cmd)
     if not os.path.exists(info['tag_dir'] + '/gigapoint_resource'):
-    	subprocess.check_output(['ln','-s','/home/toand/git/projects/gigapoint/gigapoint/dist/gigapoint_resource'])
+        subprocess.check_output(['ln','-s','/home/toand/git/projects/gigapoint/gigapoint/dist/gigapoint_resource'])
     if not os.path.exists(info['tag_dir'] + '/gigapoint.so'):
-    	subprocess.check_output(['ln','-s','/home/toand/git/projects/gigapoint/gigapoint/dist/gigapoint.so'])
+        subprocess.check_output(['ln','-s','/home/toand/git/projects/gigapoint/gigapoint/dist/gigapoint.so'])
     os.chdir(info['cwd'])
 
     #copy
@@ -149,6 +158,35 @@ def runPoint(info):
     file_local = info['tag_dir'] + '/gigapoint.json'
     print 'download', file_url
     downloadFile(file_url, file_local)
+
+    # run
+    runViewer(info)
+
+
+def runImage(info):
+    """
+    run high-res image with dzviewer
+    :param info: 
+    :return: 
+    """
+    # download data
+    file_url = host + '/data/tags/' + info['tag'] + '/image_processed.zip'
+    file_local = info['tag_dir'] + '/image_processed.zip'
+    print 'download', file_url
+    downloadFile(file_url, file_local)
+    # unzip
+    os.chdir(info['tag_dir'])
+    cmd = ['unzip', '-o', 'image_processed.zip']
+    subprocess.check_output(cmd)
+    os.chdir(info['cwd'])
+    # generate run command
+    cmd = 'GO_CAVE2_DZ -b 256 -t 4 -p -m'
+    jsonfile = info['tag_dir'] + '/image.json'
+    with open(jsonfile, 'rt') as f:
+        data = json.load(f)
+        for img in data:
+            cmd = cmd + ' -i ' + img
+    info['imagecmd'] = cmd.split()
 
     # run
     runViewer(info)
@@ -186,7 +224,7 @@ def main(argv):
     if not os.path.exists(tag_dir):
         os.makedirs(tag_dir)
     info['tag_dir'] = os.path.abspath(tag_dir)
-    info['lavavr'] = 'LavaVR.sh'
+    info['lavavu'] = 'LavaVR.sh'
     info['cwd'] = os.getcwd()
 
     print info
@@ -196,6 +234,8 @@ def main(argv):
         runMesh(info)
     elif type == 'point':
         runPoint(info)
+    elif type == 'image':
+        runImage(info);
     else:
         raise Exception("invalid type")
 
