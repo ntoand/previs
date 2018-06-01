@@ -78,3 +78,22 @@ or
 - Sharevol (WebGL volume viewer)
 - Three.js (WebGL mesh viewer)
 - OpenSeadragon (Javascript high-res image viewer)
+- vips (to convert image to deep zoom format)
+
+
+## Change log
+
+### v0.4
+
+- Support high resolution image upload, view high-res images in web browser and CAVE2
+- New json file structure for mesh folders
+- Support MTL file with texture images
+- Support more image types (in addition to tiff image, users can upload stack of jpg,png images)
+- Faster volume data conversion
+- Support high resolution volume viewing in the CAVE2 with Tuvok
+
+### v0.3
+
+- Support volume (tiffstack), mesh (obj) and pointcloud data
+- Data can be imported from local machine, shared link or MyTardis
+- View data in the CAVE2
