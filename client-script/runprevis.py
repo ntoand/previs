@@ -186,7 +186,10 @@ def runImage(info):
         data = json.load(f)
         for img in data:
             cmd = cmd + ' -i ' + img
-    info['imagecmd'] = cmd.split()
+    info['imagecmd'] = cmd.encode('ascii','ignore').split()
+
+    if not os.path.exists(info['tag_dir'] + '/shader'):
+        subprocess.check_output(['ln','-s','/home/toand/git/projects/vsviewer/build/CAVE2/shaders'])
 
     # run
     runViewer(info)
