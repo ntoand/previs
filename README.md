@@ -46,7 +46,7 @@ cd server/potree/potree
 npm install
 gulp build
 cd server/potree
-./updatepotreeviewer.sh
+./updatepotreeviewer.sh  (to copy potree previs build to pointviewer)
 ```
 
 - Install npm packages

@@ -15,7 +15,7 @@ export class HomeComponent implements OnInit {
     url2: environment.ws_url + '/sharevol/index.html?data=data/tags/000000_arteries_brain/vol.json&reset',
     url3: environment.ws_url + '/meshviewer/?tag=000000_mesh_heart',
     url4: environment.ws_url + '/meshviewer/?tag=000000_mesh_baybridge',
-    url5: environment.ws_url + '/data/tags/000000_hoyoverde/potree.html',
+    url5: environment.ws_url + '/pointviewer/?tag=000000_hoyoverde',
     url6: environment.ws_url + '/imageviewer/?tag=000000_image_cmu1'
   };
 

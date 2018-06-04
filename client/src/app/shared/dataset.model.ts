@@ -57,7 +57,7 @@ export class Dataset {
     }
     else if (this.type === 'point') {
       this.imgUrl = 'assets/img/no-image-box.png';
-      this.viewUrl = environment.ws_url + '/data/tags/' + result.tag + '/point_result/potree.html';
+      this.viewUrl = environment.ws_url + '/pointviewer/?tag=' + result.tag;
     }
     else if (this.type === 'image') {
       this.imgUrl = environment.ws_url + '/data/tags/' + result.tag + '/image_result/thumb.jpeg';

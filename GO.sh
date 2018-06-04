@@ -13,6 +13,7 @@ ln -s ${dir}/server/public/data .
 ln -s ${dir}/server/public/sharevol .
 ln -s ${dir}/server/public/meshviewer .
 ln -s ${dir}/server/public/imageviewer .
+ln -s ${dir}/server/public/pointviewer .
 
 cd ${dir}/server/dist/sharevol
 unlink data
@@ -23,6 +24,10 @@ unlink data
 ln -s ${dir}/server/public/data .
 
 cd ${dir}/server/dist/imageviewer
+unlink data
+ln -s ${dir}/server/public/data . 
+
+cd ${dir}/server/dist/pointviewer
 unlink data
 ln -s ${dir}/server/public/data . 
 

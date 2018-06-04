@@ -485,13 +485,14 @@ function convertPointcloud(io, data, in_file) {
 	var basename = data.inputfilename;
 	var fileext = in_file.split('.').pop().toLowerCase();;
 	var out_dir = data.tagdir + '/' + basename + '_result';
+	var convert_out_dir = out_dir + '/pointclouds/potree'; // to be compatible with previous converter having output html page
 	var tag_url = 'data/tags/' + data.tag + '/';
 	
 	var cmd = '';
 	if (fileext === 'xyz' || fileext === 'txt') {
-		cmd = 'cd ' + config.potree_converter_dir + ' && ./PotreeConverter ' + in_file + ' -o ' + out_dir + ' -p potree -f xyzrgb';
+		cmd = 'cd ' + config.potree_converter_dir + ' && ./PotreeConverter ' + in_file + ' -o ' + convert_out_dir + ' -f xyzrgb';
 	} else {
-		cmd = 'cd ' + config.potree_converter_dir + ' && ./PotreeConverter ' + in_file + ' -o ' + out_dir + ' -p potree';
+		cmd = 'cd ' + config.potree_converter_dir + ' && ./PotreeConverter ' + in_file + ' -o ' + convert_out_dir;
 	} 
 	console.log(cmd);
 	myutils.packAndSend(io, 'processupload', {status: 'working', result: 'Converting pointcloud...(it takes long time to process big data e.g. ~10min for 100k points)'});
