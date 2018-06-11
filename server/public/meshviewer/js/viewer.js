@@ -140,6 +140,8 @@ var OBJViewProperties = function()
     this.camDistance = 10.0;
     this.camRotX = 0.0;
     this.camRotY = 0.0;
+    this.views = {};
+    this.views.translate = [0, 0, 0];
     this.groups = [];
     // OBJViewProperties.refresh() - refresh all models in the scene
     this.refresh = function()
@@ -225,6 +227,7 @@ function finaliseScene()
     resetTitle();
     g_properties.refresh();
     refreshGUI(g_gui);
+    updateObjects();
 };
 
 // resetTitle() - sets the main title back to its default, just used for now until a modal dialog is added for feedback
@@ -261,6 +264,23 @@ var responder = function()
         g_properties.refresh();
         refreshGUI(g_gui);
     };
+    
+    this.centreObjects = function()
+    {
+        console.log("Center objects");
+        var x = (g_objectBounds.min.x + g_objectBounds.max.x)/2;
+        var y = (g_objectBounds.min.y + g_objectBounds.max.y)/2;
+        var z = (g_objectBounds.min.z + g_objectBounds.max.z)/2;
+        g_properties.views.translate = [-x, -y, -z];
+        updateObjects();
+    }
+    
+    this.resetTranslate = function()
+    {
+        console.log("Reset translate");
+        g_properties.views.translate = [0, 0, 0];
+        updateObjects();
+    }
 
     this.toggleAxis = function()
     {
@@ -395,7 +415,8 @@ function loadOBJOnly(filename, path, object, materials) {
         var title = document.getElementById("viewertitle");
         if(title != null && g_sceneOBJCount > 0) {
             var amtLoaded = g_sceneOBJLoaded / g_sceneOBJCount;
-            title.innerHTML = "Loading, " + amtLoaded.toFixed(0) + "%";
+            //title.innerHTML = "Loading, " + amtLoaded.toFixed(0) + "%";
+            title.innerHTML = "Loading " + g_sceneOBJLoaded + " / " + g_sceneOBJCount + "...";
         }
 
         g_allObjectsGroup.add(object);
@@ -560,6 +581,8 @@ function main()
         if(this.readyState == 4 && this.status == 200)
         {
             jsonObj = JSON.parse(this.responseText);
+            var translate = jsonObj.views.translate;
+            jsonObj = jsonObj.objects;
             // sort by group name
             jsonObj.sort(function(a, b) {
                if(a.name > b.name) return 1;
@@ -598,10 +621,11 @@ function main()
                     var title = document.getElementById("viewertitle");
                     if(title != null)
                     {
-                        title.innerHTML = "Loading, " + g_sceneOBJLoaded + "/" + g_sceneOBJCount;
+                        title.innerHTML = "Loading " + g_sceneOBJLoaded + "/" + g_sceneOBJCount + "...";
                     }
                 }
 
+                g_properties.views.translate = translate;
                 g_properties.groups.push(objgroup);
                 console.log("Global group count: " + g_properties.groups.length);
             }
@@ -628,6 +652,8 @@ function setupGUI()
     g_responder['Reset all'] = g_responder.resetAll;
     //g_responder['Toggle axis lines'] = g_responder.toggleAxis;
     g_responder['Show axis lines'] = g_responder.showAxis;
+    g_responder['Centre objects'] = g_responder.centreObjects;
+    g_responder['Reset translation'] = g_responder.resetTranslate;
     
     console.log("setupGUI(): Global group count: " + g_properties.groups.length);
 
@@ -640,6 +666,9 @@ function setupGUI()
     }
     g_gui.add(g_responder, ['Reset all']);
     g_gui.add(g_responder, ['Reload settings']);
+    g_gui.add(g_responder, ['Centre objects']);
+    g_gui.add(g_responder, ['Reset translation']);
+    
     //g_gui.add(g_responder, ['Toggle axis lines']);
     var axisEvent = g_gui.add(g_responder, ['Show axis lines']);
     axisEvent.onChange(function(value) {
@@ -1029,8 +1058,19 @@ function saveScene()
         jsonObj[i].visible = group.visible;
     }
     
-    socket.emit('savemeshjson', {tag: g_tag, jsonStr: JSON.stringify(jsonObj, null, 4)});
+    var json = {};
+    json.views = g_properties.views;
+    json.objects = jsonObj;
+    console.log(json);
+    socket.emit('savemeshjson', {tag: g_tag, jsonStr: JSON.stringify(json, null, 4)});
 };
+
+
+function updateObjects() {
+    var translate = g_properties.views.translate;
+    console.log("updateObjects moveto: ", translate);
+    g_allObjectsGroup.position.set(translate[0], translate[1], translate[2]);
+}
 
 
 socket.on('savemeshjson', function(data) {

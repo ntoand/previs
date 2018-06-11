@@ -217,6 +217,7 @@ function processUploadFile_Meshes(io, data) {
 			myutils.packAndSend(io, 'processupload', {status: 'error', result: 'Processing the meshes archive failed!', detail: stderr});
 			return;
 		}
+		data.numobjects = JSON.parse(stdout);
 	    myutils.packAndSend(io, 'processupload', {status: 'working', result: 'Files unpacked, all groups processed..'})
 		sendViewDataToClient_Meshes(io, data);
     });
@@ -461,7 +462,7 @@ function sendViewDataToClient_Meshes(io, data) {
 	volume.data_dir=tag_url + basename + '_result';
 	volume.json=jsonurl;
 	volume.initscr = initurl;
-	volume.res = [0, 0, 0];
+	volume.res = data.numobjects; //[0, 0, 0];
 	volumes.push(volume);
 	tag_json.volumes=volumes;
 	

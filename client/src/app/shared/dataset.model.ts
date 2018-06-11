@@ -53,15 +53,20 @@ export class Dataset {
     else if (this.type === 'mesh') {
       this.imgUrl = 'assets/img/no-image-box.png';
       this.viewUrl = environment.ws_url + '/meshviewer/?tag=' + result.tag;
-      this.size = 'not available';
+      if(this.size ==='0,0,0')
+        this.size = 'not available';
+      else
+        this.size = this.size + ' objects';
     }
     else if (this.type === 'point') {
       this.imgUrl = 'assets/img/no-image-box.png';
       this.viewUrl = environment.ws_url + '/pointviewer/?tag=' + result.tag;
+      this.size = this.size + ' points';
     }
     else if (this.type === 'image') {
       this.imgUrl = environment.ws_url + '/data/tags/' + result.tag + '/image_result/thumb.jpeg';
       this.viewUrl = environment.ws_url + '/imageviewer?tag=' + result.tag;
+      this.size = this.size + ' image(s)';
     }
     
     if(result.note !== undefined && result.note !== null)

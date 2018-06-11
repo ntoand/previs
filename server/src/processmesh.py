@@ -125,6 +125,7 @@ def processMeshes(infile, outdir, verbose = False):
     if verbose:
         print groups
 
+    objectcount = 0;
     metajson = []
     #python 2
     for key, value in groups.iteritems():
@@ -144,16 +145,24 @@ def processMeshes(infile, outdir, verbose = False):
             else:
                 objjson["hasmtl"] = False
             groupjson["objects"].append(objjson)
+            objectcount = objectcount + 1
 
         metajson.append(groupjson)
+        
+    meshjson = {};
+    meshjson["views"] = {};
+    meshjson["views"]["translate"] = [0, 0, 0];
+    meshjson["objects"] = metajson;
 
     if verbose:
-        print metajson
+        print meshjson
 
     #write json file
     outfilename = os.path.join(outdir, "mesh.json")
     with open(outfilename, 'w') as outfile:
-        json.dump(metajson, outfile, sort_keys = True, indent = 4, ensure_ascii = False)
+        json.dump(meshjson, outfile, sort_keys = True, indent = 4, ensure_ascii = False)
+        
+    print ('['+str(objectcount)+']')
 
 
 def main():
