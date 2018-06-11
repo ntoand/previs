@@ -1074,6 +1074,8 @@ function updateObjects() {
 
 
 socket.on('savemeshjson', function(data) {
+    console.log('savemeshjson');
+    console.log(data);
     if(data.status == "error") {
         console.log("Can't save view parameters for examples - aborting!");
         var title = document.getElementById("viewertitle");
@@ -1126,6 +1128,8 @@ function loadScene(sceneData)
         if(this.readyState == 4 && this.status == 200)
         {
             jsonObj = JSON.parse(this.responseText);
+            var translate = jsonObj.views.translate;
+            jsonObj = jsonObj.objects;
             // sort by group name
             jsonObj.sort(function(a, b) {
                if(a.name > b.name) return 1;
@@ -1141,7 +1145,7 @@ function loadScene(sceneData)
                 group.colour = jsonObj[i].colour;
                 group.visible = jsonObj[i].visible;
             }
-            
+            g_properties.views.translate = translate;
             g_properties.refresh();
             refreshGUI(g_gui);
         }
