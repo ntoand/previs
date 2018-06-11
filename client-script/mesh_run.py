@@ -13,6 +13,7 @@ lv["trisplit"] = 1
 obj = lv
 with open(jsonfile, 'rt') as f:
     groups = json.load(f)
+    groups = groups["objects"]
     print groups
 
     for group in groups:
