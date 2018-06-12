@@ -3,8 +3,7 @@ import json
 jsonfile = 'mesh.json'
 
 import lavavu
-#lv = lavavu.Viewer()
-lv = lavavu.Viewer(renderlist="triangles quads vectors tracers shapes sortedpoints labels lines volume")
+lv = lavavu.Viewer()
 print(lavavu.version)
 
 lv["trisplit"] = 1
@@ -22,7 +21,7 @@ with open(jsonfile, 'rt') as f:
         name = group["name"]
         visible = group["visible"]
         print("Creating:" + name)
-        obj = lv.add(name)
+        obj = lv.triangles(name)
 
         objects = group["objects"]
         for object in objects:
