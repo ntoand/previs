@@ -31,6 +31,7 @@ var g_tag;
 var g_prevDistance = 0;             // for touch zoom
 var g_canTouchRotate = false;
 var g_canTouchZoom = false;
+var g_canTouchPan = false;
 
 var CAMERA_DISTANCE_MIN = 0.1;
 
@@ -749,6 +750,11 @@ function onDocumentTouchStart(event) {
 			var dy = event.touches[ 0 ].pageY - event.touches[ 1 ].pageY;
 			g_prevDistance = Math.sqrt( dx * dx + dy * dy );
 			g_canTouchZoom = true;
+			
+			// panning
+			g_canTouchPan = true;
+			g_prevMouseX = (event.touches[ 0 ].pageX + event.touches[ 1 ].pageX)/2;
+			g_prevMouseY = (event.touches[ 0 ].pageY + event.touches[ 1 ].pageY)/2;
 			break;
 
 		default:
@@ -760,6 +766,7 @@ function onDocumentTouchStart(event) {
 function onDocumentTouchEnd(event) {
     g_canTouchRotate = false;
     g_canTouchZoom = false;
+    g_canTouchPan = false;
 }
 		    
 function onDocumentTouchMove(event) {
@@ -791,8 +798,18 @@ function onDocumentTouchMove(event) {
 			    var delta = distance > g_prevDistance ? -15 : 15;
 			    handleZoom(delta);
 			}
-			
 			g_prevDistance = distance;
+			
+			// panning
+			if(g_canTouchPan) {
+			    var vx = (event.touches[ 0 ].pageX + event.touches[ 1 ].pageX)/2;
+			    var vy = (event.touches[ 0 ].pageY + event.touches[ 1 ].pageY)/2;
+			    var dragging = true;
+                var translating = true;
+                var rolling = false;
+                handleDragging(vx, vy, dragging, translating, rolling);
+			}
+			
 			break;
 
 		default:
