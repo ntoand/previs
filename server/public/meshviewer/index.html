@@ -15,8 +15,13 @@
         <script src="/socket.io/socket.io.js"></script>
         <script src="js/defaults.js"></script>
         <script src="js/viewer.js"></script>
+        
 
         <script>
+        
+            document.addEventListener( 'touchstart', onDocumentTouchStart, false );
+		    document.addEventListener( 'touchend', onDocumentTouchEnd, false );
+		    document.addEventListener( 'touchmove', onDocumentTouchMove, false );
 
             document.addEventListener('mousemove', onDocumentMouseMove, false);
             document.addEventListener('wheel', onDocumentMouseWheel, false);

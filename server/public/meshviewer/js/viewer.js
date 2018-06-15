@@ -28,6 +28,10 @@ var g_axisLines;
 var g_boundsSize = 1.0;         // the longest distance in any dimension that the mesh extends from the origin
 var g_tag;
 
+var g_prevDistance = 0;             // for touch zoom
+var g_canTouchRotate = false;
+var g_canTouchZoom = false;
+
 var CAMERA_DISTANCE_MIN = 0.1;
 
 // SceneTransport holds data about groups and models, used for saving/reconstructing
@@ -573,6 +577,9 @@ function main()
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.setClearColor(0x404048, 1);
     document.body.appendChild(renderer.domElement);
+    
+    // camera control
+    //g_control = new THREE.OrbitControls( camera );
 
     // load the json file, as a test..
     var xmlreq = new XMLHttpRequest();
@@ -722,33 +729,105 @@ function resetView()
     renderer.setSize(window.innerWidth, window.innerHeight);
 }
 
+// =========== EVENTS ===============
+function onDocumentTouchStart(event) {
+    event.preventDefault();
+	event.stopPropagation();
+
+	switch ( event.touches.length ) {
+
+		case 1: // one-fingered touch: rotate/rolling
+		
+		    g_prevMouseX = event.touches[ 0 ].pageX;
+		    g_prevMouseY = event.touches[ 0 ].pageY;
+		    g_canTouchRotate = true;
+			break;
+
+		case 2: // two-fingered touch: zoom
+
+            var dx = event.touches[ 0 ].pageX - event.touches[ 1 ].pageX;
+			var dy = event.touches[ 0 ].pageY - event.touches[ 1 ].pageY;
+			g_prevDistance = Math.sqrt( dx * dx + dy * dy );
+			g_canTouchZoom = true;
+			break;
+
+		default:
+
+            break;
+	}
+}
+	
+function onDocumentTouchEnd(event) {
+    g_canTouchRotate = false;
+    g_canTouchZoom = false;
+}
+		    
+function onDocumentTouchMove(event) {
+    
+    event.preventDefault();
+	event.stopPropagation();
+
+	switch ( event.touches.length ) {
+
+		case 1: // one-fingered touch: rotate/rolling
+		
+		    var vx = event.touches[ 0 ].pageX;
+            var vy = event.touches[ 0 ].pageY;
+            var dragging = true;
+            var translating = false;
+            var rolling = false;
+            if(g_canTouchRotate)
+                handleDragging(vx, vy, dragging, translating, rolling);
+
+			break;
+
+		case 2: // two-fingered touch: dolly-pan
+
+            var dx = event.touches[ 0 ].pageX - event.touches[ 1 ].pageX;
+			var dy = event.touches[ 0 ].pageY - event.touches[ 1 ].pageY;
+			var distance = Math.sqrt( dx * dx + dy * dy );
+			
+			if(g_canTouchZoom) {
+			    var delta = distance > g_prevDistance ? -15 : 15;
+			    handleZoom(delta);
+			}
+			
+			g_prevDistance = distance;
+			break;
+
+		default:
+            break;
+	}
+}
+
+
 function onDocumentMouseMove(event)
 {
     var vx = event.clientX;
     var vy = event.clientY;
-    var vz = 1.0;
-
-    var xDelta = vx - g_prevMouseX;
-    var yDelta = vy - g_prevMouseY;
-
-    var translating = false;
+    
     var dragging = false;
+    var translating = false;
     var rolling = false;
 
-    if(event.buttons != 0)
-    {
+    if(event.buttons != 0){
         dragging = true;
     }
 
-    if(event.ctrlKey || (event.buttons & 2))
-    {
+    if(event.ctrlKey || (event.buttons & 2)) {
         translating = true;
     }
 
-    if(event.buttons & 4)
-    {
+    if(event.buttons & 4) {
         rolling = true;
     }
+    handleDragging(vx, vy, dragging, translating, rolling);
+}
+
+function handleDragging(vx, vy, dragging, translating, rolling)
+{
+    var xDelta = vx - g_prevMouseX;
+    var yDelta = vy - g_prevMouseY;
 
     if(dragging)
     {
@@ -893,11 +972,15 @@ function onDocumentMouseMove(event)
     g_prevMouseY = vy;
 }
 
-function onDocumentMouseWheel(event)
-{
+
+function onDocumentMouseWheel(event) {
     // step the same amount regardless of how far the browser reported the wheel moved
     var delta = 55 * Math.sign(event.deltaY);
+    handleZoom(delta);
+}
 
+function handleZoom(delta)
+{
     // NEW ZOOM ROUTINE
     //var wheelLength = -event.deltaY;
     var wheelLength = -delta;
