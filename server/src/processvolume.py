@@ -100,7 +100,7 @@ def processZipStack(infile, outdir, verbose = False):
                 hadsize = True
 
     volinfo["numslices"] = numslices
-    volinfo["voxeldims"] = [1, 1, 1]
+    volinfo["voxelsizes"] = [1, 1, 1]
 
     lut = []
     for i in range(256):
@@ -116,9 +116,9 @@ def processZipStack(infile, outdir, verbose = False):
         xrwfile.write(struct.pack('i', volinfo["numslices"]))
 
         # wdx, wdy, wdz (voxel dimensions)
-        xrwfile.write(struct.pack('f', volinfo["voxeldims"][0]))
-        xrwfile.write(struct.pack('f', volinfo["voxeldims"][1]))
-        xrwfile.write(struct.pack('f', volinfo["voxeldims"][2]))
+        xrwfile.write(struct.pack('f', volinfo["voxelsizes"][0]))
+        xrwfile.write(struct.pack('f', volinfo["voxelsizes"][1]))
+        xrwfile.write(struct.pack('f', volinfo["voxelsizes"][2]))
 
         # write slices
         for cmpinfo in zinfolist:
@@ -152,6 +152,63 @@ def processZipStack(infile, outdir, verbose = False):
     retjson["status"] = "done"
     retjson["size"] = [volinfo["size"][0], volinfo["size"][1], volinfo["numslices"]]
     print (json.dumps(retjson))
+
+
+def processTiffStack(infile, outdir, verbose):
+    """
+    Process multi-dimensional tiff
+    :param infile: 
+    :param outdir: 
+    :param verbose: 
+    :return: 
+    """
+    img = Image.open(infile)
+    volinfo = {}
+    volinfo["size"] = img.size
+    volinfo["mode"] = img.mode
+    volinfo["numslices"] = img.n_frames
+    volinfo["voxelsizes"] = [1, 1, 1]
+    if verbose:
+        print(volinfo)
+    if volinfo["numslices"] == 1:
+        raise NameError("tiff_has_only_one_frame")
+
+    lut = []
+    for i in range(256):
+        lut.append(i)
+    lutarr = bytearray(lut)
+
+    xrw_filename = os.path.join(outdir, "vol.xrw")
+    with open(xrw_filename, "wb") as xrwfile:
+        # nx, ny, nz
+        xrwfile.write(struct.pack('i', volinfo["size"][0]))
+        xrwfile.write(struct.pack('i', volinfo["size"][1]))
+        xrwfile.write(struct.pack('i', volinfo["numslices"]))
+
+        # wdx, wdy, wdz (voxel dimensions)
+        xrwfile.write(struct.pack('f', volinfo["voxelsizes"][0]))
+        xrwfile.write(struct.pack('f', volinfo["voxelsizes"][1]))
+        xrwfile.write(struct.pack('f', volinfo["voxelsizes"][2]))
+
+        for i in range(volinfo["numslices"]):
+            img.seek(i)
+            if is16bit(volinfo["mode"]):
+                img8 = convertImage16To8(img)
+                channel = img8.getchannel(0)
+            else:
+                channel = img.getchannel(0)
+            data = bytearray(channel.getdata())
+            xrwfile.write(data)
+
+        # lut r, g, b
+        xrwfile.write(lutarr)
+        xrwfile.write(lutarr)
+        xrwfile.write(lutarr)
+
+    retjson = {}
+    retjson["status"] = "done"
+    retjson["size"] = [volinfo["size"][0], volinfo["size"][1], volinfo["numslices"]]
+    print(json.dumps(retjson))
 
 
 def main(argv):
@@ -188,7 +245,12 @@ def main(argv):
         os.makedirs(outdir)
 
     # now process zip file
-    processZipStack(infile, outdir, verbose)
+    filename, ext = os.path.splitext(infile)
+    ext = ext.lower()
+    if ext == ".zip":
+        processZipStack(infile, outdir, verbose)
+    elif ext == ".tif" or ext == ".tiff":
+        processTiffStack(infile, outdir, verbose)
 
 
 # MAIN FUNCTION

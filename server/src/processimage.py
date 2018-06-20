@@ -47,12 +47,33 @@ def convertImage16To8(img16):
 def checkAndConvertTiff(infile):
     img = Image.open(infile)
     filename, ext = os.path.splitext(infile)
-    outfile = filename + '_8bit' + ext
-    if is16bit(img.mode):
-        img = convertImage16To8(img)
-        img.save(outfile)
-        return outfile
-    return infile
+    outfiles = []
+
+    if (img.n_frames > 10):
+        raise NameError("too_many_frames_in_tiff_file")
+
+    if(img.n_frames > 1):
+        for i in range(img.n_frames):
+            img.seek(i)
+            if is16bit(img.mode):
+                outfile = filename + '_' + str(i) + '_8bit' + ext
+                img8 = convertImage16To8(img)
+                img8.save(outfile)
+            else:
+                outfile = filename + '_' + str(i) + ext
+                img.save(outfile)
+            outfiles.append(outfile)
+
+    else:
+        if is16bit(img.mode):
+            outfile = filename + '_8bit' + ext
+            img8 = convertImage16To8(img)
+            img8.save(outfile)
+        else:
+            outfile = infile
+        outfiles.append(outfile)
+
+    return outfiles
 
 
 def processZipFile(infile, outdir, verbose):
@@ -91,10 +112,10 @@ def processZipFile(infile, outdir, verbose):
         # then process tmp image file
         if verbose:
             print('processZipFile', filename, tmpfile, outdir)
-        processImageFile(tmpfile, outdir, verbose, thumb)
+        resfiles = processImageFile(tmpfile, outdir, verbose, thumb)
         thumb = False
 
-        outputfiles.append(filename + ".dzi")
+        outputfiles.append(resfiles)
 
     shutil.rmtree(tmpdir)
     if verbose:
@@ -113,25 +134,29 @@ def processImageFile(infile, outdir, verbose, thumb = True):
     """
     base = os.path.basename(infile)
     filename, ext = os.path.splitext(base)
-    outfile = os.path.join(outdir, filename)
-    if verbose:
-        print('processImageFile', infile, filename, outdir, outfile)
-    #ret = subprocess.check_output(['vips','dzsave',infile,outfile,'--tile-size','1024','--depth','onetile'])
-
     if(ext == '.tif' or ext == '.tiff'):
-        infile = checkAndConvertTiff(infile)
+        resfiles = checkAndConvertTiff(infile)
+    else:
+        resfiles = infile
 
-    ret = subprocess.check_output(['vips','dzsave',infile,outfile])
-    if verbose:
-        print(ret)
-        
-    if(thumb):
-        path_to_file = os.path.join(outdir, filename + "_files/8/0_0.jpeg")
-        if os.path.isfile(path_to_file):
-            shutil.copyfile(path_to_file, outdir+'/thumb.jpeg')
-        
+    for f in resfiles:
+        base = os.path.basename(f)
+        filename, ext = os.path.splitext(base)
+        outfile = os.path.join(outdir, filename)
+        if verbose:
+            print('processImageFile', infile, filename, outdir, outfile)
 
-    return [filename + ".dzi"]
+        ret = subprocess.check_output(['vips','dzsave',f,outfile])
+        if verbose:
+            print(ret)
+        
+        if(thumb):
+            path_to_file = os.path.join(outdir, filename + "_files/8/0_0.jpeg")
+            if os.path.isfile(path_to_file):
+                shutil.copyfile(path_to_file, outdir+'/thumb.jpeg')
+                thumb = False
+
+    return resfiles
 
 
 def main():
