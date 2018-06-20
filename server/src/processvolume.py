@@ -6,10 +6,12 @@ import os.path
 from PIL import Image
 import struct
 import json
+import numpy as np
 
 # Author: Toan Nguyen
 # Date: May 2018
 # TODO: support nii and dcm files
+
 
 def getImageType(fname):
     """
@@ -23,6 +25,7 @@ def getImageType(fname):
     elif ext == ".nii":
         return 2
     return 0
+
 
 def validFilename(filename):
     """
@@ -45,6 +48,17 @@ def splitFilename(filename, hascontainer = False):
     if(hascontainer):
         parts = parts[1:]
     return parts
+
+
+def is16bit(mode):
+    return mode in ["I;16", "I;16B", "I;16S"]
+
+
+def convertImage16To8(img16):
+    data = np.array(img16) / 256
+    data = np.array(data, dtype=np.uint8)
+    img8 = Image.fromarray(data)
+    return img8
 
 
 def processZipStack(infile, outdir, verbose = False):
@@ -78,11 +92,15 @@ def processZipStack(infile, outdir, verbose = False):
             with zfile.open(cmpinfo) as imgfile:
                 img = Image.open(imgfile)
                 if verbose:
-                    print(fname, img.size, img.mode, len(img.getdata()))
+                    print(fname, img.size, img.mode, len(img.getdata()), is16bit(img.mode))
                 volinfo["size"] = img.size
+                volinfo["mode"] = img.mode
+                if img.mode != "L" and not is16bit(img.mode):
+                    raise NameError("not_8_or_16_bit_data")
                 hadsize = True
 
     volinfo["numslices"] = numslices
+    volinfo["voxeldims"] = [1, 1, 1]
 
     lut = []
     for i in range(256):
@@ -98,9 +116,9 @@ def processZipStack(infile, outdir, verbose = False):
         xrwfile.write(struct.pack('i', volinfo["numslices"]))
 
         # wdx, wdy, wdz (voxel dimensions)
-        xrwfile.write(struct.pack('f', 1))
-        xrwfile.write(struct.pack('f', 1))
-        xrwfile.write(struct.pack('f', 1))
+        xrwfile.write(struct.pack('f', volinfo["voxeldims"][0]))
+        xrwfile.write(struct.pack('f', volinfo["voxeldims"][1]))
+        xrwfile.write(struct.pack('f', volinfo["voxeldims"][2]))
 
         # write slices
         for cmpinfo in zinfolist:
@@ -115,8 +133,13 @@ def processZipStack(infile, outdir, verbose = False):
             if imgtype == 1:  # normal image
                 with zfile.open(cmpinfo) as imgfile:
                     img = Image.open(imgfile)
+
+                    if is16bit(volinfo["mode"]):
+                        img = convertImage16To8(img)
+
                     channel = img.getchannel(0)
-                    xrwfile.write(bytearray(channel.getdata()))
+                    data = bytearray(channel.getdata())
+                    xrwfile.write(data)
 
         # lut r, g, b
         xrwfile.write(lutarr)

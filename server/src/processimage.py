@@ -5,6 +5,8 @@ import subprocess
 import zipfile
 import shutil
 import json
+import numpy as np
+from PIL import Image
 
 # Author: Toan Nguyen
 # Date: May 2018
@@ -29,6 +31,28 @@ def isImageFile(file):
     if ext == ".tif" or ext == ".tiff" or ext == ".jpg" or ext == ".jpeg" or ext == ".png":
         return True
     return False
+
+
+def is16bit(mode):
+    return mode in ["I;16", "I;16B", "I;16S"]
+
+
+def convertImage16To8(img16):
+    data = np.array(img16) / 256
+    data = np.array(data, dtype=np.uint8)
+    img8 = Image.fromarray(data)
+    return img8
+
+
+def checkAndConvertTiff(infile):
+    img = Image.open(infile)
+    filename, ext = os.path.splitext(infile)
+    outfile = filename + '_8bit' + ext
+    if is16bit(img.mode):
+        img = convertImage16To8(img)
+        img.save(outfile)
+        return outfile
+    return infile
 
 
 def processZipFile(infile, outdir, verbose):
@@ -93,6 +117,10 @@ def processImageFile(infile, outdir, verbose, thumb = True):
     if verbose:
         print('processImageFile', infile, filename, outdir, outfile)
     #ret = subprocess.check_output(['vips','dzsave',infile,outfile,'--tile-size','1024','--depth','onetile'])
+
+    if(ext == '.tif' or ext == '.tiff'):
+        infile = checkAndConvertTiff(infile)
+
     ret = subprocess.check_output(['vips','dzsave',infile,outfile])
     if verbose:
         print(ret)
