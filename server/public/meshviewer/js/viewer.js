@@ -732,32 +732,30 @@ function resetView()
 
 // =========== EVENTS ===============
 function onDocumentTouchStart(event) {
-    event.preventDefault();
+    //event.preventDefault();
 	event.stopPropagation();
 
 	switch ( event.touches.length ) {
 
 		case 1: // one-fingered touch: rotate/rolling
-		
 		    g_prevMouseX = event.touches[ 0 ].pageX;
 		    g_prevMouseY = event.touches[ 0 ].pageY;
 		    g_canTouchRotate = true;
 			break;
 
 		case 2: // two-fingered touch: zoom
-
             var dx = event.touches[ 0 ].pageX - event.touches[ 1 ].pageX;
 			var dy = event.touches[ 0 ].pageY - event.touches[ 1 ].pageY;
 			g_prevDistance = Math.sqrt( dx * dx + dy * dy );
 			g_canTouchZoom = true;
 			break;
-			
+		
 		case 3: // panning
 			g_canTouchPan = true;
 			g_prevMouseX = (event.touches[ 0 ].pageX + event.touches[ 1 ].pageX)/2;
 			g_prevMouseY = (event.touches[ 0 ].pageY + event.touches[ 1 ].pageY)/2;
 			break;
-
+        
 		default:
 
             break;
@@ -800,7 +798,7 @@ function onDocumentTouchMove(event) {
 			    handleZoom(delta);
 			}
 			g_prevDistance = distance;
-			
+		
 		case 3: //panning
 			if(g_canTouchPan) {
 			    var vx = (event.touches[ 0 ].pageX + event.touches[ 1 ].pageX)/2;
@@ -812,7 +810,7 @@ function onDocumentTouchMove(event) {
 			}
 			
 			break;
-
+        
 		default:
             break;
 	}
