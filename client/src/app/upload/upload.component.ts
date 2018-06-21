@@ -17,6 +17,14 @@ export class UploadComponent implements OnInit {
   
   dataType: string = "volume";
   uploadType: string = "local";
+  // advanded options for volume data
+  settings = {
+    voxelSizeX: 1,
+    voxelSizeY: 1,
+    voxelSizeZ: 1,
+    channel: 0,
+    time: 0
+  };
   
   message = { type: "", content: "" };
   dataset: Dataset = new Dataset();

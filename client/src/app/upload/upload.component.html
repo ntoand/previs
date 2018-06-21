@@ -20,10 +20,11 @@
       <div *ngIf="dataType === 'volume'" class="collapse-able">
         <details>
           <summary>
-            Upload a TIFF Image Stack (.zip file of an indexed TIFF image stack)
+            Upload a TIFF Image Stack (.zip file of an indexed TIFF image stack) or a multi-dimensional (stacked) TIFF file
           </summary>
-          <p>Example data <a href="data/example/tiffstack-foot.zip">tiffstack-foot.zip</a></p>
-          <p><b>How to prepare data:</b></p>
+          <p>Note: 16-bit data will be converted to 8-bit</p>
+          <p>Example data <a href="data/example/tiffstack-foot.zip">tiffstack-foot.zip</a> (image stack) and <a href="data/example/foot-3d.tif">foot-3d.tif</a> (multi-dim tiff)</p>
+          <p><b>How to prepare stack zip file data:</b></p>
           <li>Create a directory to store slices</li>
           <li>Convert slices to tiff format if needed using image editors (e.g. ImageMagick)</li>
           <li>Slices (tiff images) are named in order (e.g. 0001.tif, 0002.tif, ...)</li>
@@ -102,6 +103,22 @@
         </details>
       </div>
       
+      <div *ngIf="dataType === 'volume'" class="collapse-able">
+        <details>
+          <summary>
+            <b>Volume settings</b>
+          </summary>
+          <p>Voxel size x <input type="number" step="0.01" [(ngModel)]="settings.voxelSizeX" class="option-input" > 
+                        y <input type="number" step="0.01" [(ngModel)]="settings.voxelSizeY" class="option-input" > 
+                        z <input type="number" step="0.01" [(ngModel)]="settings.voxelSizeZ" class="option-input" > 
+          </p>
+          <p>Channel index <input type="number"  [(ngModel)]="settings.channel" class="option-input" > 
+             Timestep <input type="number"  [(ngModel)]="settings.time" class="option-input" > 
+             (in case your stacked tiff has more than 1 channel or 1 timestep. Index starts from 0)
+          </p>
+        </details>
+      </div>
+      
     </div>
   </mat-card>
   
@@ -117,15 +134,15 @@
     </div>
     
     <div class="block" *ngIf="uploadType === 'local'">
-      <app-uploadfile [dataType]="dataType"></app-uploadfile>
+      <app-uploadfile [dataType]="dataType" [settings]="settings"></app-uploadfile>
     </div>
     
     <div class="block" *ngIf="uploadType === 'link'">
-      <app-uploadlink [dataType]="dataType"></app-uploadlink>
+      <app-uploadlink [dataType]="dataType" [settings]="settings"></app-uploadlink>
     </div>
     
     <div class="block" *ngIf="uploadType === 'mytardis'">
-      <app-mytardis></app-mytardis>
+      <app-mytardis [settings]="settings"></app-mytardis>
     </div>
     
   </mat-card>

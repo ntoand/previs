@@ -19,6 +19,7 @@ export class UploadfileComponent implements OnInit {
   errMsg = '';
   
   @Input() dataType: string;
+  @Input() settings;
   
   ngOnInit() {
   }
@@ -67,9 +68,16 @@ export class UploadfileComponent implements OnInit {
     let fileext = file.name.split('.').pop().toLowerCase();
     
     this.errMsg = "";
-    if(this.dataType === 'volume' || this.dataType === 'mesh') {
+    if(this.dataType === 'volume') {
+      if (fileext !== 'zip' && fileext !== 'tif' && fileext !== 'tiff') {
+        this.errMsg = "Volume requires zip or tiff file!";
+        this.renderer.selectRootElement('.uploadfile').value = '';
+        return;
+      }
+    }
+    else if (this.dataType === 'mesh') {
       if (fileext !== 'zip') {
-        this.errMsg = "Volume or mesh requires zip file!";
+        this.errMsg = "Mesh requires zip file!";
         this.renderer.selectRootElement('.uploadfile').value = '';
         return;
       }
@@ -116,7 +124,8 @@ export class UploadfileComponent implements OnInit {
           }
           this.renderer.selectRootElement('.uploadfile').value = '';
           this.appService.sendMsg({action: 'processupload', data: {task: "process", file: result.file, datatype: this.dataType, uploadtype: 'local',
-                                                                    userId: this.authService.userDetails.uid, userEmail: this.authService.userDetails.email} });
+                                                                    userId: this.authService.userDetails.uid, userEmail: this.authService.userDetails.email,
+                                                                    settings: this.settings } });
           
           let x = document.querySelector("#processing_anchor");
           if (x){

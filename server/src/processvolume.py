@@ -7,6 +7,7 @@ from PIL import Image
 import struct
 import json
 import numpy as np
+import imageio
 
 # Author: Toan Nguyen
 # Date: May 2018
@@ -51,7 +52,7 @@ def splitFilename(filename, hascontainer = False):
 
 
 def is16bit(mode):
-    return mode in ["I;16", "I;16B", "I;16S"]
+    return mode in ["uint16", "I;16", "I;16B", "I;16S"]
 
 
 def convertImage16To8(img16):
@@ -154,7 +155,80 @@ def processZipStack(infile, outdir, verbose = False):
     print (json.dumps(retjson))
 
 
-def processTiffStack(infile, outdir, verbose):
+def parseVolInfo(shape):
+    """
+    Parse volume info from shape read from imageio
+    :param shape: 
+    :return: 
+    """
+    shape = shape[::-1]
+    volinfo = {}
+    volinfo["size"] = [shape[0], shape[1]]
+    dim = len(shape)
+    numslices = 1
+    numtimes = 1
+    numchannels = 1
+    if dim == 3:
+        numslices = shape[2]
+    elif dim == 4:
+        if shape[2] <= 3:
+            numchannels = shape[2]
+            numslices = shape[3]
+        else:
+            numslices = shape[2]
+            numtimes = shape[3]
+    elif dim == 5:
+        numchannels = shape[2]
+        numslices = shape[3]
+        numtimes = shape[4]
+    else:
+        raise NameError("unsupported number of dimensions = " + str(dim))
+
+    volinfo["numslices"] = numslices
+    volinfo["numchannels"] = numchannels
+    volinfo["numtimes"] = numtimes
+    volinfo["voxelsizes"] = [1, 1, 1]
+    return volinfo
+
+
+def getFrameData(img, volinfo, i, channel, timestep):
+    """
+    Get frame data from imageio img    
+    :param img: 
+    :param volinfo: 
+    :param i: 
+    :param channel: 
+    :param timestep: 
+    :return: 
+    """
+    # check inputs
+    channel = int(channel)
+    timestep = int(timestep)
+    if channel < 0: channel = 0
+    if channel > volinfo["numchannels"]-1 : channel = volinfo["numchannels"]-1
+    if timestep < 0: timestep = 0
+    if timestep > volinfo["numtimes"]-1 : channel = volinfo["numtimes"]-1
+    
+    shape = volinfo["shape"]
+    shape = shape[::-1]
+    dim = len(shape)
+    if dim == 3:
+        data = img[i, :, :]
+    elif dim == 4:
+        if shape[2] <= 3:
+            data = img[i,channel,:,:]
+        else:
+            data = img[timestep,i,:,:]
+    elif dim == 5:
+        data = img[timestep,i,channel,:,:]
+
+    if is16bit(volinfo["mode"]):
+        data = data / 256
+        data = np.array(data, dtype=np.uint8)
+    return data.tobytes()
+
+
+def processTiffStack(infile, outdir, channel, timestep, verbose):
     """
     Process multi-dimensional tiff
     :param infile: 
@@ -162,16 +236,16 @@ def processTiffStack(infile, outdir, verbose):
     :param verbose: 
     :return: 
     """
-    img = Image.open(infile)
-    volinfo = {}
-    volinfo["size"] = img.size
-    volinfo["mode"] = img.mode
-    volinfo["numslices"] = img.n_frames
-    volinfo["voxelsizes"] = [1, 1, 1]
+    #img = Image.open(infile)
+    img = imageio.volread(infile)
+    volinfo = parseVolInfo(img.shape)
+    volinfo["mode"] = img.dtype.name
+    volinfo["shape"] = img.shape
     if verbose:
         print(volinfo)
-    if volinfo["numslices"] == 1:
-        raise NameError("tiff_has_only_one_frame")
+
+    if volinfo["numslices"] < 5:
+        raise NameError("Tiff has less than 5 frames")
 
     lut = []
     for i in range(256):
@@ -191,13 +265,7 @@ def processTiffStack(infile, outdir, verbose):
         xrwfile.write(struct.pack('f', volinfo["voxelsizes"][2]))
 
         for i in range(volinfo["numslices"]):
-            img.seek(i)
-            if is16bit(volinfo["mode"]):
-                img8 = convertImage16To8(img)
-                channel = img8.getchannel(0)
-            else:
-                channel = img.getchannel(0)
-            data = bytearray(channel.getdata())
+            data = getFrameData(img, volinfo, i, channel, timestep)
             xrwfile.write(data)
 
         # lut r, g, b
@@ -218,18 +286,18 @@ def main(argv):
     Output: 
     """
     # parse parameters
-    infile = ""
-    outdir = ""
-    verbose = False
-
     parser = argparse.ArgumentParser(description='Convert image to deep zoom using vips')
     parser.add_argument('-i', '--infile', dest='infile', help='name of input file to process')
     parser.add_argument('-o', '--outdir', dest='outdir', help='ouput directory e.g. /path/to/tags/avc233')
+    parser.add_argument('-c', '--channel', dest='channel', help='channel index (from 0) e.g. 0', default=0)
+    parser.add_argument('-t', '--timestep', dest='timestep', help='timestep (from 0) e.g. 0', default=0)
     parser.add_argument('-v', '--verbose', action='store_true', help='verbose')
 
     args = parser.parse_args()
     infile = args.infile
     outdir = args.outdir
+    channel = args.channel
+    timestep = args.timestep
     verbose = args.verbose
 
     if verbose:
@@ -250,7 +318,7 @@ def main(argv):
     if ext == ".zip":
         processZipStack(infile, outdir, verbose)
     elif ext == ".tif" or ext == ".tiff":
-        processTiffStack(infile, outdir, verbose)
+        processTiffStack(infile, outdir, channel, timestep, verbose)
 
 
 # MAIN FUNCTION

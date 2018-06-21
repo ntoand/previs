@@ -16,6 +16,7 @@ export class UploadlinkComponent implements OnInit {
   errMsg = '';
   
   @Input() dataType: string;
+  @Input() settings;
 
   ngOnInit() {
   }
@@ -29,7 +30,7 @@ export class UploadlinkComponent implements OnInit {
       return;
     }
     this.appService.sendMsg({action: 'processupload', data: {task: "process", url: this.urlStr, ext: this.extStr, datatype: this.dataType, uploadtype: 'link',
-                                                              userId: this.authService.userDetails.uid, userEmail: this.authService.userDetails.email } });
+                                                              userId: this.authService.userDetails.uid, userEmail: this.authService.userDetails.email, settings: this.settings } });
     
     let x = document.querySelector("#processing_anchor");
     if (x){

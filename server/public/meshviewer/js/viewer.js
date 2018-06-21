@@ -750,8 +750,9 @@ function onDocumentTouchStart(event) {
 			var dy = event.touches[ 0 ].pageY - event.touches[ 1 ].pageY;
 			g_prevDistance = Math.sqrt( dx * dx + dy * dy );
 			g_canTouchZoom = true;
+			break;
 			
-			// panning
+		case 3: // panning
 			g_canTouchPan = true;
 			g_prevMouseX = (event.touches[ 0 ].pageX + event.touches[ 1 ].pageX)/2;
 			g_prevMouseY = (event.touches[ 0 ].pageY + event.touches[ 1 ].pageY)/2;
@@ -800,7 +801,7 @@ function onDocumentTouchMove(event) {
 			}
 			g_prevDistance = distance;
 			
-			// panning
+		case 3: //panning
 			if(g_canTouchPan) {
 			    var vx = (event.touches[ 0 ].pageX + event.touches[ 1 ].pageX)/2;
 			    var vy = (event.touches[ 0 ].pageY + event.touches[ 1 ].pageY)/2;

@@ -177,8 +177,9 @@ function processUploadFile_Volumes(io, data) {
 	console.log(data);
 	
 	var inputfile = data.inputfile;
+	var settings = data.settings; // vol voxel size x, y, z, channel, timestep
 	var out_dir = data.tagdir + '/volume_result';
-	var cmd = 'cd ' + config.scripts_dir + ' && python processvolume.py -i ' + inputfile + ' -o ' + out_dir;
+	var cmd = 'cd ' + config.scripts_dir + ' && python processvolume.py -i ' + inputfile + ' -o ' + out_dir + ' -c ' + settings.channel + ' -t ' + settings.time;
 	console.log(cmd);
 	myutils.packAndSend(io, 'processupload', {status: 'working', result: 'Converting image stack to xrw...'})
 	exec(cmd, function(err, stdout, stderr) 
@@ -340,6 +341,12 @@ function convertXRWToPNG(io, data) {
     	data.resize_factor = resize_factor;
     	data.vol_res_full = vol_res;
     	data.vol_res_web = [ Math.floor(vol_res[0]/resize_factor), Math.floor(vol_res[1]/resize_factor), Math.floor(vol_res[2]/resize_factor)];
+    	//calculate scale
+    	var settings = data.settings;
+    	var xref_full = data.vol_res_full[0]*settings.voxelSizeX;
+    	data.vol_scale_full = [1, data.vol_res_full[1]*settings.voxelSizeY/xref_full, data.vol_res_full[2]*settings.voxelSizeZ/xref_full];
+    	var xref_web = data.vol_res_web[0]*settings.voxelSizeX;
+    	data.vol_scale_web = [1, data.vol_res_web[1]*settings.voxelSizeY/xref_web, data.vol_res_web[2]*settings.voxelSizeZ/xref_web];
     	console.log(data);
     
     	var cmd = 'cd ' + config.scripts_dir + ' && xrw2pngmos -f ' + result_dir + '/vol.xrw -o ' + result_dir + '/vol_web.png -s ' 
@@ -384,9 +391,11 @@ function sendViewDataToClient(io, data) {
 		var obj_web = JSON.parse(jsondata);
 		obj_full.objects[0].volume.url = 'none'; //'data/local/' + basename + '_result/vol_web.png';
     	obj_full.objects[0].volume.res = data.vol_res_full;
+    	obj_full.objects[0].volume.scale = data.vol_scale_full;
     	
     	obj_web.objects[0].volume.url = tag_url + basename + '_result/vol_web.png';
     	obj_web.objects[0].volume.res = data.vol_res_web;
+    	obj_web.objects[0].volume.scale = data.vol_scale_web;
 
     	//write json first
 		fs.writeFile( jsonfile_full, JSON.stringify(obj_full, null, 4), function(err) {
@@ -401,7 +410,7 @@ function sendViewDataToClient(io, data) {
 					myutils.packAndSend(io, 'processupload', {status: 'error', result: 'cannot_generate_json_full'});
 					return;
 				} 
-			
+				
 				// save to database
 				var tag_json = {};
 				tag_json.tag=data.tag;

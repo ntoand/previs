@@ -130,18 +130,31 @@ export class DatasetDetailComponent implements OnInit {
     }
     
     let dataType = localStorage.getItem('currentDatatype');
+    let settings = localStorage.getItem('settings');
     
     //check filename
     let fileext = filename.split('.').pop().toLowerCase();
-    if(dataType === 'volume' || dataType === 'mesh') {
+    if(dataType === 'volume') {
+      if (fileext !== 'zip' && fileext !== 'tif' && fileext !== 'tiff') {
+        this.errMsg = "Volume requires zip or tiff file!";
+        return;
+      }
+    }
+    else if (dataType === 'mesh') {
       if (fileext !== 'zip') {
-        this.errMsg = "Volume or mesh requires zip file!";
+        this.errMsg = "Volume requires zip file!";
         return;
       }
     }
     else if (dataType === 'point') {
-      if (fileext !== 'las' && fileext !== 'laz' && fileext !== 'ptx' && fileext !== 'ply' && fileext !== 'zip' ) {
-        this.errMsg = "Pointcloud requies las/laz, ptx, ply or zip file";
+      if (fileext !== 'las' && fileext !== 'laz' && fileext !== 'ptx' && fileext !== 'ply' && fileext !== 'xyz' && fileext !== 'txt' && fileext !== 'zip' ) {
+        this.errMsg = "Pointcloud requies las/laz, ptx, ply, xyz/txt, or zip file";
+        return;
+      }
+    }
+    else if (dataType == "image") {
+      if (fileext !== 'tif' && fileext !== 'tiff' && fileext !== 'jpg' && fileext !== 'png' && fileext !== 'zip') {
+        this.errMsg = "Image(s) requies .tif, .png, .jpg, or .zip file";
         return;
       }
     }
@@ -157,7 +170,7 @@ export class DatasetDetailComponent implements OnInit {
     this.appService.setLock(true);
     this.appService.sendMsg({action: 'processupload', data: {task: "process", datatype: dataType, uploadtype: 'mytardis', 
                              fileid: id, filename: filename, auth: info,
-                             userId: this.authService.userDetails.uid, userEmail: this.authService.userDetails.email } });
+                             userId: this.authService.userDetails.uid, userEmail: this.authService.userDetails.email, settings: settings } });
                              
     let x = document.querySelector("#processing_anchor");
     if (x){

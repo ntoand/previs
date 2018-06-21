@@ -48,3 +48,8 @@ summary:focus {
     width: 60px;
 }
   
+.option-input {
+    margin-right: 5px;
+    text-align: center;
+    width: 50px;
+}

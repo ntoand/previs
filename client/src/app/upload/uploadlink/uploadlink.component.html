@@ -1,9 +1,18 @@
 <div>
   <p>Copy/paste a Google Drive shared link. <b>Please make sure that anyone can access data with the link.</b></p>
   <form class="file-form">
+    
     <mat-form-field class="full-width">
       <input matInput placeholder="shared link" [(ngModel)]="urlStr" name="urlStr">
     </mat-form-field>
+    
+    <mat-form-field *ngIf="dataType === 'volume'">
+      <mat-select [(value)]="extStr">
+        <mat-option value="zip">file ext .zip</mat-option>
+        <mat-option value="tif">file ext .tif</mat-option>
+      </mat-select>
+    </mat-form-field>
+    
     <mat-form-field *ngIf="dataType === 'point'">
       <mat-select [(value)]="extStr">
         <mat-option value="zip">file ext .zip</mat-option>
@@ -11,6 +20,13 @@
         <mat-option value="laz">file ext .laz</mat-option>
         <mat-option value="ptx">file ext .ptx</mat-option>
         <mat-option value="ply">file ext .ply</mat-option>
+      </mat-select>
+    </mat-form-field>
+    
+    <mat-form-field *ngIf="dataType === 'image'">
+      <mat-select [(value)]="extStr">
+        <mat-option value="zip">file ext .zip</mat-option>
+        <mat-option value="tif">file ext .tif</mat-option>
       </mat-select>
     </mat-form-field>
     

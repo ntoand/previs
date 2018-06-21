@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Input } from '@angular/core';
 import { AppService } from '../../core/app.service';
 import { Router, ActivatedRoute } from '@angular/router';
 
@@ -17,6 +17,8 @@ export class MytardisComponent implements OnInit {
   errMsg = '';
   loggedin = false;
   username = '';
+  
+  @Input() settings;
 
   ngOnInit() {
     //this.appService.setMenuIdx(3);
@@ -31,7 +33,7 @@ export class MytardisComponent implements OnInit {
       
         const userId = msg.data.result.objects[0].id;
         localStorage.setItem('currentMytardis', 
-                              JSON.stringify({host: this.host, accessType: this.accessType, apiKey: this.apiKey, userId: userId}));
+                              JSON.stringify({host: this.host, accessType: this.accessType, apiKey: this.apiKey, userId: userId, settings: this.settings}));
         //this.router.navigate(['/mytardis/experiment']);
         this.router.navigate([{ outlets: { "auxMytardis": ["experiment"] }}], { relativeTo: this.activeRoute });
         this.loggedin = true;

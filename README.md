@@ -83,7 +83,14 @@ or
 
 ## Change log
 
-### v0.4
+### v0.5.0
+
+- Can upload volume as stacked tif file
+- Allow users to upload 16-bit tif data. 16-bit will be converted to 8-bit
+- Add tiff extension for volume and image downloaded from a Google link
+- Add advanced options for volume data (voxel size, timestep, channel index)
+
+### v0.4.0
 
 - Support high resolution image upload, view high-res images in web browser and CAVE2
 - New json file structure for mesh folders
@@ -92,7 +99,7 @@ or
 - Faster volume data conversion
 - Support high resolution volume viewing in the CAVE2 with Tuvok
 
-### v0.3
+### v0.3.0
 
 - Support volume (tiffstack), mesh (obj) and pointcloud data
 - Data can be imported from local machine, shared link or MyTardis

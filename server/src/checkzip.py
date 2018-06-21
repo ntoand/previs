@@ -85,12 +85,8 @@ def main():
             match = True
             
     elif (type == "volume"):
-        if hasImage:
-            if countImg < 5:
-                errstr = "Number of images is small. Maybe you want to upload high resolution images?"
-            else:
-                if not hasMesh and not hasPoint:
-                    match = True
+        if hasImage and not hasMesh and not hasPoint:
+            match = True
     
     elif (type == "image"):
         if hasImage and not hasMesh and not hasPoint:
