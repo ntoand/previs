@@ -117,6 +117,13 @@ def runMesh(info):
     cmd = ['unzip', '-o', 'mesh_processed.zip']
     subprocess.check_output(cmd)
     os.chdir(info['cwd'])
+    
+    # download update json
+    file_url = host + '/data/tags/' + info['tag'] + '/mesh_result/mesh.json'
+    file_local = info['tag_dir'] + '/mesh.json'
+    os.remove(file_local)
+    print 'download', file_url
+    downloadFile(file_url, file_local)
 
     # clean
     os.remove(file_local)
