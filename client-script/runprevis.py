@@ -78,8 +78,9 @@ def runVolume(info):
     #download xrw
     file_url = host + '/data/tags/' + info['tag'] + '/volume_result/vol.xrw'
     file_local = info['tag_dir'] + '/vol.xrw'
-    print 'download', file_url
-    downloadFile(file_url, file_local)
+    if not os.path.exists(file_local):
+        print 'download', file_url
+        downloadFile(file_url, file_local)
 
     #json
     file_url = host + '/data/tags/' + info['tag'] + '/volume_result/vol_full.json'
@@ -110,13 +111,14 @@ def runMesh(info):
     #download data
     file_url = host + '/data/tags/' + info['tag'] + '/mesh_processed.zip'
     file_local = info['tag_dir'] + '/mesh_processed.zip'
-    print 'download', file_url
-    downloadFile(file_url, file_local)
-    #unzip
-    os.chdir(info['tag_dir'])
-    cmd = ['unzip', '-o', 'mesh_processed.zip']
-    subprocess.check_output(cmd)
-    os.chdir(info['cwd'])
+    if not os.path.exists(file_local):
+        print 'download', file_url
+        downloadFile(file_url, file_local)
+        #unzip
+        os.chdir(info['tag_dir'])
+        cmd = ['unzip', '-o', 'mesh_processed.zip']
+        subprocess.check_output(cmd)
+        os.chdir(info['cwd'])
     
     # download update json
     file_url = host + '/data/tags/' + info['tag'] + '/mesh_result/mesh.json'
@@ -124,9 +126,6 @@ def runMesh(info):
     os.remove(file_local)
     print 'download', file_url
     downloadFile(file_url, file_local)
-
-    # clean
-    os.remove(file_local)
 
     cmd = ['cp', 'mesh_run.py', info['tag_dir'] + '/init.py']
     subprocess.check_output(cmd)
@@ -144,12 +143,14 @@ def runPoint(info):
     # download data
     file_url = host + '/data/tags/' + info['tag'] + '/point_processed.zip'
     file_local = info['tag_dir'] + '/point_processed.zip'
-    print 'download', file_url
-    downloadFile(file_url, file_local)
-    # unzip
-    os.chdir(info['tag_dir'])
-    cmd = ['unzip', '-o', 'point_processed.zip']
-    subprocess.check_output(cmd)
+    if not os.path.exists(file_local):
+        print 'download', file_url
+        downloadFile(file_url, file_local)
+        # unzip
+        os.chdir(info['tag_dir'])
+        cmd = ['unzip', '-o', 'point_processed.zip']
+        subprocess.check_output(cmd)
+
     if not os.path.exists(info['tag_dir'] + '/gigapoint_resource'):
         subprocess.check_output(['ln','-s','/home/toand/git/projects/gigapoint/gigapoint/dist/gigapoint_resource'])
     if not os.path.exists(info['tag_dir'] + '/gigapoint.so'):
@@ -179,13 +180,16 @@ def runImage(info):
     # download data
     file_url = host + '/data/tags/' + info['tag'] + '/image_processed.zip'
     file_local = info['tag_dir'] + '/image_processed.zip'
-    print 'download', file_url
-    downloadFile(file_url, file_local)
-    # unzip
-    os.chdir(info['tag_dir'])
-    cmd = ['unzip', '-o', 'image_processed.zip']
-    subprocess.check_output(cmd)
-    os.chdir(info['cwd'])
+    
+    if not os.path.exists(file_local):
+        print 'download', file_url
+        downloadFile(file_url, file_local)
+        # unzip
+        os.chdir(info['tag_dir'])
+        cmd = ['unzip', '-o', 'image_processed.zip']
+        subprocess.check_output(cmd)
+        os.chdir(info['cwd'])
+
     # generate run command
     cmd = 'GO_CAVE2_DZ -b 256 -t 4 -p -m'
     jsonfile = info['tag_dir'] + '/image.json'
@@ -195,8 +199,8 @@ def runImage(info):
             cmd = cmd + ' -i ' + img
     info['imagecmd'] = cmd.encode('ascii','ignore').split()
 
-    if not os.path.exists(info['tag_dir'] + '/shader'):
-        subprocess.check_output(['ln','-s','/home/toand/git/projects/vsviewer/build/CAVE2/shaders'])
+    if not os.path.exists(info['tag_dir'] + '/default.cfg'):
+        subprocess.check_output(['ln','-s','/home/toand/git/projects/vsviewer/data/default.cfg'])
 
     # run
     runViewer(info)
