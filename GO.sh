@@ -32,4 +32,4 @@ unlink data
 ln -s ${dir}/server/public/data . 
 
 cd ${dir}/server
-NODE_ENV=production node server.js
+NODE_ENV=production forever server.js

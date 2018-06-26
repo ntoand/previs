@@ -79,6 +79,7 @@ else if (test ===4) {
     })
 
     // demo v2 brain
+    /*
     var json = {
       tag: 'demov2',
       type: 'volume'
@@ -86,6 +87,7 @@ else if (test ===4) {
     object.insertNewTag(json, function(err) {
         console.log(err);
     })
+    */
     
     // demo m1 heart
     var json = {

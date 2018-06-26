@@ -4,4 +4,4 @@
 dir=`pwd`
 
 cd ${dir}/server
-NODE_ENV=production node server.js
+NODE_ENV=production forever server.js
