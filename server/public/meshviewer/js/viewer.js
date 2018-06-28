@@ -465,6 +465,7 @@ function loadOBJOnly(filename, path, object, materials) {
         g_camDistance = targetDist * 1.5;
 
         // change the far clipping plane
+        camera.near = targetDist * 0.001;
         camera.far = targetDist * 8.0;  // arbitarily chosen for now, 8x the size of the bounding box
 
         // reset the camera
