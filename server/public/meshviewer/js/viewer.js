@@ -74,9 +74,8 @@ var OBJModel = function()
             return;
         }
 
-        console.log(this.model);
-        console.log("Applying settings");
-
+        console.log("OBJModel Applying settings");
+        
         var meshes = [];
 
         (function(model, meshlist) {
@@ -90,12 +89,23 @@ var OBJModel = function()
                 arguments.callee(model.children[i], meshlist);
             }
         }(this.model, meshes));
-
+        
         for(var i = 0; i < meshes.length; i++)
         {
-            meshes[i].material.color.setRGB(this.colour[0] / 255, this.colour[1] / 255, this.colour[2] / 255);
-            meshes[i].material.opacity = this.alpha;
-            meshes[i].material.transparent = (this.alpha < 1.0);
+            const mesh = meshes[i];
+            if(mesh.material.type !== 'MultiMaterial') {
+                mesh.material.color.setRGB(this.colour[0] / 255, this.colour[1] / 255, this.colour[2] / 255);
+                mesh.material.opacity = this.alpha;
+                mesh.material.transparent = (this.alpha < 1.0);
+            }
+            else {
+                const materials = mesh.material.materials;
+                for(var j=0; j < materials.length; j++) {
+                    materials[j].color.setRGB(this.colour[0] / 255, this.colour[1] / 255, this.colour[2] / 255);
+                    materials[j].opacity = this.alpha;
+                    materials[j].transparent = (this.alpha < 1.0);
+                }
+            }
         }
     };
 };
@@ -120,12 +130,14 @@ var OBJGroup = function()
     // OBJGroup.refresh() - apply alpha/colour settings to all meshes in the group
     this.refresh = function()
     {
+        console.log("OBJGroup refresh");
         console.log("Updating group " + this.name + "..");
+        
         for(i = 0; i < this.nodes.length; i++)
         {
             //console.log(i + ": (" + this.nodes[i].name + ", " + this.nodes[i].model + ")");
             this.nodes[i].model.visible = this.visible;
-            console.log("[" + i + "/" + this.nodes.length + "] " + this.nodes[i].filename + ": " + this.nodes[i].model.visible);
+            console.log("[" + (i+1) + "/" + this.nodes.length + "] " + this.nodes[i].filename + ": " + this.nodes[i].model.visible);
             
             if(this.visible)
             {
@@ -151,13 +163,12 @@ var OBJViewProperties = function()
     // OBJViewProperties.refresh() - refresh all models in the scene
     this.refresh = function()
     {
-        console.log(this);
+        //console.log(this);
         var groupCount = this.groups.length;
 
         for(var i = 0; i < groupCount; i++)
         {
-            console.log("Refreshing group " + i + "/" + groupCount + "..");
-            console.log(this.groups[i]);
+            console.log("Refreshing group " + (i+1) + "/" + groupCount + "..");
             this.groups[i].refresh();
         }
     };
@@ -381,6 +392,7 @@ function loadOBJ(filename, groupname, object)
         });
     }
     else {
+        console.log('loadOBJ no material');
         var mat = new THREE.MeshBasicMaterial({ color: 0xffffff });
         loadOBJOnly(filename, path, object, mat);
     }
@@ -419,9 +431,9 @@ function loadOBJOnly(filename, path, object, materials) {
 
         var title = document.getElementById("viewertitle");
         if(title != null && g_sceneOBJCount > 0) {
-            var amtLoaded = g_sceneOBJLoaded / g_sceneOBJCount;
+            //var amtLoaded = g_sceneOBJLoaded / g_sceneOBJCount;
             //title.innerHTML = "Loading, " + amtLoaded.toFixed(0) + "%";
-            title.innerHTML = "Loading " + g_sceneOBJLoaded + " / " + g_sceneOBJCount + "...";
+            title.innerHTML = "Loading " + g_sceneOBJLoaded+1 + " / " + g_sceneOBJCount + "...";
         }
 
         g_allObjectsGroup.add(object);
