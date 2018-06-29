@@ -433,7 +433,7 @@ function loadOBJOnly(filename, path, object, materials) {
         if(title != null && g_sceneOBJCount > 0) {
             //var amtLoaded = g_sceneOBJLoaded / g_sceneOBJCount;
             //title.innerHTML = "Loading, " + amtLoaded.toFixed(0) + "%";
-            title.innerHTML = "Loading " + g_sceneOBJLoaded+1 + " / " + g_sceneOBJCount + "...";
+            title.innerHTML = "Loading " + g_sceneOBJLoaded + " / " + g_sceneOBJCount + "...";
         }
 
         g_allObjectsGroup.add(object);
