@@ -89,7 +89,16 @@ def runVolume(info):
     if (r.status_code != 200):
         raise Exception("Cannot get json")
     jsondata = r.json()
+    res =jsondata['objects'][0]['volume']['res'];
+    
+    file_url = host + '/data/tags/' + info['tag'] + '/volume_result/vol_web.json'
+    file_local = info['tag_dir'] + '/vol_web.json'
+    r = requests.get(file_url)
+    if (r.status_code != 200):
+        raise Exception("Cannot get json")
     jsondata['views'][0]['rotate'] = [0, 0, 0, 1]
+    jsondata['objects'][0]['volume']['res'] = res
+    
     print jsondata
     with open(file_local, 'w') as outfile:
         json.dump(jsondata, outfile, sort_keys=False, indent=4, ensure_ascii=False)
@@ -97,7 +106,8 @@ def runVolume(info):
     #inif.script
     with open(info['tag_dir'] + '/init.script', 'wt') as outfile:
         outfile.write('file vol.xrw\n')
-        outfile.write('file vol_full.json')
+        outfile.write('file vol_web.json')
+    
     #run
     runViewer(info)
 
