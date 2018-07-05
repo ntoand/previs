@@ -17,7 +17,7 @@ mkdir -p build
 cd build
 cmake -DCMAKE_BUILD_TYPE=Release -DLASZIP_INCLUDE_DIRS=${dir}/LAStools/LASzip/dll -DLASZIP_LIBRARY=${dir}/LAStools/LASzip/build/src/liblaszip.so ..
 make
-cd PotreeConverter
-unlink resources
-cp -r ../../PotreeConverter/resources .
+#cd PotreeConverter
+#unlink resources
+#cp -r ../../PotreeConverter/resources .
 
