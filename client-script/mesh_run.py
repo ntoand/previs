@@ -6,7 +6,7 @@ import lavavu
 lv = lavavu.Viewer()
 print(lavavu.version)
 
-lv["trisplit"] = 1
+#lv["trisplit"] = 1
 
 # load groups/objects
 obj = lv
