@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { WebsocketService } from './websocket.service';
-import { Observable, Subject } from 'rxjs/Rx';
+import { Observable, Subject, pipe } from 'rxjs';
+import { map } from 'rxjs/operators';
 
 @Injectable()
 export class AppService {
@@ -11,9 +12,11 @@ export class AppService {
   constructor(private wsService: WebsocketService) {
     this.messages = <Subject<any>>wsService
       .connect()
-      .map((response: any): any => {
-        return response;
-      })
+      .pipe(
+        map((response: any): any => {
+          return response;
+        })
+      )
       
     this.locked = false;
   }

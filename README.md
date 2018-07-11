@@ -83,6 +83,11 @@ or
 
 ## Change log
 
+### v0.5.1
+
+- Upgrade client web app from Angular 5 to Angular 6
+- Add Google Analytics to production site
+
 ### v0.5.0
 
 - Can upload volume as stacked tif file
