@@ -122,7 +122,7 @@ function processUploadFile(io, data) {
 			out = JSON.parse(out)
 			console.log(out);
 			if (!out.match) {
-				myutils.packAndSend(io, 'processupload', {status: 'error', result: 'Zip file contents do not match type!'});
+				myutils.packAndSend(io, 'processupload', {status: 'error', result: out.err});
 				return;
 			}
 		}
@@ -573,7 +573,7 @@ function saveDefaultPotreeSetting(data, callback) {
 		visiblePointTarget: 30000000,
 		minNodePixelSize: 100,
 		material: "rgb",
-		pointScale: [0.1,0.01,1.5],
+		pointScale: [0.05,0.01,1.0],
 		pointSizeRange: [2, 600],
 		sizeType: "adaptive",
 		quality: "circle",
