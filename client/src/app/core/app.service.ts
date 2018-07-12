@@ -42,12 +42,5 @@ export class AppService {
   }
   
   // ===== OTHERS =====
-  private locked = false; // to check if dataset is being processed
-  isLocked() {
-    return this.locked;
-  }
-  setLock(locked) {
-    this.locked = locked;
-  }
 
 }

@@ -122,7 +122,7 @@ function processUploadFile(io, data) {
 			out = JSON.parse(out)
 			console.log(out);
 			if (!out.match) {
-				myutils.packAndSend(io, 'processupload', {status: 'error', result: out.err});
+				myutils.packAndSend(io, 'processupload', {status: 'error', result: 'Zip file contents do not match type'});
 				return;
 			}
 		}

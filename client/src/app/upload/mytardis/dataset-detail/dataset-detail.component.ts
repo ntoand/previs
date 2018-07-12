@@ -129,13 +129,8 @@ export class DatasetDetailComponent implements OnInit {
     $event.preventDefault();
     
     this.errMsg = '';
-    if(this.appService.isLocked()) {
-      this.errMsg = 'Other dataset is being processed. Please wait!';
-      return;
-    }
-    
     let dataType = localStorage.getItem('currentDatatype');
-    let settings = localStorage.getItem('settings');
+    let settings = JSON.parse(localStorage.getItem('settings'));
     
     //check filename
     let fileext = filename.split('.').pop().toLowerCase();
@@ -172,7 +167,6 @@ export class DatasetDetailComponent implements OnInit {
     const mytardis = localStorage.getItem('currentMytardis');
     let info = JSON.parse(mytardis);
     console.log(dataType);
-    this.appService.setLock(true);
     this.appService.sendMsg({action: 'processupload', data: {task: "process", datatype: dataType, uploadtype: 'mytardis', 
                              fileid: id, filename: filename, auth: info,
                              userId: this.authService.userDetails.uid, userEmail: this.authService.userDetails.email, settings: settings } });

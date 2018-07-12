@@ -33,8 +33,9 @@ export class MytardisComponent implements OnInit {
         }
       
         const userId = msg.data.result.objects[0].id;
+        localStorage.setItem('settings', this.settings);
         localStorage.setItem('currentMytardis', 
-                              JSON.stringify({host: this.host, accessType: this.accessType, apiKey: this.apiKey, userId: userId, settings: this.settings}));
+                              JSON.stringify({host: this.host, accessType: this.accessType, apiKey: this.apiKey, userId: userId}));
         //this.router.navigate(['/mytardis/experiment']);
         this.router.navigate([{ outlets: { "auxMytardis": ["experiment"] }}], { relativeTo: this.activeRoute });
         this.loggedin = true;

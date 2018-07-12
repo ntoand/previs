@@ -50,7 +50,7 @@ export class UploadComponent implements OnInit {
           this.message.type = 'success';
           this.message.content = 'Please write down this tag ' + result.tag + ' for later use';
           this.dataset.parseResult(data);
-          this.appService.setLock(false);
+          //this.appService.setLock(false);
         }
       }
     });
