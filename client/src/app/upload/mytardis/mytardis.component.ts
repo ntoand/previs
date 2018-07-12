@@ -11,6 +11,7 @@ export class MytardisComponent implements OnInit {
 
   constructor(private appService: AppService, private router: Router, private activeRoute: ActivatedRoute) { }
   
+  connection;
   host = 'store.erc.monash.edu';
   accessType = 'public';
   apiKey = '';
@@ -23,7 +24,7 @@ export class MytardisComponent implements OnInit {
   ngOnInit() {
     //this.appService.setMenuIdx(3);
     
-    this.appService.messages.subscribe(msg => {
+    this.connection = this.appService.onMessage().subscribe(msg => {
       if(msg.action === 'processmytardis' && msg.data.task === 'get_json' && msg.data.datatype === 'user') {
         console.log(msg.data);
         if(msg.data.status === 'error' || msg.data.result.meta.total_count === 0) {
@@ -61,6 +62,10 @@ export class MytardisComponent implements OnInit {
       this.loggedin = false;
     }
     
+  }
+  
+  ngOnDestroy() {
+    this.connection.unsubscribe();
   }
   
   onGoClick($event) {

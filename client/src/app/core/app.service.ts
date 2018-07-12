@@ -1,28 +1,33 @@
 import { Injectable } from '@angular/core';
-import { WebsocketService } from './websocket.service';
-import { Observable, Subject, pipe } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { Observer, Observable } from 'rxjs';
+import * as socketIo from 'socket.io-client';
+import { environment } from '../../environments/environment';
 
 @Injectable()
 export class AppService {
   
   // ===== Websocket ====
-  messages: Subject<any>;
+  private socket;
+  private initialized = false;
 
-  constructor(private wsService: WebsocketService) {
-    this.messages = <Subject<any>>wsService
-      .connect()
-      .pipe(
-        map((response: any): any => {
-          return response;
-        })
-      )
-      
-    this.locked = false;
+  private initSocket(): void {
+      if(!this.initialized) {
+          console.log('initSocket', environment.ws_url);
+          this.socket = socketIo(environment.ws_url);
+          this.initialized = true;
+      }
   }
-  
-  sendMsg(msg) {
-    this.messages.next(msg);
+
+  public sendMsg(message): void {
+      this.initSocket();
+      this.socket.emit('message', message);
+  }
+
+  public onMessage(): Observable<any> {
+      this.initSocket();
+      return new Observable<any>(observer => {
+          this.socket.on('message', (data) => observer.next(data));
+      });
   }
   
   // ===== MENU =====
@@ -37,7 +42,7 @@ export class AppService {
   }
   
   // ===== OTHERS =====
-  private locked; // to check if dataset is being processed
+  private locked = false; // to check if dataset is being processed
   isLocked() {
     return this.locked;
   }

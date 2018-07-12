@@ -10,6 +10,7 @@ import { Experiment } from "../mytardis.model";
 })
 export class ExperimentListComponent implements OnInit {
   
+  connection;
   experiments: Experiment[];
   errMsg = '';
   totalItems = 0;
@@ -26,7 +27,7 @@ export class ExperimentListComponent implements OnInit {
     
     //this.appService.setMenuIdx(3);
     
-    this.appService.messages.subscribe(msg => {
+    this.connection = this.appService.onMessage().subscribe(msg => {
       if(msg.action === 'processmytardis' && msg.data.task === 'get_json' && msg.data.datatype === 'experiment') {
         console.log(msg.data);
         
@@ -90,6 +91,10 @@ export class ExperimentListComponent implements OnInit {
       this.accessType = info.accessType;
       this.appService.sendMsg(msg);
     }
+  }
+  
+  ngOnDestroy() {
+    this.connection.unsubscribe();
   }
   
   onPrevClick($event) {

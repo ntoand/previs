@@ -15,6 +15,7 @@ import { LoginComponent } from '../login/login.component';
 })
 export class UploadComponent implements OnInit {
   
+  connection;
   dataType: string = "volume";
   uploadType: string = "local";
   // advanded options for volume data
@@ -36,7 +37,7 @@ export class UploadComponent implements OnInit {
   ngOnInit() {
     this.appService.setMenuIdx(1);
     
-    this.appService.messages.subscribe(msg => {
+    this.connection = this.appService.onMessage().subscribe(msg => {
       if(msg.action === 'processupload') {
         console.log(msg.data);
         const data = msg.data;
@@ -55,6 +56,10 @@ export class UploadComponent implements OnInit {
     });
     
     localStorage.setItem('currentDatatype','volume');
+  }
+  
+  ngOnDestroy() {
+    this.connection.unsubscribe();
   }
   
   onChange($event) {
