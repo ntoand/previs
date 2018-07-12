@@ -19,6 +19,7 @@ export class ReviewComponent implements OnInit {
   constructor(private appService: AppService, public authService: AuthService, 
               private dialog: MatDialog) { }
   
+  connection; 
   message = { type: "", content: "" };
   navPath = "review";
   
@@ -28,7 +29,7 @@ export class ReviewComponent implements OnInit {
   ngOnInit() {
     this.appService.setMenuIdx(2);
     
-    this.appService.messages.subscribe(msg => {
+    this.connection = this.appService.onMessage().subscribe(msg => {
       if(msg.action === 'processtag') {
         console.log(msg.data);
         
@@ -91,6 +92,10 @@ export class ReviewComponent implements OnInit {
       }
       
     });
+  }
+  
+  ngOnDestroy() {
+    this.connection.unsubscribe();
   }
   
   onLoadTags($event) {

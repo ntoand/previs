@@ -19,7 +19,6 @@ import { MatToolbarModule, MatButtonModule, MatIconModule, MatInputModule,
          MatDialogModule, MatTooltipModule } from '@angular/material';
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 import { AppService } from './core/app.service';
-import { WebsocketService } from './core/websocket.service';
 import { MytardisComponent } from './upload/mytardis/mytardis.component';
 import { ExperimentListComponent } from './upload/mytardis/experiment-list/experiment-list.component';
 import { ExperimentDetailComponent } from './upload/mytardis/experiment-detail/experiment-detail.component';
@@ -74,7 +73,7 @@ import { TagDetailComponent } from './review/tag-detail/tag-detail.component';
     AngularFirestoreModule, // imports firebase/firestore, only needed for database features
     AngularFireAuthModule // imports firebase/auth, only needed for auth features,
   ],
-  providers: [AppService, WebsocketService, AuthService],
+  providers: [AppService, AuthService],
   bootstrap: [AppComponent],
   entryComponents: [ConfirmdialogComponent]
 })

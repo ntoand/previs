@@ -13,6 +13,7 @@ import { AuthService } from '../../../core/auth.service';
 })
 export class DatasetDetailComponent implements OnInit {
   
+  connection;
   dataset: Dataset;
   datafiles: Datafile[];
   errMsg = '';
@@ -31,7 +32,7 @@ export class DatasetDetailComponent implements OnInit {
   ngOnInit() {
     //this.appService.setMenuIdx(3);
     
-    this.appService.messages.subscribe(msg => {
+    this.connection = this.appService.onMessage().subscribe(msg => {
       if(msg.action === 'processmytardis' && msg.data.task === 'get_json' && msg.data.datatype === 'datafile') {
         console.log(msg.data);
         if(msg.data.status === 'error') {
@@ -97,6 +98,10 @@ export class DatasetDetailComponent implements OnInit {
       console.log(msg);
       this.appService.sendMsg(msg);
     }
+  }
+  
+  ngOnDestroy() {
+    this.connection.unsubscribe();
   }
   
   onBackClick($event) {

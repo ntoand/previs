@@ -12,6 +12,7 @@ import { Experiment, Dataset } from "../mytardis.model";
 })
 export class ExperimentDetailComponent implements OnInit {
 
+  connection;
   experiment: Experiment;
   datasets: Dataset[];
   errMsg = '';
@@ -28,7 +29,7 @@ export class ExperimentDetailComponent implements OnInit {
     
     //this.appService.setMenuIdx(3);
     
-    this.appService.messages.subscribe(msg => {
+    this.connection = this.appService.onMessage().subscribe(msg => {
       if(msg.action === 'processmytardis' && msg.data.task === 'get_json' && msg.data.datatype === 'dataset') {
         console.log(msg.data);
         if(msg.data.status === 'error') {
@@ -86,6 +87,10 @@ export class ExperimentDetailComponent implements OnInit {
       console.log(msg);
       this.appService.sendMsg(msg);
     }
+  }
+  
+  ngOnDestroy() {
+    this.connection.unsubscribe();
   }
   
   onBackClick($event) {

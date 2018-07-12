@@ -134,8 +134,8 @@ io.on('connection', function (socket) {
   	});
   	
   	socket.on('message', function(msg) {
-  		msg = JSON.parse(msg);
   		console.log(msg);
+  		//msg = JSON.parse(msg);	// 2018.07 new client socket service sends JSON directly 
   		msg.data.db = fbmanager;
   		if(msg.data.userId === undefined) msg.data.userId = 'none';
   		if(msg.data.userEmail === undefined) msg.data.userEmail = 'none';
