@@ -24,7 +24,8 @@ export class UploadComponent implements OnInit {
     voxelSizeY: 1,
     voxelSizeZ: 1,
     channel: 0,
-    time: 0
+    time: 0,
+    sendEmail: false,
   };
   
   message = { type: "", content: "" };

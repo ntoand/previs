@@ -16,7 +16,7 @@ import { FlexLayoutModule } from "@angular/flex-layout";
 
 import { MatToolbarModule, MatButtonModule, MatIconModule, MatInputModule, 
          MatCardModule, MatRadioModule, MatProgressBarModule, MatProgressSpinnerModule, MatSelectModule,
-         MatDialogModule, MatTooltipModule } from '@angular/material';
+         MatDialogModule, MatTooltipModule, MatCheckboxModule } from '@angular/material';
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 import { AppService } from './core/app.service';
 import { MytardisComponent } from './upload/mytardis/mytardis.component';
@@ -69,6 +69,7 @@ import { TagDetailComponent } from './review/tag-detail/tag-detail.component';
     MatTooltipModule,
     MatSelectModule,
     MatDialogModule,
+    MatCheckboxModule,
     AngularFireModule.initializeApp(environment.firebase),
     AngularFirestoreModule, // imports firebase/firestore, only needed for database features
     AngularFireAuthModule // imports firebase/auth, only needed for auth features,

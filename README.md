@@ -87,6 +87,7 @@ or
 
 - Upgrade client web app from Angular 5 to Angular 6
 - Add Google Analytics to production site
+- Add email notification when conversion is complete
 
 ### v0.5.0
 

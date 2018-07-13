@@ -144,6 +144,91 @@ function zipDirectory(dir, dirname, zipfile, cb) {
     archive.finalize();
 }
 
+
+function sendEmail(type, data) {
+    
+    // send email
+    if(!data.settings.sendEmail) return;
+    
+    const mail = {
+		type: type,
+		datatype: data.datatype,
+		tag: data.tag,
+		to: data.userDetails.email,
+		userName: data.userDetails.displayName							
+    };
+    
+    var nodemailer = require('nodemailer');
+    var gmail = require('../private/gmail.json');
+   
+    var transporter = nodemailer.createTransport({
+     service: 'gmail',
+     auth: {
+            user: gmail.user,
+            pass: gmail.pass
+        }
+    });
+    
+    var mail_subject = '';
+    var userName = mail.userName ? mail.userName : 'previs user';
+    var mail_body = '<p>Dear ' + userName + ',</p>';
+    
+    if(mail.type === 'ready') {
+        mail_subject = 'You previs data with tag ' + mail.tag +  ' is ready';
+        mail_body = mail_body + '<p>Your ' + mail.datatype + ' data uploaded to previs is now ready to view on web at the following link:</p>';
+        
+        var hosturl = '';
+        if (process.env.NODE_ENV === "production")  {
+            hosturl = "https://mivp-dws1.erc.monash.edu:3000";
+        }
+        else {
+            hosturl = "http://118.138.241.179:3000"
+        }
+        var url = hosturl;
+       
+        if(mail.datatype === 'volume') {
+            url = url + '/sharevol/index.html?data=data/tags/' + mail.tag + '/volume_result/vol_web.json&reset';
+        }
+        else if (mail.datatype === 'mesh') {
+            url = url + '/meshviewer/?tag=' + mail.tag;
+        }
+        else if (mail.datatype === 'point') {
+            url = url + '/pointviewer/?tag=' + mail.tag;
+        }
+        else if (mail.datatype === 'image') {
+            url = url + '/imageviewer/?tag=' + mail.tag;
+        }
+        
+        mail_body = mail_body + '<p>' + url + '</p>';
+        mail_body = mail_body + '<p>It may take a few minutes to compress and prepare your data to view in the CAVE2</p>';
+        mail_body = mail_body + '<p>You can also check all your tags on previs ' + hosturl + '</p>';
+        mail_body = mail_body + '<p>Kind regards,</p><p>MIVP previs team</p>';
+    }
+    else if (mail.type === 'fail') {
+        mail_subject = 'Previs failed to process your previs data';
+        mail_body = '<p>Unfortunately previs was unable to process your ' + mail.datatype + ' data. Please try again or contact MIVP team</p>';
+        mail_body = mail_body + '<p>Kind regards,</p><p>MIVP previs team</p>';
+    }
+    
+    var mailOptions = {
+      from: '"MIVP Previs" <mivp.gacc@gmail.com>',
+      to: mail.to,
+      cc: 'mivp.gacc@gmail.com',
+      subject: mail_subject,
+      html: mail_body
+    };
+    
+    transporter.sendMail(mailOptions, function(error, info){
+      if (error) {
+        console.log(error);
+      } else {
+        console.log('Email sent: ' + info.response);
+      }
+    });
+
+}
+
+
 module.exports.fileExists = fileExists;
 module.exports.trim = trim;
 module.exports.packAndSend = packAndSend;
@@ -152,3 +237,4 @@ module.exports.moveFile = moveFile;
 module.exports.extractGoogleId = extractGoogleId;
 module.exports.downloadFileHttps = downloadFileHttps;
 module.exports.zipDirectory = zipDirectory;
+module.exports.sendEmail = sendEmail;

@@ -167,9 +167,13 @@ export class DatasetDetailComponent implements OnInit {
     const mytardis = localStorage.getItem('currentMytardis');
     let info = JSON.parse(mytardis);
     console.log(dataType);
+    const userDetails = {
+      uid: this.authService.userDetails.uid,
+      email: this.authService.userDetails.email,
+      displayName: this.authService.userDetails.displayName
+    };
     this.appService.sendMsg({action: 'processupload', data: {task: "process", datatype: dataType, uploadtype: 'mytardis', 
-                             fileid: id, filename: filename, auth: info,
-                             userId: this.authService.userDetails.uid, userEmail: this.authService.userDetails.email, settings: settings } });
+                             fileid: id, filename: filename, auth: info, userDetails: userDetails, settings: settings } });
                              
     let x = document.querySelector("#processing_anchor");
     if (x){

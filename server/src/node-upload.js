@@ -288,8 +288,8 @@ function processUploadFile_Images(io, data) {
 		tag_json.date=Date.now();
 		tag_json.data = tag_url + data.inputfilename + data.inputfileext;
 		tag_json.processedData = 'data/tags/' + data.tag + '/image_processed.zip';
-		tag_json.userId = data.userId;
-		tag_json.userEmail = data.userEmail;
+		tag_json.userId = data.userDetails.uid;
+		tag_json.userEmail = data.userDetails.email;
 			
 		var volumes = [];
 		var volume = {};
@@ -307,6 +307,8 @@ function processUploadFile_Images(io, data) {
 			myutils.packAndSend(io, 'processupload', {status: 'done', result: tag_json});
 			// zip pointcloids folder
 			myutils.zipDirectory(out_dir, '', data.tagdir + '/image_processed.zip');
+			// email
+			myutils.sendEmail('ready', data);
 		});
 		
     });
@@ -418,8 +420,8 @@ function sendViewDataToClient(io, data) {
 				tag_json.source='localupload';
 				tag_json.date=Date.now();
 				tag_json.data = data.tagdir + '/' + data.inputfilename + '.' + data.inputfileext;
-				tag_json.userId = data.userId;
-				tag_json.userEmail = data.userEmail;
+				tag_json.userId = data.userDetails.uid;
+				tag_json.userEmail = data.userDetails.email;
 					
 				var volumes = [];
 				var volume = {};
@@ -441,6 +443,9 @@ function sendViewDataToClient(io, data) {
 						return;
 					} 
 					myutils.packAndSend(io, 'processupload', {status: 'done', result: tag_json});
+				
+					// email
+					myutils.sendEmail('ready', data);
 				});
 			});
 	    });		
@@ -463,8 +468,8 @@ function sendViewDataToClient_Meshes(io, data) {
 	tag_json.date=Date.now();
 	tag_json.data = data.file;
 	tag_json.processedData = 'data/tags/' + data.tag + '/mesh_processed.zip';
-	tag_json.userId = data.userId;
-	tag_json.userEmail = data.userEmail;
+	tag_json.userId = data.userDetails.uid;
+	tag_json.userEmail = data.userDetails.email;
 
 	var volumes = [];
 	var volume = {};
@@ -487,6 +492,9 @@ function sendViewDataToClient_Meshes(io, data) {
 		if (myutils.fileExists(data.inputfile)) {
 			fs.unlink(data.inputfile);
 		}
+		
+		// email
+		myutils.sendEmail('ready', data);
 	});
 }
 
@@ -538,8 +546,8 @@ function convertPointcloud(io, data, in_file) {
 			tag_json.date=Date.now();
 			tag_json.data = tag_url + data.inputfilename + data.inputfileext;
 			tag_json.processedData = 'data/tags/' + data.tag + '/point_processed.zip';
-			tag_json.userId = data.userId;
-			tag_json.userEmail = data.userEmail;
+			tag_json.userId = data.userDetails.uid;
+			tag_json.userEmail = data.userDetails.email;
 				
 			var potree_url = tag_url + basename + '_result/potree.html';
 			var volumes = [];
@@ -559,6 +567,8 @@ function convertPointcloud(io, data, in_file) {
 				myutils.packAndSend(io, 'processupload', {status: 'done', result: tag_json});
 				// zip pointcloids folder
 				myutils.zipDirectory(out_dir + '/pointclouds/potree', 'potree', data.tagdir + '/point_processed.zip');
+				// email
+				myutils.sendEmail('ready', data);
 			});
 		});
     });

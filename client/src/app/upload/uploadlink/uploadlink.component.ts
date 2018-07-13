@@ -29,8 +29,13 @@ export class UploadlinkComponent implements OnInit {
       this.errMsg = 'Please provide valid Google Drive shared link';
       return;
     }
+    const userDetails = {
+      uid: this.authService.userDetails.uid,
+      email: this.authService.userDetails.email,
+      displayName: this.authService.userDetails.displayName
+    };
     this.appService.sendMsg({action: 'processupload', data: {task: "process", url: this.urlStr, ext: this.extStr, datatype: this.dataType, uploadtype: 'link',
-                                                              userId: this.authService.userDetails.uid, userEmail: this.authService.userDetails.email, settings: this.settings } });
+                                                              userDetails: userDetails, settings: this.settings } });
     
     let x = document.querySelector("#processing_anchor");
     if (x){

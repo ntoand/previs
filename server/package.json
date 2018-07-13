@@ -19,6 +19,7 @@
     "firebase-admin": "^5.11.0",
     "formidable": "^1.0.17",
     "mongodb": "^2.2.5",
+    "nodemailer": "^4.6.7",
     "socket.io": "^1.4.4",
     "sqlite3": "^3.1.1",
     "three-obj-loader": "^1.0.2",
