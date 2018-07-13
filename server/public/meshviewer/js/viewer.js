@@ -35,6 +35,8 @@ var g_canTouchPan = false;
 
 var CAMERA_DISTANCE_MIN = 0.1;
 
+var DEBUG = false;
+
 // SceneTransport holds data about groups and models, used for saving/reconstructing
 var SceneTransport = function()
 {
@@ -74,7 +76,7 @@ var OBJModel = function()
             return;
         }
 
-        console.log("OBJModel Applying settings");
+        if(DEBUG) console.log("OBJModel Applying settings");
         
         var meshes = [];
 
@@ -130,14 +132,15 @@ var OBJGroup = function()
     // OBJGroup.refresh() - apply alpha/colour settings to all meshes in the group
     this.refresh = function()
     {
-        console.log("OBJGroup refresh");
-        console.log("Updating group " + this.name + "..");
+        if(DEBUG) console.log("OBJGroup refresh");
+        if(DEBUG) console.log("Updating group " + this.name + "..");
         
         for(i = 0; i < this.nodes.length; i++)
         {
             //console.log(i + ": (" + this.nodes[i].name + ", " + this.nodes[i].model + ")");
             this.nodes[i].model.visible = this.visible;
-            console.log("[" + (i+1) + "/" + this.nodes.length + "] " + this.nodes[i].filename + ": " + this.nodes[i].model.visible);
+            if(DEBUG)
+                console.log("[" + (i+1) + "/" + this.nodes.length + "] " + this.nodes[i].filename + ": " + this.nodes[i].model.visible);
             
             if(this.visible)
             {
@@ -176,7 +179,7 @@ var OBJViewProperties = function()
     // OBJViewProperties.findNode() - find a node (mesh) in the scene by name
     this.findNode = function(filename)
     {
-        console.log("Looking for node to match " + filename + "...");
+        if (DEBUG) console.log("Looking for node to match " + filename + "...");
         for(var i = 0; i < this.groups.length; i++)
         {
             //console.log("Looking in " + this.groups[i].name);
@@ -184,7 +187,7 @@ var OBJViewProperties = function()
             {
                 if(this.groups[i].nodes[j].filename == filename)
                 {
-                    console.log(this.groups[i].nodes[j].filename + " matches!");
+                    if (DEBUG) console.log(this.groups[i].nodes[j].filename + " matches!");
                     return this.groups[i].nodes[j];
                 }
             }
@@ -207,7 +210,7 @@ var OBJViewProperties = function()
     // OBJViewProperties.attachModel() - store a reference to a model
     this.attachModel = function(filename, model, material)
     {
-        console.log("OBJViewProperties.attachModel(): Looking for node to match " + filename + "...");
+        if (DEBUG) console.log("OBJViewProperties.attachModel(): Looking for node to match " + filename + "...");
         for(var i = 0; i < this.groups.length; i++)
         {
             //console.log("Looking in " + this.groups[i].name);
@@ -215,8 +218,8 @@ var OBJViewProperties = function()
             {
                 if(this.groups[i].nodes[j].filename == filename)
                 {
-                    console.log(this.groups[i].nodes[j].filename + " matches!");
-                    console.log("Setting model reference..");
+                    if (DEBUG) console.log(this.groups[i].nodes[j].filename + " matches!");
+                    if (DEBUG) console.log("Setting model reference..");
                     if(model == null)
                     {
                         console.log(" .. model is missing");
@@ -236,14 +239,31 @@ var OBJViewProperties = function()
     };    
 };
 
+function updateViews() {
+    //// axis
+    g_axisLines.visible = g_properties.views.showAxis;
+    
+    // camera
+    if(g_properties.views.camera) {
+        camera.matrix.fromArray(g_properties.views.camera.matrix);
+        camera.near = g_properties.views.camera.near;
+        camera.far = g_properties.views.camera.far;
+        camera.matrix.decompose(camera.position, camera.quaternion, camera.scale); 
+        camera.updateMatrixWorld();
+        updateLights();
+    }
+}
+
 // finaliseScene() - update the page when everything is loaded
 function finaliseScene()
 {
     console.log("finaliseScene");
     resetTitle();
     g_properties.refresh();
+    g_responder['Show axis lines'] = g_properties.views.showAxis;
     refreshGUI(g_gui);
     updateObjects();
+    updateViews();
 };
 
 // resetTitle() - sets the main title back to its default, just used for now until a modal dialog is added for feedback
@@ -259,8 +279,6 @@ function resetTitle()
 // responder - contains callbacks for dat.gui events
 var responder = function()
 {
-    this.showAxis = true;
-
     this.loadAll = function()
     {
         console.log("responder: Loading scene");
@@ -304,7 +322,7 @@ var responder = function()
         //g_showAxisLines = !g_showAxisLines;
 
         //g_axisLines.visible = g_showAxisLines;
-        g_axisLines.visible = this.showAxis;
+        g_axisLines.visible = g_properties.views.showAxis;
     };
 
     this.reportSave = function()
@@ -317,7 +335,7 @@ var responder = function()
 
         for(var i = 0; i < g_properties.groups.length; i++)
         {
-            console.log("Saving group " + g_properties.groups[i].name + "..");
+            if (DEBUG) console.log("Saving group " + g_properties.groups[i].name + "..");
 
             var group = new OBJGroup_store();
             //var groupKeys = Object.keys(group);
@@ -335,7 +353,7 @@ var responder = function()
 
             for(var j = 0; j < g_properties.groups[i].nodes.length; j++)
             {
-                console.log("Saving model " + g_properties.groups[i].nodes[j].name + "..");
+                if (DEBUG) console.log("Saving model " + g_properties.groups[i].nodes[j].name + "..");
 
                 var model = new OBJModel_store();
 
@@ -345,7 +363,7 @@ var responder = function()
                 for(var k = 0; k < modelNames.length; k++)
                 {
                     //group.push(origNames[k]);
-                    console.log("Saving property " + modelNames[k] + ": " + g_properties.groups[i].nodes[j][modelNames[k]]);
+                    if (DEBUG) console.log("Saving property " + modelNames[k] + ": " + g_properties.groups[i].nodes[j][modelNames[k]]);
                     model[modelNames[k]] = g_properties.groups[i].nodes[j][modelNames[k]];
                 }
 
@@ -372,16 +390,16 @@ render();
 function loadOBJ(filename, groupname, object)
 {
     var path =  "data/tags/" + g_tag + "/mesh_result/" + groupname + "/";
-    console.log('loadOBJ: path=' + path);
-    console.log(object);
+    if (DEBUG) console.log('loadOBJ: path=' + path);
+    if (DEBUG) console.log(object);
     
     if(object.hasmtl) {
         var mtlLoader = new THREE.MTLLoader();
         mtlLoader.setPath(path);
         mtlLoader.load(object.mtl, function(materials) {
-            console.log("Material loaded " + object.mtl);
+            if (DEBUG) console.log("Material loaded " + object.mtl);
             materials.preload();
-            console.log(materials);
+            if (DEBUG) console.log(materials);
             loadOBJOnly(filename, path, object, materials);
         },
         function () {
@@ -392,7 +410,7 @@ function loadOBJ(filename, groupname, object)
         });
     }
     else {
-        console.log('loadOBJ no material');
+        if (DEBUG) console.log('loadOBJ no material');
         var mat = new THREE.MeshBasicMaterial({ color: 0xffffff });
         loadOBJOnly(filename, path, object, mat);
     }
@@ -404,11 +422,11 @@ function loadOBJOnly(filename, path, object, materials) {
     if(object.hasmtl) {
         loader.setMaterials(materials);
     }
-    console.log("loadOBJOnly: path=" + path + " name=" + object.obj)
+    if (DEBUG) console.log("loadOBJOnly: path=" + path + " name=" + object.obj)
     
     var obj = null;
     loader.load(object.obj, function(object) {
-        console.log("Model loaded " + name);
+        if (DEBUG) console.log("Model loaded " + name);
         object.position.y = 0;
         //object.scale.set(20, 20, 20);
         object.rotation.set(1.5708, 0.0, 0.0);
@@ -417,7 +435,7 @@ function loadOBJOnly(filename, path, object, materials) {
         // step through the model hierarchy and smooth everything
         object.traverse( function(node) {
             if(node.geometry !== undefined) {
-                console.log("Smoothing and recomputing normals..");
+                if (DEBUG) console.log("Smoothing and recomputing normals..");
                 var g = new THREE.Geometry()
                 g.fromBufferGeometry(node.geometry);
                 g.mergeVertices();
@@ -448,10 +466,10 @@ function loadOBJOnly(filename, path, object, materials) {
         g_lights[1].position.y = g_objectBounds.min.y;
         g_lights[1].position.z = g_objectBounds.min.z;
 
-        console.log("Bounding box: (" +
+        if (DEBUG) console.log("Bounding box: (" +
             g_objectBounds.min.x + ", " + g_objectBounds.min.y + ", " + g_objectBounds.min.z + ")-(" +
             g_objectBounds.max.x + ", " + g_objectBounds.max.y + ", " + g_objectBounds.max.z + ")");
-        console.log("Simple centroid: (" +
+        if (DEBUG) console.log("Simple centroid: (" +
             ((g_objectBounds.min.x + g_objectBounds.max.x) / 2) + ", " +
             ((g_objectBounds.min.y + g_objectBounds.max.y) / 2) + ", " +
             ((g_objectBounds.min.z + g_objectBounds.max.z) / 2) + ")");
@@ -602,7 +620,10 @@ function main()
         if(this.readyState == 4 && this.status == 200)
         {
             jsonObj = JSON.parse(this.responseText);
-            var translate = jsonObj.views.translate;
+            g_properties.views.translate = jsonObj.views.translate !== undefined ? jsonObj.views.translate : [0, 0, 0];
+            g_properties.views.showAxis = jsonObj.views.showAxis !== undefined ? jsonObj.views.showAxis : true;
+            g_properties.views.camera = jsonObj.views.camera !== undefined  ? jsonObj.views.camera : null;
+            
             jsonObj = jsonObj.objects;
             // sort by group name
             jsonObj.sort(function(a, b) {
@@ -610,8 +631,8 @@ function main()
                if(a.name < b.name) return -1;
                return 0;
             });
-            console.log(jsonObj);
-            console.log("Length: " + jsonObj.length);
+            if (DEBUG) console.log(jsonObj);
+            if (DEBUG) console.log("Length: " + jsonObj.length);
 
             for(var i = 0; i < jsonObj.length; i++)
             {
@@ -620,15 +641,15 @@ function main()
                 objgroup.visible = jsonObj[i].visible;
                 objgroup.colour = jsonObj[i].colour;
                 objgroup.alpha = jsonObj[i].alpha;
-                console.log("main: Group: " + objgroup.name);
-                console.log(objgroup);
+                if (DEBUG) console.log("main: Group: " + objgroup.name);
+                if (DEBUG) console.log(objgroup);
 
                 var meshGroup = jsonObj[i].objects;
                 
                 for(var j = 0; j < meshGroup.length; j++)
                 {
                     var filename = objgroup.name + "/" + meshGroup[j].obj;
-                    console.log("Opening " + filename + "...");
+                    if (DEBUG) console.log("Opening " + filename + "...");
 
                     loadOBJ(filename, objgroup.name, meshGroup[j]);
                     g_sceneOBJCount++;
@@ -638,7 +659,7 @@ function main()
                     groupmodel.filename = filename;
 
                     objgroup.nodes.push(groupmodel);
-                    console.log("Nodes in group " + jsonObj[i].name + ": " + objgroup.nodes.length);
+                    if (DEBUG) console.log("Nodes in group " + jsonObj[i].name + ": " + objgroup.nodes.length);
                     var title = document.getElementById("viewertitle");
                     if(title != null)
                     {
@@ -646,7 +667,6 @@ function main()
                     }
                 }
 
-                g_properties.views.translate = translate;
                 g_properties.groups.push(objgroup);
                 console.log("Global group count: " + g_properties.groups.length);
             }
@@ -672,7 +692,7 @@ function setupGUI()
     g_responder['Reload settings'] = g_responder.loadAll;
     g_responder['Reset all'] = g_responder.resetAll;
     //g_responder['Toggle axis lines'] = g_responder.toggleAxis;
-    g_responder['Show axis lines'] = g_responder.showAxis;
+    g_responder['Show axis lines'] = g_properties.views.showAxis;
     g_responder['Centre objects'] = g_responder.centreObjects;
     g_responder['Reset translation'] = g_responder.resetTranslate;
     
@@ -693,7 +713,8 @@ function setupGUI()
     //g_gui.add(g_responder, ['Toggle axis lines']);
     var axisEvent = g_gui.add(g_responder, ['Show axis lines']);
     axisEvent.onChange(function(value) {
-        g_responder.showAxis = value;
+        g_properties.views.showAxis = value;
+        console.log(g_properties.views);
         g_responder.toggleAxis();
     });
 
@@ -701,7 +722,7 @@ function setupGUI()
 
     for (var i=0; i < g_properties.groups.length; i++) {
         var group = g_properties.groups[i];
-        console.log("Adding group " + group.name + " to GUI... (# nodes: " + group.nodes.length +  ")");
+        if (DEBUG) console.log("Adding group " + group.name + " to GUI... (# nodes: " + group.nodes.length +  ")");
         
         var currentGroup = folderMeshGroups.addFolder(group.name);
         var element = currentGroup.add(g_properties.groups[i], 'visible');
@@ -1092,7 +1113,7 @@ function placeCamera(rotX, rotY, rotZ, dist, up)
 
 function updateAxisLines(scale)
 {
-    console.log("Scaling axis lines to " + scale);
+    if (DEBUG) console.log("Scaling axis lines to " + scale);
 
     //var mat = new THREE.Matrix4();
     //mat.makeScale(scale, scale, scale);
@@ -1116,14 +1137,14 @@ function onDocumentContextMenu(event)
 
 function loader_getGroup(groupName)
 {
-    console.log("Checking scene for group name " + groupName + "..");
+    if (DEBUG) console.log("Checking scene for group name " + groupName + "..");
 
     // get a group from the properties object
     for(var i = 0; i < g_properties.groups.length; i++)
     {
         if(g_properties.groups[i].name == groupName)
         {
-            console.log(g_properties.groups[i].name + " matches!");
+            if (DEBUG) console.log(g_properties.groups[i].name + " matches!");
 
             return g_properties.groups[i];
         }
@@ -1171,7 +1192,13 @@ function saveScene()
     }
     
     var json = {};
+    const camSettings = {
+      near: camera.near,
+      far: camera.far,
+      matrix: camera.matrix.toArray()
+    };
     json.views = g_properties.views;
+    json.views.camera = camSettings;
     json.objects = jsonObj;
     console.log(json);
     socket.emit('savemeshjson', {tag: g_tag, jsonStr: JSON.stringify(json, null, 4)});
@@ -1240,7 +1267,11 @@ function loadScene(sceneData)
         if(this.readyState == 4 && this.status == 200)
         {
             jsonObj = JSON.parse(this.responseText);
-            var translate = jsonObj.views.translate;
+            g_properties.views.translate = jsonObj.views.translate !== undefined ? jsonObj.views.translate : [0, 0, 0];
+            g_properties.views.showAxis = jsonObj.views.showAxis !== undefined ? jsonObj.views.showAxis : true;
+            g_properties.views.camera = jsonObj.views.camera !== undefined  ? jsonObj.views.camera : null;
+            console.log('loadScene', g_properties.views);
+                
             jsonObj = jsonObj.objects;
             // sort by group name
             jsonObj.sort(function(a, b) {
@@ -1257,9 +1288,11 @@ function loadScene(sceneData)
                 group.colour = jsonObj[i].colour;
                 group.visible = jsonObj[i].visible;
             }
-            g_properties.views.translate = translate;
+            
+            g_responder['Show axis lines'] = g_properties.views.showAxis;
             g_properties.refresh();
             refreshGUI(g_gui);
+            updateViews();
         }
     }
     xmlreq.open("GET", "data/tags/" + g_tag + "/mesh_result/mesh.json");   // 20170411 - server provdes full filename now, don't need to add .json
