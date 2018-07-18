@@ -2,47 +2,27 @@
 // by dw in 2017 for MIVP
 // modified by Toan Nguyen in June 2018
 var scene, camera, renderer;
+var g_controls;
+var g_container;
 var g_lights = [];                // g_lights that surround the meshes
 var g_light1;
 var g_light_cam;                  // camera-bound light
-var g_width, g_height;
-var g_prevMouseX = 0, g_prevMouseY = 0;
 var g_camDistance = 1.0;
-var g_camRotX = 0.0, g_camRotY = 0.0;
-var g_camTransX = 0.0, g_camTransY = 0.0, g_camTransZ = 0.0;
-var model;
-var camTransform = new THREE.Matrix4();
 var g_gui;
 var g_properties;
 var g_responder;
-var g_tempScene;                // object to hold load/save data
-var g_tempSceneJSON;            // a temporary string to hold JSON of all mesh parameters
 var socket = io();
-var g_sourceName = "";          // the name of the directory/file used as a source of scene data
 var g_sceneOBJCount = 0;
 var g_sceneOBJLoaded = 0;
 var g_objectBounds;
 var g_allObjectsGroup;
-var g_showAxisLines = true;
 var g_axisLines;
 var g_boundsSize = 1.0;         // the longest distance in any dimension that the mesh extends from the origin
 var g_tag;
 
-var g_prevDistance = 0;             // for touch zoom
-var g_canTouchRotate = false;
-var g_canTouchZoom = false;
-var g_canTouchPan = false;
-
 var CAMERA_DISTANCE_MIN = 0.1;
 
 var DEBUG = false;
-
-// SceneTransport holds data about groups and models, used for saving/reconstructing
-var SceneTransport = function()
-{
-    this.groups = [];
-    this.models = [];
-};
 
 // OBJModel_store - the base version of an OBJModel, which contains the data that should persist on the server
 //                - these can be saved/loaded as JSON objects
@@ -239,6 +219,7 @@ var OBJViewProperties = function()
     };    
 };
 
+
 function updateViews() {
     //// axis
     g_axisLines.visible = g_properties.views.showAxis;
@@ -376,10 +357,6 @@ var responder = function()
     };
 };
 
-function loadParamsFromString(params)
-{
-
-}
 
 var jsonObj;
 
@@ -416,6 +393,7 @@ function loadOBJ(filename, groupname, object)
     }
 }
 
+
 function loadOBJOnly(filename, path, object, materials) {
     var loader = new THREE.OBJLoader();
     loader.setPath(path);
@@ -424,7 +402,6 @@ function loadOBJOnly(filename, path, object, materials) {
     }
     if (DEBUG) console.log("loadOBJOnly: path=" + path + " name=" + object.obj)
     
-    var obj = null;
     loader.load(object.obj, function(object) {
         if (DEBUG) console.log("Model loaded " + name);
         object.position.y = 0;
@@ -484,7 +461,7 @@ function loadOBJOnly(filename, path, object, materials) {
 
         // change the far clipping plane
         camera.near = targetDist * 0.001;
-        camera.far = targetDist * 8.0;  // arbitarily chosen for now, 8x the size of the bounding box
+        camera.far = targetDist * 10.0;  // arbitarily chosen for now, 8x the size of the bounding box
 
         // reset the camera
         placeCamera(0, 0, 0, g_camDistance);
@@ -505,11 +482,13 @@ function loadOBJOnly(filename, path, object, materials) {
     });
 }
 
+
 function updateLights()
 {
     // move the camera light
     g_light_cam.position.set(camera.position.x, camera.position.y, camera.position.z);
 }
+
 
 function main()
 {
@@ -523,12 +502,13 @@ function main()
         console.log("Tag not specified");
         return;
     }
+    
+    g_container = document.getElementById("container");
    
     g_properties = new OBJViewProperties();
 
     scene = new THREE.Scene();
-    //camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-    camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 2000);
+    camera = new THREE.PerspectiveCamera(75, g_container.clientWidth / g_container.clientHeight, 0.1, 2000);
     g_allObjectsGroup = new THREE.Group();  // create a group for all objects
 
     scene.add(g_allObjectsGroup);
@@ -606,12 +586,12 @@ function main()
     camera.position.z = 5;
 
     renderer = new THREE.WebGLRenderer();
-    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setSize(g_container.clientWidth, g_container.clientHeight);
     renderer.setClearColor(0x404048, 1);
-    document.body.appendChild(renderer.domElement);
+    document.getElementById('container').appendChild( renderer.domElement );
     
     // camera control
-    //g_control = new THREE.OrbitControls( camera );
+    g_controls = new THREE.TrackballControls( camera, g_container );
 
     // load the json file, as a test..
     var xmlreq = new XMLHttpRequest();
@@ -679,6 +659,7 @@ function main()
     xmlreq.send();
 }
 
+
 // setupGUI() - what it says on the tin
 function setupGUI()
 {
@@ -743,17 +724,15 @@ function setupGUI()
     folderMeshGroups.open();
 }
 
+
 // render() - draw everything
 function render()
 {
     requestAnimationFrame(render);
-    // if(g_totalLoaded < 3)
-    // {
-    //     return;
-    // }
-    //console.log("Frame"); // write to log for all frames, only needed for debugging (to check for renderer stopping)
+    g_controls.update();
     renderer.render(scene, camera);
 }
+
 
 // resetView() - sets up the camera and canvas to suit current window parameters
 function resetView()
@@ -764,322 +743,12 @@ function resetView()
     renderer.setSize(window.innerWidth, window.innerHeight);
 }
 
-// =========== EVENTS ===============
-function onDocumentTouchStart(event) {
-    //event.preventDefault();
-	event.stopPropagation();
-
-	switch ( event.touches.length ) {
-
-		case 1: // one-fingered touch: rotate/rolling
-		    g_prevMouseX = event.touches[ 0 ].pageX;
-		    g_prevMouseY = event.touches[ 0 ].pageY;
-		    g_canTouchRotate = true;
-			break;
-
-		case 2: // two-fingered touch: zoom
-            var dx = event.touches[ 0 ].pageX - event.touches[ 1 ].pageX;
-			var dy = event.touches[ 0 ].pageY - event.touches[ 1 ].pageY;
-			g_prevDistance = Math.sqrt( dx * dx + dy * dy );
-			g_canTouchZoom = true;
-			break;
-		
-		case 3: // panning
-			g_canTouchPan = true;
-			g_prevMouseX = (event.touches[ 0 ].pageX + event.touches[ 1 ].pageX)/2;
-			g_prevMouseY = (event.touches[ 0 ].pageY + event.touches[ 1 ].pageY)/2;
-			break;
-        
-		default:
-
-            break;
-	}
-}
-	
-function onDocumentTouchEnd(event) {
-    g_canTouchRotate = false;
-    g_canTouchZoom = false;
-    g_canTouchPan = false;
-}
-		    
-function onDocumentTouchMove(event) {
-    
-    event.preventDefault();
-	event.stopPropagation();
-
-	switch ( event.touches.length ) {
-
-		case 1: // one-fingered touch: rotate/rolling
-		
-		    var vx = event.touches[ 0 ].pageX;
-            var vy = event.touches[ 0 ].pageY;
-            var dragging = true;
-            var translating = false;
-            var rolling = false;
-            if(g_canTouchRotate)
-                handleDragging(vx, vy, dragging, translating, rolling);
-
-			break;
-
-		case 2: // two-fingered touch: dolly-pan
-
-            var dx = event.touches[ 0 ].pageX - event.touches[ 1 ].pageX;
-			var dy = event.touches[ 0 ].pageY - event.touches[ 1 ].pageY;
-			var distance = Math.sqrt( dx * dx + dy * dy );
-			
-			if(g_canTouchZoom) {
-			    var delta = distance > g_prevDistance ? -15 : 15;
-			    handleZoom(delta);
-			}
-			g_prevDistance = distance;
-		
-		case 3: //panning
-			if(g_canTouchPan) {
-			    var vx = (event.touches[ 0 ].pageX + event.touches[ 1 ].pageX)/2;
-			    var vy = (event.touches[ 0 ].pageY + event.touches[ 1 ].pageY)/2;
-			    var dragging = true;
-                var translating = true;
-                var rolling = false;
-                handleDragging(vx, vy, dragging, translating, rolling);
-			}
-			
-			break;
-        
-		default:
-            break;
-	}
-}
-
-
-function onDocumentMouseMove(event)
-{
-    var vx = event.clientX;
-    var vy = event.clientY;
-    
-    var dragging = false;
-    var translating = false;
-    var rolling = false;
-
-    if(event.buttons != 0){
-        dragging = true;
-    }
-
-    if(event.ctrlKey || (event.buttons & 2)) {
-        translating = true;
-    }
-
-    if(event.buttons & 4) {
-        rolling = true;
-    }
-    handleDragging(vx, vy, dragging, translating, rolling);
-}
-
-function handleDragging(vx, vy, dragging, translating, rolling)
-{
-    var xDelta = vx - g_prevMouseX;
-    var yDelta = vy - g_prevMouseY;
-
-    if(dragging)
-    {
-        if(translating)
-        {
-            // var scaleX = 7.0;
-            // var scaleY = 7.0;
-            // set a scale based on the object size and the window size
-            var scaleX = 3.0 * (g_boundsSize / g_width);
-            var scaleY = 3.0 * (g_boundsSize / g_height);
-
-            // adjust the scale based on the distance between the camera and the object            
-            var c = camera.position.clone();
-            c.negate();
-            var distanceToOrigin = c.length();
-
-            // a little clumsy but log of camera distance to origin is a decent relationship for now..
-            scaleX *= (0.3 * Math.log(distanceToOrigin));
-            scaleY *= (0.3 * Math.log(distanceToOrigin));
-
-            // generate a vector from mouse movement
-            var translateLocal = new THREE.Vector3(xDelta * scaleX, -yDelta * scaleY, 0.0);
-            //console.log("Translate camera: " + translateLocal.x + ", " + translateLocal.y + ", " + translateLocal.z);
-            // var transX = xDelta;
-            // var transY = yDelta;
-
-            // remember the length of the mouse movement vector because transformDirection() will normalise it
-            var translateLength = translateLocal.length();
-
-            // rotate the vector to be relative to the camera's direction, then restore the vector's length
-            translateLocal.transformDirection(camera.matrixWorld);
-            translateLocal.multiplyScalar(translateLength);
-            //translateLocal *= (camera.getWorldDirection());
-            //translateLocal.multiplyVectors(camera.getWorldDirection(), translateLocal);
-
-            // translate the object
-            // g_allObjectsGroup.position.x += (translateLocal.x);
-            // g_allObjectsGroup.position.y += (translateLocal.y);
-            // g_allObjectsGroup.position.z += (translateLocal.z);
-
-            // translate the camera by subtracting the translation that was meant for the object
-            camera.position.x -= translateLocal.x;
-            camera.position.y -= translateLocal.y;
-            camera.position.z -= translateLocal.z;
-
-            // update the camera's attached light
-            updateLights();
-
-            //console.log("Translate camera: " + translateLocal.x + ", " + translateLocal.y + ", " + translateLocal.z);
-
-            //var c = new THREE.Vector3(0, 0, 0);
-            //camera.lookAt(c);
-        }
-        else if(!rolling)
-        {
-            var scaleX = 2.0;
-            var scaleY = 2.0;
-            
-            // desired rotation offset
-            var camRotY = (-xDelta / g_width) * scaleX;
-            var camRotX = (-yDelta / g_height) * scaleY;
-            
-            var rotateOffset = new THREE.Matrix4();
-
-            var rotateX = new THREE.Matrix4();
-            var rotateY = new THREE.Matrix4();
-            
-            // get camera's world matrix
-            var camMat = new THREE.Matrix4;
-            camMat.extractRotation(camera.matrixWorld);
-
-            // calculate camera's up and right vectors
-            var camUp = new THREE.Vector3(0, 1, 0);
-            var camRight = new THREE.Vector3(1, 0, 0);
-            camUp.applyMatrix4(camMat);
-            camRight.applyMatrix4(camMat);
-
-            // generate rotation matrices for local X and Y
-            rotateX.makeRotationAxis(camUp, camRotY);
-            rotateY.makeRotationAxis(camRight, camRotX);
-
-            // apply rotation Y then X
-            rotateOffset.multiplyMatrices(rotateY, rotateOffset);
-            rotateOffset.multiplyMatrices(rotateX, rotateOffset);
-
-            // apply the final rotation to the camera's world matrix            
-            camera.applyMatrix(rotateOffset);
-
-            // update after these changes
-            camera.updateMatrixWorld();
-            updateLights();
-        }
-        else
-        {
-            var scaleX = 4.0;
-            
-            // console.log("Rolling..");
-
-            // desired rotation offset
-            var camRotZ = (-xDelta / g_width) * scaleX;
-            
-            var rotateOffset = new THREE.Matrix4();
-
-            var rotateZ = new THREE.Matrix4();
-            
-            // get camera's world matrix
-            var camMat = new THREE.Matrix4;
-            camMat.extractRotation(camera.matrixWorld);
-
-            // calculate camera's direction vector
-            var camDir = new THREE.Vector3(0, 0, 1);
-            camDir.applyMatrix4(camMat);
-
-            // generate rotation matrix for local Z
-            rotateZ.makeRotationAxis(camDir, camRotZ);
-
-            // apply rotation Z
-            rotateOffset.multiplyMatrices(rotateZ, rotateOffset);
-
-            // apply the final rotation to the camera's world matrix            
-            camera.applyMatrix(rotateOffset);
-
-            // update after these changes
-            camera.updateMatrixWorld();
-
-            updateLights();
-        }
-    }
-    //else
-    {
-        // var camPos = camera.position;
-        // camPos.x = ((vx / g_width) - 0.5) * 2.0;
-        // camPos.y = ((vy / g_height) - 0.5) * 2.0;
-        // var c = new THREE.Vector3(0, 0, 0);
-
-        // //camera.position.x = vx;
-        // camera.position = camPos;
-        // camera.lookAt(c);
-    }
-
-    g_prevMouseX = vx;
-    g_prevMouseY = vy;
-}
-
-
-function onDocumentMouseWheel(event) {
-    // step the same amount regardless of how far the browser reported the wheel moved
-    var delta = 55 * Math.sign(event.deltaY);
-    handleZoom(delta);
-}
-
-function handleZoom(delta)
-{
-    // NEW ZOOM ROUTINE
-    //var wheelLength = -event.deltaY;
-    var wheelLength = -delta;
-
-    var c = camera.position.clone();
-    c.negate();
-    //g_camDistance = camera.position.distanceTo(c);
-    //var directionTo
-    var distanceToOrigin = c.length();
-    
-    // work out direction to origin
-    var directionToOrigin = c.clone();
-    directionToOrigin.normalize();
-
-    directionToOrigin = camera.getWorldDirection();
-
-    // work out how far to move
-    var targetOffset = directionToOrigin.clone();
-    targetOffset.multiplyScalar(wheelLength * (g_boundsSize * .001));
-
-    // if zooming in would go through the origin, then cancel (but always allow zooming out)
-    if(wheelLength > 0.0 && targetOffset.length() >= distanceToOrigin)
-    {
-        return;
-    }
-
-    camera.position.add(targetOffset);
-    camera.updateMatrixWorld();
-
-    updateLights();
-}
 
 function placeCamera(rotX, rotY, rotZ, dist, up)
 {
-    // g_camDistance += (event.deltaY * .1);
-    
-    // rotX = g_camRotX;// % (Math.PI * 2.0);
-    // rotY = g_camRotY;// % (Math.PI * 2.0);
-        
     var transform = new THREE.Matrix4();
     var translate = new THREE.Matrix4();
     var rotate = new THREE.Matrix4();
-/*
-    translate.makeTranslation(0.0, 0.0, 1.0);
-    rotate.makeRotationFromEuler(new THREE.Euler(rotX, rotY, 0.0), "XYZ");
-
-    //transform = rotate.multiply(translate);
-    transform.multiplyMatrices(rotate, translate);
-  */
 
     var rotateX = new THREE.Matrix4();
     var rotateY = new THREE.Matrix4();
@@ -1088,9 +757,6 @@ function placeCamera(rotX, rotY, rotZ, dist, up)
 
     translate.makeTranslation(0.0, 0.0, 1.0);
     rotate.makeRotationFromEuler(new THREE.Euler(rotX, rotY, 0.0), "XYZ");
-
-    //transform = rotate.multiply(translate);
-    //transform.multiplyMatrices(rotate, translate);
 
     transform.multiplyMatrices(rotateX, translate);
     transform.multiplyMatrices(rotateY, transform);
@@ -1114,9 +780,6 @@ function placeCamera(rotX, rotY, rotZ, dist, up)
 function updateAxisLines(scale)
 {
     if (DEBUG) console.log("Scaling axis lines to " + scale);
-
-    //var mat = new THREE.Matrix4();
-    //mat.makeScale(scale, scale, scale);
 
     //g_axisLines.matrix = mat;
     g_axisLines.scale.set(scale, scale, scale);

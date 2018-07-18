@@ -8,9 +8,13 @@
     </head>
 
     <body>
+        <div id="viewertitle">Mesh viewer</div>
+        <div id="container"></div>
+        
         <script src="js/three.min.js"></script>
         <script src="js/MTLLoader.js"></script>
         <script src="js/OBJLoader.js"></script>
+        <script src="js/TrackballControls.js"></script>
         <script src="js/dat.gui.min.js"></script>
         <script src="/socket.io/socket.io.js"></script>
         <script src="js/defaults.js"></script>
@@ -18,20 +22,10 @@
         
 
         <script>
-        
-            document.addEventListener( 'touchstart', onDocumentTouchStart, false );
-		    document.addEventListener( 'touchend', onDocumentTouchEnd, false );
-		    document.addEventListener( 'touchmove', onDocumentTouchMove, false );
 
-            document.addEventListener('mousemove', onDocumentMouseMove, false);
-            document.addEventListener('wheel', onDocumentMouseWheel, false);
             window.addEventListener('resize', onDocumentResize, false);
             document.addEventListener('contextmenu', onDocumentContextMenu, false);
 
         </script>
-
-        <div id="viewertitle">
-            Mesh viewer
-        </div>
     </body>
 </html>
