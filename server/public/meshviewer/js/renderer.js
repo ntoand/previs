@@ -164,7 +164,6 @@ var PrevisMeshRenderer = (function () {
 				scope.finaliseScene();
 				showMessage('');
 			}
-			console.log( msg );
 			
 		};
 		
