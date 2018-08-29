@@ -1,31 +1,36 @@
-<!doctype html>
+<!DOCTYPE html>
 <html>
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=0" />
-        <title>MIVP mesh viewer</title>
-        <link rel="stylesheet" type="text/css" href="css/viewer.css">
-    </head>
-
-    <body>
-        <div id="viewertitle">Mesh viewer</div>
-        <div id="container"></div>
-        
-        <script src="js/three.min.js"></script>
-        <script src="js/MTLLoader.js"></script>
-        <script src="js/OBJLoader.js"></script>
-        <script src="js/TrackballControls.js"></script>
-        <script src="js/dat.gui.min.js"></script>
-        <script src="/socket.io/socket.io.js"></script>
-        <script src="js/defaults.js"></script>
-        <script src="js/viewer.js"></script>
-        
-
-        <script>
-
-            window.addEventListener('resize', onDocumentResize, false);
-            document.addEventListener('contextmenu', onDocumentContextMenu, false);
-
-        </script>
-    </body>
+	<head>
+		<meta charset=utf-8>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+		<title>Previs mesh viewer (v0.1.0)</title>
+		
+		<link rel="stylesheet" type="text/css" href="css/style.css">
+		
+	</head>
+	<body>
+		
+		<div id="status-icon"><img src="img/spinner.gif" width=100 height=100 /></div>
+		<div id="status-message"></div>
+		<div id="import">
+			<input id="select-file-to-import" type="file" style="visibility:hidden" />
+		</div>
+		
+		<div id="container">
+			<canvas id="meshviewer"></canvas>
+		</div>
+		
+		<script src="/socket.io/socket.io.js"></script>
+		
+		<script type="text/javascript" src="js/dat.gui/dat.gui.min.js"></script>
+		<script type="text/javascript" src="js/three.js/Detector.js"></script>
+		<script type="text/javascript" src="js/three.js/three.min.js"></script>
+		<script type="text/javascript" src="js/three.js/controls/TrackballControls.js"></script>
+		<script type="text/javascript" src="js/three.js/stats.min.js"></script>
+		<script type="text/javascript" src="js/three.js/loaders/MTLLoader.js"></script>
+		<script type="text/javascript" src="js/three.js/loaders/LoaderSupport.js"></script>
+		<script type="text/javascript" src="js/three.js/loaders/OBJLoader2.js"></script>
+		
+		<script type="text/javascript" src="js/meshviewer-all.min.js"></script>
+	</body>
 </html>

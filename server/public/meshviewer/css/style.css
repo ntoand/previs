@@ -1,0 +1,58 @@
+html {
+    width: 100%;
+	height: 100vh;
+}
+
+body {
+	font-family: Monospace;
+	background-color: #000;
+	color: #fff;
+	margin: 0 0 0 0;
+	padding: 0 0 0 0;
+	border: none;
+	cursor: default;
+	width: 100%;
+	height: 100vh;
+}
+			
+canvas { 
+    width: 100%; 
+    height: 100%;
+}
+
+#container {
+    width: 100%;
+    height: 100%; 
+}
+
+#meshviewer {
+    top: 0;
+	left: 0;
+	background-color: #000000;
+}
+
+#status-message {
+    position: absolute;
+    bottom: 50px;
+    left: 50px;
+    width: 100%;
+    z-index: 10;
+    font-size: x-large;
+    color: #eee;
+}
+
+#status-icon {
+    display: none;
+    width: 100px;
+    height: 100px;
+    
+    position: absolute;
+    top:0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    margin: auto;
+    
+    z-index: 10;
+    color: #eee;
+}
