@@ -45,7 +45,8 @@ var saveSettings = function() {
 	const camSettings = {
       near: app.camera.near,
       far: app.camera.far,
-      matrix: app.camera.matrix.toArray()
+      matrix: app.camera.matrix.toArray(),
+      up: app.camera.up.toArray()
     };
     json.views.camera = camSettings;
     socket.emit('savemeshjson', {tag: gTag, jsonStr: JSON.stringify(json, null, 4)});	

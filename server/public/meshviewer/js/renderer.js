@@ -325,8 +325,11 @@ var PrevisMeshRenderer = (function () {
 	        scope.camera.matrix.fromArray(camConfig.matrix);
 	        scope.camera.near = camConfig.near;
 	        scope.camera.far = camConfig.far;
+	        if(camConfig.up !== null || camConfig.up !== undefined)
+	        	scope.camera.up.fromArray(camConfig.up);
 	        scope.camera.matrix.decompose(scope.camera.position, scope.camera.quaternion, scope.camera.scale); 
-	        scope.camera.updateMatrixWorld();
+	        scope.camera.updateMatrixWorld(true);
+	        scope.camera.updateProjectionMatrix();
 	    }
 	    else {
 			scope.camera.near = 0.001*ml;
