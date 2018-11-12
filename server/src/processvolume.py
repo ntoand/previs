@@ -8,6 +8,8 @@ import struct
 import json
 import numpy as np
 import imageio
+import gzip
+import shutil
 
 # Author: Toan Nguyen
 # Date: May 2018
@@ -279,6 +281,34 @@ def processTiffStack(infile, outdir, channel, timestep, verbose):
     print(json.dumps(retjson))
 
 
+def processXRWFile(infile, outdir, verbose):
+    """
+    Process XRW file. Only compressed XRW file is supported now
+    :param infile:
+    :param outdir:
+    :param verbose:
+    :return:
+    """
+    xrw_filename = os.path.join(outdir, "vol.xrw")
+    with gzip.open(infile, 'rb') as f_in:
+        with open(xrw_filename, 'wb') as f_out:
+            shutil.copyfileobj(f_in, f_out)
+
+    # read some info from file
+    size_x = 0
+    size_y = 0
+    numslides = 0
+    with gzip.open(infile, 'rb') as f_in:
+        size_x = struct.unpack('i', f_in.read(4))
+        size_y = struct.unpack('i', f_in.read(4))
+        numslides = struct.unpack('i', f_in.read(4))
+
+    retjson = {}
+    retjson["status"] = "done"
+    retjson["size"] = [size_x, size_y, numslides]
+    print(json.dumps(retjson))
+
+
 def main(argv):
     """
     Main function
@@ -319,6 +349,10 @@ def main(argv):
         processZipStack(infile, outdir, verbose)
     elif ext == ".tif" or ext == ".tiff":
         processTiffStack(infile, outdir, channel, timestep, verbose)
+    elif ext == ".xrw":
+        processXRWFile(infile, outdir, verbose)
+    else:
+        raise NameError("wrong_input_file_ext")
 
 
 # MAIN FUNCTION
