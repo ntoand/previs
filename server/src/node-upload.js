@@ -332,6 +332,7 @@ function convertXRWToPNG(io, data) {
     	stdout = myutils.trim(stdout).trim();
     	var res = stdout.split(" ");
     	var vol_res = [parseInt(res[2]), parseInt(res[3]), parseInt(res[4])];
+    	/*
     	var max_val = Math.max.apply(Math, vol_res);
     	var resize_factor = 1;
     	if(max_val > 4069)
@@ -340,6 +341,19 @@ function convertXRWToPNG(io, data) {
     		resize_factor = 4;
     	else if (max_val > 1024)
     		resize_factor = 2;
+    	*/
+    	var resize_factor = 1;
+    	var total_res = parseInt(res[2]) * parseInt(res[3]) * parseInt(res[4]);
+    	console.log('total res: ', total_res);
+    	if(total_res > 4069*4096*4096)
+    		resize_factor = 9;
+    	else if(total_res > 2048*2048*2048)
+    		resize_factor = 5;
+    	else if(total_res > 1024*1024*1024)
+    		resize_factor = 3;
+    	else if(total_res > 512*512*512)
+    		resize_factor = 2;
+    	
     	data.resize_factor = resize_factor;
     	data.vol_res_full = vol_res;
     	data.vol_res_web = [ Math.floor(vol_res[0]/resize_factor), Math.floor(vol_res[1]/resize_factor), Math.floor(vol_res[2]/resize_factor)];

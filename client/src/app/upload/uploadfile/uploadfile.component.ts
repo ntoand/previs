@@ -69,8 +69,8 @@ export class UploadfileComponent implements OnInit {
     
     this.errMsg = "";
     if(this.dataType === 'volume') {
-      if (fileext !== 'zip' && fileext !== 'tif' && fileext !== 'tiff') {
-        this.errMsg = "Volume requires zip or tiff file!";
+      if (fileext !== 'zip' && fileext !== 'tif' && fileext !== 'tiff' && fileext !== 'xrw') {
+        this.errMsg = "Volume requires zip, tiff or xrw file!";
         this.renderer.selectRootElement('.uploadfile').value = '';
         return;
       }
