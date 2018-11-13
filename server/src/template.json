@@ -5,6 +5,7 @@
   },
   "colourmaps": [
     {
+      "name": "default",
       "colours": [
         {
           "position": 0,

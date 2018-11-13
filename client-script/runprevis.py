@@ -104,11 +104,10 @@ def runVolume(info):
     print ('vol_web', jsondata)
     with open(file_local, 'w') as outfile:
         json.dump(jsondata, outfile, sort_keys=False, indent=4, ensure_ascii=False)
-
-    #inif.script
-    with open(info['tag_dir'] + '/init.script', 'wt') as outfile:
-        outfile.write('file vol.xrw\n')
-        outfile.write('file vol_web.json')
+    
+    # LavaVR run script    
+    cmd = ['cp', 'run_volume.py', info['tag_dir'] + '/init.py']
+    subprocess.check_output(cmd)
     
     #run
     runViewer(info)
@@ -139,7 +138,7 @@ def runMesh(info):
     print 'download', file_url
     downloadFile(file_url, file_local)
 
-    cmd = ['cp', 'mesh_run.py', info['tag_dir'] + '/init.py']
+    cmd = ['cp', 'run_mesh.py', info['tag_dir'] + '/init.py']
     subprocess.check_output(cmd)
 
     #run
