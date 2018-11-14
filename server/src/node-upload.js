@@ -551,6 +551,10 @@ function convertPointcloud(io, data, in_file) {
 					numpoints = stdout[i-1];
 			}
 			console.log(numpoints);
+			if(numpoints === '0') {
+				myutils.packAndSend(io, 'processupload', {status: 'error', result: "numpoints = 0; failed to convert pointcloud, please check data format"});
+				return;
+			}
 	
 			//save to database
 			var tag_json = {};
