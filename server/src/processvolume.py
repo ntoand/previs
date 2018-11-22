@@ -98,8 +98,8 @@ def processZipStack(infile, outdir, verbose = False):
                     print(fname, img.size, img.mode, len(img.getdata()), is16bit(img.mode))
                 volinfo["size"] = img.size
                 volinfo["mode"] = img.mode
-                if img.mode != "L" and not is16bit(img.mode):
-                    raise NameError("not_8_or_16_bit_data")
+                #if img.mode != "L" and not is16bit(img.mode):
+                #    raise NameError("not_8_or_16_bit_data")
                 hadsize = True
 
     volinfo["numslices"] = numslices

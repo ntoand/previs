@@ -181,6 +181,8 @@ io.on('connection', function (socket) {
 
 function saveDataJson(socket, data) {
 	var filename = config.public_dir + "/" + data.file;
+	console.log(config.public_dir);
+	console.log(filename);
 	//write
 	fs.writeFile( filename, data.json, function(err) {
 		if (err) {
