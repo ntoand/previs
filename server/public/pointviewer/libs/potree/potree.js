@@ -22563,126 +22563,170 @@ initSidebarCave = (viewer) => {
     'Level of Detail',
     'Composite'
   ];
-
-  var objCave = {
-        PointBudget: viewer.getPointBudget(),
-        FOV: viewer.getFOV(),
-        LoadSettings: function () {
-          loadSettings();
-        },
-        SaveSettings: function () {
-          saveSettings();
-        },
-        PointSize: material.size,
-        PointSizing: Object.keys(Potree.PointSizeType)[material.pointSizeType],
-        PointShape: Object.keys(Potree.PointShape)[material.shape],
-        PointColorType: colorTypes[material.pointColorType],
-        ElevDirection: 'Z',
-        ElevRangeMin: 0,
-        ElevRangeMax: 1,
-        EDL: viewer.getEDLEnabled(),
-        EDLRadius: viewer.getEDLRadius(),
-        EDLStrength: viewer.getEDLStrength()
-  };
-
-  var guiCave = new dat.gui.GUI();
-  //guiCave.remember(objCave);
-
-  // Control
-  guiCave.add(objCave, 'LoadSettings');
-  if(!demo) {
-    guiCave.add(objCave, 'SaveSettings');
+  
+  var gGui = {};
+  initGui();
+  buildGui();
+  
+  // functions
+  function initGui() {
+    var obj = {
+      PointBudget: viewer.getPointBudget(),
+      FOV: viewer.getFOV(),
+      LoadSettings: function () {
+        loadSettings();
+      },
+      SaveSettings: function () {
+        saveSettings();
+      },
+      PointSize: material.size,
+      PointSizing: Object.keys(Potree.PointSizeType)[material.pointSizeType],
+      PointShape: Object.keys(Potree.PointShape)[material.shape],
+      PointColorType: colorTypes[material.pointColorType],
+      ElevDirection: 'Z',
+      ElevRangeMin: 0,
+      ElevRangeMax: 1,
+      EDL: viewer.getEDLEnabled(),
+      EDLRadius: viewer.getEDLRadius(),
+      EDLStrength: viewer.getEDLStrength()
+    };
+    gGui.obj = obj;
+    
+    var gui = new dat.GUI();
+	  gGui.gui = gui;
   }
-
-  // Appearance
-  var guiCaveAppearance = guiCave.addFolder('Appearance');
-  var pointBudget = guiCaveAppearance.add(objCave, 'PointBudget').min(100 * 1000).max(10 * 1000 * 1000).step(1000);
-  var FOV = guiCaveAppearance.add(objCave, 'FOV').min(20).max(100).step(1);
-  //guiCaveAppearance.open();
-  // Scene
-  var guiCaveSettings = guiCave.addFolder('Settings');
-  var pointSize = guiCaveSettings.add(objCave, 'PointSize').min(0).max(3).step(0.01);
-  var pointSizing = guiCaveSettings.add(objCave, 'PointSizing', [ 'ADAPTIVE', 'FIXED' ]);
-  var pointShape = guiCaveSettings.add(objCave, 'PointShape', [ 'SQUARE', 'CIRCLE' ]);
-  var pointColorType = guiCaveSettings.add(objCave, 'PointColorType', [ 'RGB', 'ELEVATION' ]);
-  var elevDirection = guiCaveSettings.add(objCave, 'ElevDirection', [ 'X', 'Y', 'Z' ]);
-  var elevRangeMin = guiCaveSettings.add(objCave, 'ElevRangeMin').min(0).max(1).step(0.01);
-  var elevRangeMax = guiCaveSettings.add(objCave, 'ElevRangeMax').min(0).max(1).step(0.01);
-  var edlEnabled = guiCaveSettings.add(objCave, 'EDL');
-  var edlRadius = guiCaveSettings.add(objCave, 'EDLRadius').min(1).max(4).step(0.01);
-  var edlStrength = guiCaveSettings.add(objCave, 'EDLStrength').min(0).max(5).step(0.01);
-  guiCaveSettings.open();
+  
+  function buildGui() {
+    console.log('buildGui');
+    var obj = gGui.obj;
+    
+    var gui = gGui.gui;
+    gui.destroy();
+	  gui = new dat.GUI();
+	
+	  // Control
+    gui.add(obj, 'LoadSettings');
+    if(!demo) {
+      gui.add(obj, 'SaveSettings');
+    }
+    
+    // Appearance
+    var guiCaveAppearance = gui.addFolder('Appearance');
+    var pointBudget = guiCaveAppearance.add(obj, 'PointBudget').min(100 * 1000).max(10 * 1000 * 1000).step(1000);
+    var FOV = guiCaveAppearance.add(obj, 'FOV').min(20).max(100).step(1);
+    //guiCaveAppearance.open();
+    // Scene
+    var guiCaveSettings = gui.addFolder('Settings');
+    var pointSize = guiCaveSettings.add(obj, 'PointSize').min(0).max(3).step(0.01);
+    var pointSizing = guiCaveSettings.add(obj, 'PointSizing', [ 'ADAPTIVE', 'FIXED' ]);
+    var pointShape = guiCaveSettings.add(obj, 'PointShape', [ 'SQUARE', 'CIRCLE' ]);
+    var pointColorType = guiCaveSettings.add(obj, 'PointColorType', [ 'RGB', 'ELEVATION' ]);
+    var elevDirection = guiCaveSettings.add(obj, 'ElevDirection', [ 'X', 'Y', 'Z' ]);
+    var elevRangeMin = guiCaveSettings.add(obj, 'ElevRangeMin').min(0).max(1).step(0.01);
+    var elevRangeMax = guiCaveSettings.add(obj, 'ElevRangeMax').min(0).max(1).step(0.01);
+    var edlEnabled = guiCaveSettings.add(obj, 'EDL');
+    var edlRadius = guiCaveSettings.add(obj, 'EDLRadius').min(1).max(4).step(0.01);
+    var edlStrength = guiCaveSettings.add(obj, 'EDLStrength').min(0).max(5).step(0.01);
+    guiCaveSettings.open();
+    
+    // GUI EVENTS
+    pointBudget.onChange(function(value) {
+      obj.PointBudget = value;
+      updateView();
+    });
+    
+    FOV.onChange(function(value) {
+      obj.FOV = value;
+      updateView();
+    });
+    
+    pointSize.onChange(function(value) {
+      obj.PointSize = value;
+      updateView();
+    });
+    
+    pointSizing.onFinishChange(function(value) {
+      obj.PointSizing = value;
+      updateView();
+    });
+    
+    pointShape.onFinishChange(function(value) {
+      obj.PointShape = value;
+      updateView();
+    });
+    
+    pointColorType.onFinishChange(function(value) {
+      obj.PointColorType = value;
+      updateView();
+    });
+    
+    elevDirection.onFinishChange(function(value) {
+      obj.ElevDirection = value;
+      updateView();
+    });
+    
+    elevRangeMin.onChange(function(value) {
+      obj.ElevRangeMin = value;
+      updateView();
+    });
+    
+    elevRangeMax.onChange(function(value) {
+      obj.ElevRangeMax = value;
+      updateView();
+    });
+    
+    edlEnabled.onFinishChange(function(value) {
+      obj.EDL = value;
+      updateView();
+    });
+  
+    edlRadius.onChange(function(value) {
+      obj.EDLRadius = value;
+      updateView();
+    });
+  
+    edlStrength.onChange(function(value) {
+      obj.EDLStrength = value;
+      updateView();
+    });
+	
+  }
   
   
   function updateView() {
-    viewer.setPointBudget(objCave.PointBudget);
-    viewer.setFOV(objCave.FOV);
-    material.size = objCave.PointSize;
-    if(objCave.PointSizing === "FIXED") {
+    var obj = gGui.obj;
+    
+    viewer.setPointBudget(obj.PointBudget);
+    viewer.setFOV(obj.FOV);
+    material.size = obj.PointSize;
+    if(obj.PointSizing === "FIXED") {
       material.pointSizeType = Potree.PointSizeType.FIXED;
     }
     else {
       material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
     }
-    if(objCave.PointShape === "SQUARE") {
+    if(obj.PointShape === "SQUARE") {
       material.shape = Potree.PointShape.SQUARE;
     }
     else {
       material.shape = Potree.PointShape.CIRCLE;
     }
-    if(objCave.PointColorType === "ELEVATION") {
+    if(obj.PointColorType === "ELEVATION") {
       material.pointColorType = 3;
     }
     else {
       material.pointColorType = 0;
     }
-    let ind = getDirectionIndexFromString(objCave.ElevDirection);
+    let ind = getDirectionIndexFromString(obj.ElevDirection);
     material.elevationDirection = ind;
     let range = getRangeInfo(ind);
-    material.heightMin = range.min + objCave.ElevRangeMin * range.length;
-    material.heightMax = range.min + objCave.ElevRangeMax * range.length; 
-    viewer.setEDLEnabled(objCave.EDL);
-    viewer.setEDLRadius(objCave.EDLRadius);
-    viewer.setEDLStrength(objCave.EDLStrength);
+    material.heightMin = range.min + obj.ElevRangeMin * range.length;
+    material.heightMax = range.min + obj.ElevRangeMax * range.length; 
+    viewer.setEDLEnabled(obj.EDL);
+    viewer.setEDLRadius(obj.EDLRadius);
+    viewer.setEDLStrength(obj.EDLStrength);
   }
   
-  
-  // GUI EVENTS
-  pointBudget.onChange(function(value) {
-    viewer.setPointBudget(value);
-  });
-
-  FOV.onChange(function(value) {
-    viewer.setFOV(value);
-  });
-
-  pointSize.onChange(function(value) {
-    material.size = value;
-  });
-
-  pointSizing.onFinishChange(function(value) {
-    if(value === "FIXED") {
-      material.pointSizeType = Potree.PointSizeType.FIXED;
-    } else if (value === "ADAPTIVE") {
-      material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
-    }
-  });
-
-  pointShape.onFinishChange(function(value) {
-    if(value === "SQUARE") {
-      material.shape = Potree.PointShape.SQUARE;
-    } else if (value === "CIRCLE") {
-      material.shape = Potree.PointShape.CIRCLE;
-    }
-  });
-
-  pointColorType.onFinishChange(function(value) {
-    if (value === "ELEVATION") {
-      material.pointColorType = 3;
-    } else {
-      material.pointColorType = 0;
-    }
-  });
   
   function getRangeInfo(direction) {
     let box = [pointcloud.pcoGeometry.tightBoundingBox, pointcloud.getBoundingBoxWorld()].find(v => v !== undefined);
@@ -22709,43 +22753,6 @@ initSidebarCave = (viewer) => {
     return 2;
   }
   
-  elevDirection.onFinishChange(function(value) {
-    let ind = getDirectionIndexFromString(value);
-    material.elevationDirection = ind;
-    let range = getRangeInfo(ind);
-    material.heightMin = range.min;
-    material.heightMax = range.max; 
-    elevRangeMin.setValue(0);
-    elevRangeMax.setValue(1);
-  });
-  
-  elevRangeMin.onChange(function(value) {
-    let str = elevDirection.getValue();
-    let ind = getDirectionIndexFromString(str);
-    let range = getRangeInfo(ind);
-    material.heightMin = range.min + value * range.length;
-  });
-  
-  elevRangeMax.onChange(function(value) {
-    let str = elevDirection.getValue();
-    let ind = getDirectionIndexFromString(str);
-    let range = getRangeInfo(ind);
-    material.heightMax = range.min + value * range.length;
-  });
-  
-  
-  edlEnabled.onFinishChange(function(value) {
-    viewer.setEDLEnabled(value);
-  });
-
-  edlRadius.onChange(function(value) {
-    viewer.setEDLRadius(value);
-  });
-
-  edlStrength.onChange(function(value) {
-    viewer.setEDLStrength(value);
-  });
-  
   
   function loadSettings() {
     console.log('loadSettings');
@@ -22754,15 +22761,17 @@ initSidebarCave = (viewer) => {
   }
 
   function saveSettings() {
-    objCave.CamLocation = viewer.scene.getActiveCamera().position.toArray();
-    objCave.CamTarget = viewer.scene.view.getPivot().toArray();
+    var obj = gGui.obj;
+    
+    obj.CamLocation = viewer.scene.getActiveCamera().position.toArray();
+    obj.CamTarget = viewer.scene.view.getPivot().toArray();
     
     //get tag
-    objCave.Tag = tag;
+    obj.Tag = tag;
     
-    console.log(objCave);
+    console.log(obj);
     
-    socket.emit('savepotreesettings', objCave);
+    socket.emit('savepotreesettings', obj);
     
     console.log("saveSettings");
     //pointBudget.domElement.setAttribute("hidden", true);
@@ -22775,6 +22784,7 @@ initSidebarCave = (viewer) => {
     info.hide();
   }
   
+  
   socket.on('loadpotreesettings', function(data) {
     //console.log("loadpotreesettings");
     //console.log(data);
@@ -22786,24 +22796,24 @@ initSidebarCave = (viewer) => {
     }
     
     let result = data.result;
-    objCave.PointSizing = result.sizeType.toUpperCase();
-    objCave.PointShape = result.quality.toUpperCase();
-    objCave.PointColorType = result.material.toUpperCase();
+    obj.PointSizing = result.sizeType.toUpperCase();
+    obj.PointShape = result.quality.toUpperCase();
+    obj.PointColorType = result.material.toUpperCase();
     if(result.elevationDirection == 0) {
-      objCave.ElevDirection = 'X';
+      obj.ElevDirection = 'X';
     }
     else if (result.elevationDirection == 1) {
-      objCave.ElevDirection = 'Y';
+      obj.ElevDirection = 'Y';
     }
     else {
-      objCave.ElevDirection = 'Z';
+      obj.ElevDirection = 'Z';
     }
-    objCave.ElevRangeMin = result.elevationRange[0];
-    objCave.ElevRangeMax = result.elevationRange[1];
-    objCave.EDL = result.filter === 'EDL';
-    objCave.EDLStrength = result.filterEdl[0];
-    objCave.EDLRadius = result.filterEdl[1];
-    //console.log(objCave);
+    obj.ElevRangeMin = result.elevationRange[0];
+    obj.ElevRangeMax = result.elevationRange[1];
+    obj.EDL = result.filter === 'EDL';
+    obj.EDLStrength = result.filterEdl[0];
+    obj.EDLRadius = result.filterEdl[1];
+    //console.log(obj);
     
     viewer.scene.view.position.copy(new THREE.Vector3(result.cameraPosition[0], result.cameraPosition[1], result.cameraPosition[2]));
     viewer.scene.view.lookAt(new THREE.Vector3(result.cameraTarget[0], result.cameraTarget[1], result.cameraTarget[2]));
@@ -22815,6 +22825,7 @@ initSidebarCave = (viewer) => {
     info.show();
     setTimeout(hideMessage, 3000);
   });
+  
   
   socket.on('savepotreesettings', function (data) {
     console.log(info);
