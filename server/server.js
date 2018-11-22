@@ -5,7 +5,8 @@
 var http 		  = require('http');
 var socketio 	  = require('socket.io');
 var express 	  = require('express');
-var cors		  = require('cors')
+var cors		  = require('cors');
+var glob		  =	require("glob");
 
 var path          = require('path');
 var formidable 	  = require('formidable');
@@ -177,6 +178,12 @@ io.on('connection', function (socket) {
 		console.log(data);
 		myupload.loadPotreeSettings(socket, data);
 	});
+	
+	// get save list
+	socket.on('getsavelist', function(data) {
+		console.log(data);
+		getSaveList(socket, data);
+	})
 });
 
 function saveDataJson(socket, data) {
@@ -210,4 +217,38 @@ function saveMeshParams(socket, data)
 		console.log("Saved");
 		socket.emit('savemeshjson', { status: 'done', result: data });
 	});
+}
+
+
+function getSaveList(socket, data)
+{
+	let tag = data.tag;
+	let type = data.type; // volume, mesh, point
+	let dir = config.tags_data_dir + data.tag + '/';
+	let options = {};
+	let list = ['default'];
+	
+	let startind;
+	if(type === 'volume') {
+		dir += 'volume_result/vol_web_*.json';
+		startind = 8;
+	}
+		
+	glob(dir, options, function (err, files) {
+	    if(err) { 
+	        console.log(err)
+	        socket.emit('getsavelist', { status: 'done', result: list });
+	        return;
+	    }
+	    //console.log(files);
+	    for(var i=0; i < files.length; i++) {
+	        let basename = path.basename(files[i], '.json');
+	        basename = basename.substr(startind);
+	        console.log(basename);
+	        list.push(basename);
+	    }
+	    console.log(list);
+	    socket.emit('getsavelist', { status: 'done', result: list });
+	})
+	
 }
