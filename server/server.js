@@ -246,10 +246,9 @@ function getSaveList(socket, data)
 	    for(var i=0; i < files.length; i++) {
 	        let basename = path.basename(files[i], '.json');
 	        basename = basename.substr(startind);
-	        console.log(basename);
 	        list.push(basename);
 	    }
-	    console.log(list);
+	    //console.log(list);
 	    socket.emit('getsavelist', { status: 'done', result: list });
 	})
 	
