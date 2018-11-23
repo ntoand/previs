@@ -1,5 +1,9 @@
 #!/bin/sh
 
+cd potree
+gulp build
+cd ..
+
 # run after build.sh
 # now install to pointviewer (not PotreeConverter anymore)
 rm -rf ../public/pointviewer/libs

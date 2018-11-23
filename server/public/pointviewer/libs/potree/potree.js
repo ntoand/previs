@@ -22565,19 +22565,62 @@ initSidebarCave = (viewer) => {
   ];
   
   var gGui = {};
+  var hPreset = null;
+  var guiCaveSettings = null;
+  var presetList = ['default'];
+  var needUpdateList = true;
+
   initGui();
   buildGui();
+  
+  
+  function updateDatDropdown(target, list){   
+    let innerHTMLStr = "";
+    if(list.constructor.name == 'Array'){
+        for(var i=0; i<list.length; i++){
+            var str = "<option value='" + list[i] + "'>" + list[i] + "</option>";
+            innerHTMLStr += str;        
+        }
+    }
+
+    if(list.constructor.name == 'Object'){
+        for(var key in list){
+            var str = "<option value='" + list[key] + "'>" + key + "</option>";
+            innerHTMLStr += str;
+        }
+    }
+    if (innerHTMLStr != "") target.domElement.children[0].innerHTML = innerHTMLStr;
+  }
+  
+  socket.emit('getsavelist', { type: 'point', tag:  tag});
+  
+  socket.on('getsavelist', function(data) {
+    
+    if(data.status === 'error') {
+      $('#status').text("Error! Cannot get save list");
+      info.show();
+      setTimeout(hideMessage, 3000);
+    }
+    else if(data.status == "done") {
+      presetList = data.result;
+    }
+    loadSettings();
+  });
   
   // functions
   function initGui() {
     var obj = {
+      Preset: 'default',
       PointBudget: viewer.getPointBudget(),
       FOV: viewer.getFOV(),
       LoadSettings: function () {
         loadSettings();
       },
-      SaveSettings: function () {
+      Save: function () {
         saveSettings();
+      },
+      SaveAs: function () {
+        saveSettingsAs();
       },
       PointSize: material.size,
       PointSizing: Object.keys(Potree.PointSizeType)[material.pointSizeType],
@@ -22605,9 +22648,18 @@ initSidebarCave = (viewer) => {
 	  gui = new dat.GUI();
 	
 	  // Control
-    gui.add(obj, 'LoadSettings');
+	  hPreset = gui.add(obj, 'Preset', presetList).name('Preset').listen();
+    hPreset.onFinishChange(function(value) {
+      obj.Preset = value;
+      needUpdateList = false;
+      // load setting and update gui
+			loadSettings();
+		});
+	  
+    //gui.add(obj, 'LoadSettings');
     if(!demo) {
-      gui.add(obj, 'SaveSettings');
+      gui.add(obj, 'Save');
+      gui.add(obj, 'SaveAs').name('Save As');
     }
     
     // Appearance
@@ -22616,7 +22668,7 @@ initSidebarCave = (viewer) => {
     var FOV = guiCaveAppearance.add(obj, 'FOV').min(20).max(100).step(1);
     //guiCaveAppearance.open();
     // Scene
-    var guiCaveSettings = gui.addFolder('Settings');
+    guiCaveSettings = gui.addFolder('Settings');
     var pointSize = guiCaveSettings.add(obj, 'PointSize').min(0).max(3).step(0.01);
     var pointSizing = guiCaveSettings.add(obj, 'PointSizing', [ 'ADAPTIVE', 'FIXED' ]);
     var pointShape = guiCaveSettings.add(obj, 'PointShape', [ 'SQUARE', 'CIRCLE' ]);
@@ -22745,6 +22797,7 @@ initSidebarCave = (viewer) => {
 		//let bMax = box.max.z + 0.2 * bWidth;
   }
     
+    
   function getDirectionIndexFromString(direction) {
     if(direction == 'X')
       return 0;
@@ -22755,10 +22808,10 @@ initSidebarCave = (viewer) => {
   
   
   function loadSettings() {
-    console.log('loadSettings');
-    console.log(tag);
-    socket.emit('loadpotreesettings', {Tag: tag});
+    console.log('loadSettings', tag,  gGui.obj.Preset);
+    socket.emit('loadpotreesettings', {Tag: tag, Preset: gGui.obj.Preset});
   }
+
 
   function saveSettings() {
     var obj = gGui.obj;
@@ -22778,6 +22831,25 @@ initSidebarCave = (viewer) => {
     //this.domElement.removeAttribute("hidden");
   }
   
+  
+  function saveSettingsAs() {
+    let d = new Date();
+    let tstr = d.getYear() + '' + d.getMonth() + '' + d.getDay() + '-' + d.getHours() + '' + d.getMinutes();
+    var preset = prompt("Save current settings as", tstr);
+    if (preset === null) return;
+    if (preset === '') {
+      $('#status').text("Error! Cannot save empty preset!");
+      info.show();
+      setTimeout(hideMessage, 3000);
+      return;
+    }
+    preset = preset.replace(/ /g,"_");
+    
+    gGui.obj.Preset = preset;
+    needUpdateList = true;
+    saveSettings();
+  }
+  
   var info = $("#info");
   info.hide();
   function hideMessage() {
@@ -22788,6 +22860,8 @@ initSidebarCave = (viewer) => {
   socket.on('loadpotreesettings', function(data) {
     //console.log("loadpotreesettings");
     //console.log(data);
+    var obj = gGui.obj;
+    
     if(data.status == "error") {
       $('#status').text("Error! Cannot load settings");
       info.show();
@@ -22810,7 +22884,7 @@ initSidebarCave = (viewer) => {
     }
     obj.ElevRangeMin = result.elevationRange[0];
     obj.ElevRangeMax = result.elevationRange[1];
-    obj.EDL = result.filter === 'EDL';
+    obj.EDL = result.filter.toLowerCase() === 'edl';
     obj.EDLStrength = result.filterEdl[0];
     obj.EDLRadius = result.filterEdl[1];
     //console.log(obj);
@@ -22820,6 +22894,11 @@ initSidebarCave = (viewer) => {
     
     guiCaveSettings.updateDisplay();
     updateView();
+    
+    if (needUpdateList === true) {
+      updateDatDropdown(hPreset, presetList);
+      needUpdateList = false;
+    }
     
     $('#status').text("Loaded succesfully!");
     info.show();
@@ -22835,6 +22914,8 @@ initSidebarCave = (viewer) => {
       setTimeout(hideMessage, 3000);
     }
     else if(data.status == "done") {
+      socket.emit('getsavelist', { type: 'point', tag:  tag});
+      
       $('#status').text("Saved succesfully!");
       info.show();
       setTimeout(hideMessage, 3000);

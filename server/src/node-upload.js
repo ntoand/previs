@@ -649,6 +649,9 @@ function saveDefaultPotreeSetting(data, callback) {
 function savePotreeSettings(io, data) {
 	var tag = data.Tag;
 	var destfile = config.tags_data_dir + tag + '/gigapoint.json';
+	if(data.Preset && data.Preset !== 'default') {
+		destfile = config.tags_data_dir + tag + '/gigapoint_' + data.Preset + '.json';
+	}
 	if(myutils.fileExists(destfile)) {
 		fs.unlinkSync(destfile);
 	}
@@ -695,7 +698,11 @@ function savePotreeSettings(io, data) {
 // for potree viewer
 function loadPotreeSettings(io, data) {
 	var tag = data.Tag;
+	var preset = data.Preset;
 	var jsonfile = config.tags_data_dir + tag + '/gigapoint.json';
+	if(preset && preset !== 'default') {
+		jsonfile = config.tags_data_dir + tag + '/gigapoint_' + preset + '.json';
+	}
 	fs.readFile(jsonfile, 'utf8', function (err, data) {
 	    if (err) {
 	    	io.emit('loadpotreesettings', {status: 'error', result: 'cannot_load_json_file'});

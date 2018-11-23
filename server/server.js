@@ -235,6 +235,15 @@ function getSaveList(socket, data)
 		dir += 'volume_result/vol_web_*.json';
 		startind = 8;
 	}
+	else if (type === 'mesh') {
+		dir += 'mesh_result/mesh_*.json';
+		startind = 5;
+	}
+	else if (type === 'point') {
+		dir += 'gigapoint_*.json';
+		startind = 10;
+	}
+	console.log(dir);
 		
 	glob(dir, options, function (err, files) {
 	    if(err) { 
@@ -242,13 +251,13 @@ function getSaveList(socket, data)
 	        socket.emit('getsavelist', { status: 'done', result: list });
 	        return;
 	    }
-	    //console.log(files);
+	    console.log(files);
 	    for(var i=0; i < files.length; i++) {
 	        let basename = path.basename(files[i], '.json');
 	        basename = basename.substr(startind);
 	        list.push(basename);
 	    }
-	    //console.log(list);
+	    console.log(list);
 	    socket.emit('getsavelist', { status: 'done', result: list });
 	})
 	
