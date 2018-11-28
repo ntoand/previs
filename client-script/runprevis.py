@@ -127,8 +127,8 @@ def runMesh(info):
         downloadFile(file_url, file_local)
         #unzip
         os.chdir(info['tag_dir'])
-        cmd = ['unzip', '-o', 'mesh_processed.zip']
-        subprocess.check_output(cmd)
+        cmd='unzip -o mesh_processed.zip | pv -l >/dev/null'
+        subprocess.check_output(cmd,shell=True)
         os.chdir(info['cwd'])
     
     # download update json
@@ -159,8 +159,8 @@ def runPoint(info):
         downloadFile(file_url, file_local)
         # unzip
         os.chdir(info['tag_dir'])
-        cmd = ['unzip', '-o', 'point_processed.zip']
-        subprocess.check_output(cmd)
+        cmd='unzip -o point_processed.zip | pv -l >/dev/null'
+        subprocess.check_output(cmd,shell=True)
 
     if not os.path.exists(info['tag_dir'] + '/gigapoint_resource'):
         subprocess.check_output(['ln','-s','/home/toand/git/projects/gigapoint/gigapoint/dist/gigapoint_resource'])
@@ -197,8 +197,8 @@ def runImage(info):
         downloadFile(file_url, file_local)
         # unzip
         os.chdir(info['tag_dir'])
-        cmd = ['unzip', '-o', 'image_processed.zip']
-        subprocess.check_output(cmd)
+        cmd='unzip -o image_processed.zip | pv -l >/dev/null'
+        subprocess.check_output(cmd,shell=True)        
         os.chdir(info['cwd'])
 
     # generate run command
