@@ -56,7 +56,7 @@ def downloadFile(remote_file, local_file):
 def runViewer(info):
     os.chdir(info['tag_dir'])
     if(info['type'] == 'point'):
-        subprocess.check_output(['orun','-s', 'gigapoint_run.py'])
+        subprocess.check_output(['orun','-s', 'run_gigapoint.py'])
     elif (info['type'] == 'mesh'):
         subprocess.check_output(info['lavavu'])
     elif (info['type'] == 'image'):
@@ -169,7 +169,7 @@ def runPoint(info):
     os.chdir(info['cwd'])
 
     #copy
-    cmd = ['cp', 'gigapoint_run.py', info['tag_dir']]
+    cmd = ['cp', 'run_gigapoint.py', info['tag_dir']]
     subprocess.check_output(cmd)
     
     # download gigapoint.json file
