@@ -81,11 +81,7 @@ function doLocalUpload(req, res) {
   	.on('end', function() {
     	console.log('-> upload done');
     	var filebase = path.parse(files[0][1].path).base;
-    	const myio = {
-			socket: null,
-			res: res
-		};
-		myutils.packAndSend(myio, 'localupload', {status: 'done', result: filebase});
+    	res.json({status: 'done', file: filebase});
     });
 
 	form.parse(req);

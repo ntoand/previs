@@ -12,6 +12,7 @@ var extract 	= require('extract-zip')
 
 function processUpload(io, data) {
 	
+	console.log('processUpload', data);
 	var file = data.file;
 	var filepath = config.tags_data_dir + file;
 	var datatype = data.datatype;

@@ -1,3 +1,11 @@
+"""
+To upload data to previs
+Author: Toan Nguyen (toan.nguyen@monash.edu)
+Date: December 2018
+Version: 1.0.0
+Usage: python previs-upload --help
+"""
+
 from __future__ import print_function
 import os
 import sys
@@ -58,7 +66,7 @@ def uploadFile(file):
 
 
 def help():
-    print('python previs-upload.py -s server -f file -t type -k key [-n]')
+    print('python previs-upload.py [-s server] -f file -t type -k key [-n]')
     print('  Example: -s -f data/tiffstack-foot.zip -t volume -k 11e94460-*******')
     print('  -s, --server defaults to https://mivp-dws1.erc.monash.edu:3000')
     print('  -f, --file: path to file to upload')
@@ -108,7 +116,7 @@ def main(argv):
     print(json)
 
     if(json['status'] != 'done'):
-        sys.exit('Failed to upload file. ' + json['detail'])
+        sys.exit('Failed to upload file. ' + json['file'])
 
     print('Now processing uploaded file...')
     url = config['server'] + '/rest/processupload'
@@ -117,11 +125,11 @@ def main(argv):
             'voxelSizeX': 1, 'voxelSizeY': 1, 'voxelSizeZ': 1,
               'channel': 0, 'time': 0, 'sendEmail': config['notify']}
     resp = requests.post(url, params=params, headers=headers)
-    json = resp.json()
+    json = resp.json()['data']
     print(json)
 
     if (json['status'] != 'done'):
-        sys.exit('Failed to process uploaded file. ' + json['detail'])
+        sys.exit('Failed to process uploaded file. ' + json['result'])
 
     print('\nThe data has been uploaded to previs successfully!')
     tag = json['result']['tag']
