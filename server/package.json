@@ -24,7 +24,8 @@
     "socket.io": "^1.4.4",
     "sqlite3": "^3.1.1",
     "three-obj-loader": "^1.0.2",
-    "three.js": "^0.77.1"
+    "three.js": "^0.77.1",
+    "uuid": "^3.3.2"
   },
   "devDependencies": {
     "gulp": "^3.9.1",

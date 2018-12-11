@@ -20,7 +20,14 @@ function trim(str) {
 }
 
 function packAndSend(io, action, data) {
-    io.emit('message', {action: action, data: data});
+    if(io.socket) {
+        io.socket.emit('message', {action: action, data: data});
+    }
+    else {
+        if(io.res && data.status !== 'working') {
+            io.res.json({action: action, data: data});
+        }
+    }
 }
 
 function createDirSync(dir) {

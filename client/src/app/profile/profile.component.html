@@ -1,0 +1,31 @@
+<h2 *ngIf="authService.isLoggedIn()">Your profile and API key</h2>
+
+
+<div *ngIf="authService.isLoggedIn()" class="with-min-height">
+    <mat-card>
+        <h3>Basic information</h3>
+        <p>Display name: {{authService.userDetails.displayName}}</p>
+        <p>Email: {{authService.userDetails.email}}</p>
+    </mat-card>
+    
+    <div class="spacing"></div>
+    
+    <mat-card>
+        <h3>API Key</h3>
+        
+        <span class="hoz-space"><button mat-button mat-raised-button color='primary' (click)='onLoadKey($event)'>View key</button></span>
+        <span class="hoz-space"><button mat-button mat-raised-button color='primary' (click)='onGenerateKey($event)'>Generate new key</button></span>
+        <span class="hoz-space"><button mat-button mat-raised-button color='primary' (click)='onCopyToClipboard($event)'>Copy key to clipboard</button></span>
+        
+        <div class="alert-box {{message.type}}" *ngIf="message.content !== ''">
+            <span>{{message.type}}: </span>{{message.content}}
+        </div>
+        
+        <p>API Key: <b>{{apikey.key}}</b></p>
+        <p>Created on: {{apikey.date}}</p>
+        <p>The API key is required if you upload data to previs from client script <a href="assets/previs-upload.py" target="_blank"><b>previs-upload.py</b></a></p>
+        <p>Run <b>python previs-upload.py --help</b> for more details</p>
+
+    </mat-card>
+    
+</div>
