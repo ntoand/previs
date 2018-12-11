@@ -8,6 +8,7 @@ import { ExperimentListComponent }      from './upload/mytardis/experiment-list/
 import { ExperimentDetailComponent } from './upload/mytardis/experiment-detail/experiment-detail.component';
 import { DatasetDetailComponent } from './upload/mytardis/dataset-detail/dataset-detail.component';
 import { LoginComponent }      from './login/login.component';
+import { ProfileComponent } from './profile/profile.component';
 
 const routes: Routes = [
   { path: '', component: HomeComponent },
@@ -19,6 +20,7 @@ const routes: Routes = [
   },
   { path: 'review', component: ReviewComponent },
   { path: 'login', component: LoginComponent },
+  { path: 'profile', component: ProfileComponent },
   { path: '404', component: HomeComponent }
   //{ path: '**', redirectTo: '/404' }
   //{ path: '**', redirectTo: '/' }

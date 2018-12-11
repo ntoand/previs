@@ -2,7 +2,8 @@ var FilebaseManager   = require('../src/node-firebase');
 
 var object = new FilebaseManager();
 
-test = 4; //0: add/get some data;  1: check and create new tag; 2: retrieve tags; 3: get a tag
+test = 5; //0: add/get some data;  1: check and create new tag; 2: retrieve tags; 3: get a tag
+        // 5: key test
 
 if(test === 0) {
     var tag = '1111';
@@ -125,4 +126,13 @@ else if (test ===4) {
         console.log(err);
     })
 
+}
+else if (test ===5) {
+    object.getKeyInfo('11e94460-fc0b-11e8-a543-9b4576771683', function(err, doc){
+        if(err) {
+            console.log(err);
+            return;
+        }
+        console.log(doc);
+    })
 }

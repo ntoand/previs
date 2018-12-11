@@ -11,8 +11,23 @@
         <span class="header-spacer"></span>
         <span>
           <a *ngIf="authService.isLoggedIn() == false" routerLink="/login" matTooltip="click to login"><mat-icon class="header-icon">account_circle</mat-icon></a>
+          <!--
           <a *ngIf="authService.isLoggedIn()" href="#" (click)="signOut($event)" matTooltip="click to logout">
             <img src="{{authService.userDetails.photoURL}}" width="24" height="24" style="border-radius: 25px;"/></a>
+          -->
+          <a *ngIf="authService.isLoggedIn()" class="a-cursor" [matMenuTriggerFor]="profileMenu">
+            <img src="{{authService.userDetails.photoURL}}" width="24" height="24" style="border-radius: 25px;"/></a>
+          <mat-menu #profileMenu="matMenu">
+            <button mat-menu-item routerLink="/profile" (click)="onMenuClick(3)">
+              <mat-icon>person</mat-icon>
+              <span>Profile</span>
+            </button>
+            <button mat-menu-item (click)="signOut($event)">
+              <mat-icon>cancel</mat-icon>
+              <span>Sign out</span>
+            </button>
+          </mat-menu>
+          
         </span>
         <!--<span class="header-spacer"></span>-->
         <!--

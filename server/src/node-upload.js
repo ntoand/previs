@@ -452,8 +452,7 @@ function sendViewDataToClient(io, data) {
 				
 				data.db.insertNewTag(tag_json, function(err, res) {
 					if (err) {
-						io.emit('processupload', {status: 'error', result: 'cannot_generate_tag_json'});
-						//throw err;
+						myutils.packAndSend(io, 'processupload', {status: 'error', result: 'cannot_generate_tag_json'});
 						return;
 					} 
 					myutils.packAndSend(io, 'processupload', {status: 'done', result: tag_json});
@@ -681,7 +680,13 @@ function savePotreeSettings(io, data) {
 		cameraUpdatePosOri: 1,
 		cameraPosition: data.CamLocation,
 		cameraTarget: data.CamTarget,
-		cameraUp: [0, 0, 1]
+		cameraUp: [0, 0, 1],
+		//for web only
+		forWebOnly: {
+			PointBudget: data.PointBudget,
+			FOV: data.FOV,
+			PointSize: data.PointSize
+		}
 	};
 	
 	var json = JSON.stringify(jsonObj, null, 4);
@@ -715,5 +720,6 @@ function loadPotreeSettings(io, data) {
 
 // EXPORT
 module.exports.processUpload = processUpload;
+module.exports.processUploadFile = processUploadFile;	//for REST upload using scripts 
 module.exports.savePotreeSettings = savePotreeSettings;
 module.exports.loadPotreeSettings = loadPotreeSettings;

@@ -22547,6 +22547,9 @@ initSidebarCave = (viewer) => {
   var url = new URL(window.location.href);
   var tag = url.searchParams.get("tag");
   var demo = tag.includes("000000_") ? true : false;
+  var preset = url.searchParams.get("preset");
+  if(preset === null || preset === undefined) preset = 'default';
+  console.log('initSidebarCave tag: ' + tag + ' preset: ' + preset);
 
   // all color types
   var colorTypes = [
@@ -22566,6 +22569,7 @@ initSidebarCave = (viewer) => {
   
   var gGui = {};
   var hPreset = null;
+  var guiCaveAppearance = null;
   var guiCaveSettings = null;
   var presetList = ['default'];
   var needUpdateList = true;
@@ -22610,7 +22614,7 @@ initSidebarCave = (viewer) => {
   // functions
   function initGui() {
     var obj = {
-      Preset: 'default',
+      Preset: preset,
       PointBudget: viewer.getPointBudget(),
       FOV: viewer.getFOV(),
       LoadSettings: function () {
@@ -22663,7 +22667,7 @@ initSidebarCave = (viewer) => {
     }
     
     // Appearance
-    var guiCaveAppearance = gui.addFolder('Appearance');
+    guiCaveAppearance = gui.addFolder('Appearance');
     var pointBudget = guiCaveAppearance.add(obj, 'PointBudget').min(100 * 1000).max(10 * 1000 * 1000).step(1000);
     var FOV = guiCaveAppearance.add(obj, 'FOV').min(20).max(100).step(1);
     //guiCaveAppearance.open();
@@ -22858,8 +22862,7 @@ initSidebarCave = (viewer) => {
   
   
   socket.on('loadpotreesettings', function(data) {
-    //console.log("loadpotreesettings");
-    //console.log(data);
+    console.log("loadpotreesettings", data);
     var obj = gGui.obj;
     
     if(data.status == "error") {
@@ -22870,6 +22873,13 @@ initSidebarCave = (viewer) => {
     }
     
     let result = data.result;
+    if(result.forWebOnly !== undefined && result.forWebOnly !== null) {
+      console.log(result.forWebOnly);
+      obj.PointBudget = result.forWebOnly.PointBudget;
+      obj.FOV = result.forWebOnly.FOV;
+      obj.PointSize = result.forWebOnly.PointSize;
+    }
+    
     obj.PointSizing = result.sizeType.toUpperCase();
     obj.PointShape = result.quality.toUpperCase();
     obj.PointColorType = result.material.toUpperCase();
@@ -22892,6 +22902,7 @@ initSidebarCave = (viewer) => {
     viewer.scene.view.position.copy(new THREE.Vector3(result.cameraPosition[0], result.cameraPosition[1], result.cameraPosition[2]));
     viewer.scene.view.lookAt(new THREE.Vector3(result.cameraTarget[0], result.cameraTarget[1], result.cameraTarget[2]));
     
+    guiCaveAppearance.updateDisplay();
     guiCaveSettings.updateDisplay();
     updateView();
     
