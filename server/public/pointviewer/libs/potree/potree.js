@@ -22547,6 +22547,9 @@ initSidebarCave = (viewer) => {
   var url = new URL(window.location.href);
   var tag = url.searchParams.get("tag");
   var demo = tag.includes("000000_") ? true : false;
+  var preset = url.searchParams.get("preset");
+  if(preset === null || preset === undefined) preset = 'default';
+  console.log('initSidebarCave tag: ' + tag + ' preset: ' + preset);
 
   // all color types
   var colorTypes = [
@@ -22611,7 +22614,7 @@ initSidebarCave = (viewer) => {
   // functions
   function initGui() {
     var obj = {
-      Preset: 'default',
+      Preset: preset,
       PointBudget: viewer.getPointBudget(),
       FOV: viewer.getFOV(),
       LoadSettings: function () {
