@@ -152,7 +152,7 @@ function zipDirectory(dir, dirname, zipfile, cb) {
 }
 
 
-function sendEmail(type, data) {
+function sendEmail(type, data, detail) {
     
     // send email
     if(!data.settings.sendEmail) return;
@@ -214,7 +214,8 @@ function sendEmail(type, data) {
     }
     else if (mail.type === 'fail') {
         mail_subject = 'Previs failed to process your previs data';
-        mail_body = '<p>Unfortunately previs was unable to process your ' + mail.datatype + ' data. Please try again or contact MIVP team</p>';
+        mail_body = mail_body + '<p>Unfortunately previs was unable to process your ' + mail.datatype + ' data. Please try again or contact MIVP team</p>';
+        if(detail) mail_body = mail_body + '<p>Log:</p><p>' + JSON.stringify(detail) + '</p>'
         mail_body = mail_body + '<p>Kind regards,</p><p>MIVP previs team</p>';
     }
     

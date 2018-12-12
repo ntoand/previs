@@ -61,11 +61,13 @@ function processUploadLink(io, data) {
     	if(err)
 		{
 			myutils.packAndSend(io, 'processupload', {status: 'error', result: 'cannot download file from shared link', detail: stderr});
+			myutils.sendEmail('fail', data, {status: 'error', result: 'cannot download file from shared link', detail: stderr});
 			return;
 		}
 		//check file exist
 		if(myutils.fileExists(destfile) === false) {
 			myutils.packAndSend(io, 'processupload', {status: 'error', result: 'cannot download file from shared link', detail: stderr});
+			myutils.sendEmail('fail', data, {status: 'error', result: 'cannot download file from shared link', detail: stderr});
 			return;
 		}
 		
@@ -91,12 +93,14 @@ function processUploadMytardis(io, data) {
 		if(err) {
 			console.log(err);
 			myutils.packAndSend(io, 'processupload', {status: 'error', result: 'Fail to download file ' + fileid});
+			myutils.sendEmail('fail', data, {status: 'error', result: 'Fail to download file ' + fileid});
 			return;
 		}
 
 	   //check file exist
 		if(myutils.fileExists(destfile) === false) {
 			myutils.packAndSend(io, 'processupload', {status: 'error', result: 'cannot download file from mytardis'});
+			myutils.sendEmail('fail', data, {status: 'error', result: 'cannot download file from mytardis'});
 			return;
 		}
 		
@@ -124,12 +128,14 @@ function processUploadFile(io, data) {
 			console.log(out);
 			if (!out.match) {
 				myutils.packAndSend(io, 'processupload', {status: 'error', result: 'Zip file contents do not match type'});
+				myutils.sendEmail('fail', data, {status: 'error', result: 'Zip file contents do not match type'});
 				return;
 			}
 		}
 		catch(err) {
 			console.log("Error!: " + err.message);
 			myutils.packAndSend(io, 'processupload', {status: 'error', result: 'Checking zip file type failed!', detail: err.message});
+			myutils.sendEmail('fail', data, {status: 'error', result: 'Checking zip file type failed!', detail: err.message});
 			return;
 		}
 	}
@@ -190,6 +196,7 @@ function processUploadFile_Volumes(io, data) {
     	if(err)
 		{
 			myutils.packAndSend(io, 'processupload', {status: 'error', result: 'cannot convert image stack to xrw', detail: stderr});
+			myutils.sendEmail('fail', data, {status: 'error', result: 'cannot convert image stack to xrw', detail: stderr});
 			return;
 		}
 		myutils.packAndSend(io, 'processupload', {status: 'working', result: 'Converting xrw to png...'});
@@ -217,6 +224,7 @@ function processUploadFile_Meshes(io, data) {
     	if(err)
 		{
 			myutils.packAndSend(io, 'processupload', {status: 'error', result: 'Processing the meshes archive failed!', detail: stderr});
+			myutils.sendEmail('fail', data, {status: 'error', result: 'Processing the meshes archive failed!', detail: stderr});
 			return;
 		}
 		data.numobjects = JSON.parse(stdout);
@@ -250,6 +258,7 @@ function processUploadFile_Points(io, data)
 			    }
 			    if (found === false) {
 			    	myutils.packAndSend(io, 'processupload', {status: 'error', result: 'Cannot find pointcloud file', detail: err});
+			    	myutils.sendEmail('fail', data, {status: 'error', result: 'Cannot find pointcloud file', detail: err});
 					return;
 			    }
 			});
@@ -275,6 +284,7 @@ function processUploadFile_Images(io, data) {
     	console.log(stderr);
     	if(err) {
 			myutils.packAndSend(io, 'processupload', {status: 'error', result: 'Failed to convert images', detail: stderr});
+			myutils.sendEmail('fail', data, {status: 'error', result: 'Failed to convert images', detail: stderr});
 			return;
 		}
 		
@@ -327,6 +337,7 @@ function convertXRWToPNG(io, data) {
 	exec(cmd, function(err, stdout, stderr) {
 		if (err) {
 			myutils.packAndSend(io, 'processupload', {status: 'error', result: 'cannot_run_xrwinfo'});
+			myutils.sendEmail('fail', data, {status: 'error', result: 'cannot_run_xrwinfo'});
 			return;
 		} 
     	
@@ -377,6 +388,7 @@ function convertXRWToPNG(io, data) {
 	    	if(err)
 			{
 				myutils.packAndSend(io, 'processupload', {status: 'error', result: 'cannot_convert_to_png', detail: stderr});
+				myutils.sendEmail('fail', data, {status: 'error', result: 'cannot_convert_to_png', detail: stderr});
 				return;
 			}
 			myutils.packAndSend(io, 'processupload', {status: 'working', result: 'Preparing json file...'});
@@ -533,6 +545,7 @@ function convertPointcloud(io, data, in_file) {
     	console.log(stderr);
     	if(err) {
 			myutils.packAndSend(io, 'processupload', {status: 'error', result: 'cannot_convert_pointcloud', detail: stderr});
+			myutils.sendEmail('fail', data, {status: 'error', result: 'cannot_convert_pointcloud', detail: stderr});
 			return;
 		}
 		
@@ -553,6 +566,7 @@ function convertPointcloud(io, data, in_file) {
 			console.log(numpoints);
 			if(numpoints === '0') {
 				myutils.packAndSend(io, 'processupload', {status: 'error', result: "numpoints = 0; failed to convert pointcloud, please check data format"});
+				myutils.sendEmail('fail', data, {status: 'error', result: "numpoints = 0; failed to convert pointcloud, please check data format"});
 				return;
 			}
 	
