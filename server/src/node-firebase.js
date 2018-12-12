@@ -8,12 +8,12 @@ function FirebaseManager() {
     var dburl = null;
     if (process.env.NODE_ENV === "production")  {
         serviceAccount = require(config.firebase_service_acc_key);
-        dburl = "https://previs2018.firebaseio.com";
+        dburl = config.firebase_db_url;
         console.log("Production firebase key " + config.firebase_service_acc_key);
     }
     else {
         serviceAccount = require(config.firebase_service_acc_key_dev);
-        dburl = "https://previs-dev.firebaseio.com"
+        dburl = config.firebase_db_url;
         console.log("Development firebase key " + config.firebase_service_acc_key_dev);
     }
             

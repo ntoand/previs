@@ -184,12 +184,13 @@ function sendEmail(type, data) {
         mail_subject = 'You previs data with tag ' + mail.tag +  ' is ready';
         mail_body = mail_body + '<p>Your ' + mail.datatype + ' data uploaded to previs is now ready to view on web at the following link:</p>';
         
+        const config	= require('./node-config').config; 
         var hosturl = '';
         if (process.env.NODE_ENV === "production")  {
-            hosturl = "https://mivp-dws1.erc.monash.edu:3000";
+            hosturl = config.hosturl;
         }
         else {
-            hosturl = "http://118.138.241.179:3000"
+            hosturl = config.hosturl_dev;
         }
         var url = hosturl;
        

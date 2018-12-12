@@ -1,7 +1,7 @@
 #!/bin/sh
 
 cd potree
-gulp build
+./node_modules/gulp/bin/gulp.js build
 cd ..
 
 # run after build.sh
