@@ -83,6 +83,13 @@ or
 
 ## Change log
 
+### v0.6.0
+
+- Add profile page and API key generation
+- Support uploading via client scripts
+- Sending email when errors occur
+- Support presets in viewers
+
 ### v0.5.1
 
 - Upgrade client web app from Angular 5 to Angular 6
