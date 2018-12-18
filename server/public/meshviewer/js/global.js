@@ -12,10 +12,17 @@ if(gTag === null || gTag === undefined) {
     alert('Tag is not specified');
     throw new Error("Tag is not specified!");
 }
+
+var gPreset = url.searchParams.get("preset");
+if(gPreset === null || gPreset === undefined) {
+    gPreset = 'default';
+}
 // ======= END ARGUMENTS ===
 
 // ======== PARAMETERS =====
 var gGui = null;
+var hPreset = null;
+var presetList = ['default'];
 
 // ===== END PARAMETERS ====
 
@@ -36,5 +43,23 @@ function getCenter(bbox) {
         z: (bbox.min.z + bbox.max.z)/2
     }
     return center;
+}
+
+function updateDatDropdown(target, list){   
+    let innerHTMLStr = "";
+    if(list.constructor.name == 'Array'){
+        for(var i=0; i<list.length; i++){
+            var str = "<option value='" + list[i] + "'>" + list[i] + "</option>";
+            innerHTMLStr += str;        
+        }
+    }
+    
+    if(list.constructor.name == 'Object'){
+        for(var key in list){
+            var str = "<option value='" + list[key] + "'>" + key + "</option>";
+            innerHTMLStr += str;
+        }
+    }
+    if (innerHTMLStr != "") target.domElement.children[0].innerHTML = innerHTMLStr;
 }
 // ======== END UTILS =============

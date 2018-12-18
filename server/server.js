@@ -283,7 +283,12 @@ function saveMeshParams(socket, data)
 	console.log("Received saveparams from mesh viewer");
 	console.log(data);
 	
-	var jsonfile = config.tags_data_dir + data.tag + '/mesh_result/mesh.json';
+	let filename = 'mesh.json';
+	let preset = data.preset;
+	if(preset && preset !== 'default') {
+		filename = 'mesh_' + preset + '.json';
+	}
+	var jsonfile = config.tags_data_dir + data.tag + '/mesh_result/' + filename;
 	fs.writeFile(jsonfile, data.jsonStr, function(err) {
 		if(err) {
 			console.log("Error: " + err);

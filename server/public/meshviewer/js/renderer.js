@@ -70,7 +70,7 @@ var PrevisMeshRenderer = (function () {
 		//this.camera.add(camLight);
 	};
 	
-	PrevisMeshRenderer.prototype.loadJsonConfig = function (cb) {
+	PrevisMeshRenderer.prototype.loadJsonConfig = function (preset, cb) {
 		showMessage('Load json configuration from server...', true);
 		var scope = this;
 	    // load the json file, as a test..
@@ -104,7 +104,11 @@ var PrevisMeshRenderer = (function () {
 	            cb();
 	        }
 	    }
-	    xmlreq.open("GET", "data/tags/" + gTag + "/mesh_result/mesh.json");   // 20170411 - server provdes full filename now, don't need to add .json
+	    let filename = 'mesh.json';
+	    if(preset && preset !== 'default') {
+	    	filename = 'mesh_' + preset + '.json';
+	    }
+	    xmlreq.open("GET", "data/tags/" + gTag + "/mesh_result/" + filename);
 	    xmlreq.send();
 	};
 	
@@ -199,10 +203,10 @@ var PrevisMeshRenderer = (function () {
 		scope.groups.push(group);
 	}
 
-	PrevisMeshRenderer.prototype.initContent = function (cb) {
+	PrevisMeshRenderer.prototype.initContent = function (preset, cb) {
 		
 		var scope = this;
-		scope.loadJsonConfig(function () {
+		scope.loadJsonConfig(preset, function () {
 			// count total number of models 
 			scope.numberOfModels = 0;
 			for(var i=0; i < scope.json.objects.length; i++) {
