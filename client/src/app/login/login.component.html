@@ -1,5 +1,8 @@
 <div>
-    <div *ngIf="authService.isLoggedIn() === false" style="min-height: 300px;">
+    <div class="spin-container" *ngIf="authService.isLoaded() === false">
+        <mat-spinner diameter=50></mat-spinner>
+    </div>
+    <div *ngIf="authService.isLoggedIn() === false && authService.isLoaded()" style="min-height: 300px;">
         <h2>Please login</h2>
         <button mat-raised-button color='primary' (click)="signIn()">
             <img src="assets/img/google-icon.png" alt="google" height="24" width="24"/> Login with Google account</button>

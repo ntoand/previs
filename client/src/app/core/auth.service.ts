@@ -10,18 +10,21 @@ import { Observable } from 'rxjs';
 export class AuthService {
   user: Observable<firebase.User>;
   public userDetails: firebase.User = null;
+  public loaded = false;
 
   constructor(private firebaseAuth: AngularFireAuth, private router: Router) {
     this.user = firebaseAuth.authState;
-    this.user.subscribe(
+    var scope = this;
+    scope.user.subscribe(
         (user) => {
           if (user) {
-            this.userDetails = user;
-            console.log(this.userDetails);
+            scope.userDetails = user;
+            console.log(scope.userDetails);
           }
           else {
-            this.userDetails = null;
+            scope.userDetails = null;
           }
+          scope.loaded = true;
         }
      );
   }
@@ -43,6 +46,10 @@ export class AuthService {
     } else {
       return true;
     }
+  }
+  
+  isLoaded() {
+    return this.loaded;
   }
 
   signOut() {
