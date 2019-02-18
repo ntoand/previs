@@ -202,16 +202,18 @@ def runImage(info):
         os.chdir(info['cwd'])
 
     # generate run command
-    cmd = 'GO_CAVE2_DZ -b 256 -t 4 -p -m'
+    #cmd = 'GO_CAVE2_DZ -b 256 -t 4 -p -m'
+    cmd = '/home/toand/git/projects/vsviewer/build/CAVE2/GO_CAVE2_DZ -b 256 -t 4 -p -m'
     jsonfile = info['tag_dir'] + '/image.json'
     with open(jsonfile, 'rt') as f:
         data = json.load(f)
         for img in data:
-            cmd = cmd + ' -i ' + img
+            cmd = cmd + ' -i ' + info['tag_dir']+'/'+img
     info['imagecmd'] = cmd.encode('ascii','ignore').split()
 
     if not os.path.exists(info['tag_dir'] + '/default.cfg'):
-        subprocess.check_output(['ln','-s','/home/toand/git/projects/vsviewer/data/default.cfg'])
+        #print "tagdir:", info['tag_dir']
+        subprocess.check_output(['ln','-t',info['tag_dir'],'-s','/home/toand/git/projects/vsviewer/data/default.cfg'])
 
     # run
     runViewer(info)
