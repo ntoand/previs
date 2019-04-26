@@ -2,7 +2,8 @@
 To upload data to previs
 Author: Toan Nguyen (toan.nguyen@monash.edu)
 Date: December 2018
-Version: 1.0.0
+Updated: April 2019
+Version: 1.0.1
 Usage: python previs-upload --help
 """
 
@@ -78,13 +79,13 @@ def help():
 def main(argv):
 
     try:
-        opts, args = getopt.getopt(argv, "s:f:t:k:n", ["server=", "file=", "type=", "key="])
+        opts, args = getopt.getopt(argv, "s:f:t:k:nh", ["server=", "file=", "type=", "key=", "help"])
     except getopt.GetoptError:
         raise NameError("Cannot parse input arguments")
 
     global config
     for opt, arg in opts:
-        if opt == '-h':
+        if opt in ("-h", "--help"):
             help()
             sys.exit()
         elif opt in ("-s", "--server"):
@@ -98,7 +99,7 @@ def main(argv):
         elif opt in ("-n", "--notify"):
             config['notify'] = True
 
-    if file == '':
+    if config['file'] == '':
         raise NameError("Please provide file to upload")
 
     print('Upload file ' + config['file'] + ' (' + config['type'] + ') to server ' +  config['server'])
@@ -106,7 +107,7 @@ def main(argv):
         print('Invalid parameters. Please check again')
 
     # upload file to server
-    json = uploadFile(file)
+    json = uploadFile(config['file'])
     # for quick dev
     """
     json = {}
