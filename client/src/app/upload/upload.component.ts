@@ -40,7 +40,7 @@ export class UploadComponent implements OnInit {
     
     this.connection = this.appService.onMessage().subscribe(msg => {
       if(msg.action === 'processupload') {
-        console.log(msg.data);
+        //console.log(msg.data);
         const data = msg.data;
         if(data.status !== 'done') {
           this.message.type = data.status;

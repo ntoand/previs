@@ -7,6 +7,7 @@ export class Dataset {
   dateStr: string;
   imgUrl: string;
   viewUrl: string;
+  qrUrl: string;
   note: string;
   
   constructor() { 
@@ -20,6 +21,7 @@ export class Dataset {
     this.size = '';
     this.imgUrl = '';
     this.viewUrl = '';
+    this.qrUrl = '';
     this.note = '';
   }
 
@@ -46,6 +48,8 @@ export class Dataset {
     let d = new Date(result.date);
     //this.dateStr = d.toString();
     this.dateStr = d.toLocaleDateString() + ' ' + d.toLocaleTimeString();
+    this.qrUrl = environment.ws_url + '/qrcode/index.html?tag=' + result.tag;
+    
     if (this.type === 'volume') {
       this.imgUrl =  environment.ws_url + '/' + result.volumes[0].thumb;  
       this.viewUrl = environment.ws_url + '/sharevol/index.html?data=' + result.volumes[0].json_web + '&reset';

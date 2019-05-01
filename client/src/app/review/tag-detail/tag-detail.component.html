@@ -20,7 +20,8 @@
   </mat-card-header>
   <img mat-card-image src={{dataset.imgUrl}} height="200" alt={{dataset.tag}}>
   <mat-card-actions>
-    <a href={{dataset.viewUrl}} target="_blank"><button mat-button color='primary'>VIEW ON WEB</button></a>
+    <a href={{dataset.viewUrl}} target="_blank"><button mat-button color='primary'>VIEW WEB</button></a>
+    <a href={{dataset.qrUrl}} target="_blank"><button mat-button color='primary'>QR</button></a>
     <button mat-button color='warn' (click)="onDeleteTag(dataset.tag)">DELETE</button>
   </mat-card-actions>
 </mat-card>

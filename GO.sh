@@ -15,6 +15,7 @@ ln -s ${dir}/server/public/sharevol .
 ln -s ${dir}/server/public/meshviewer .
 ln -s ${dir}/server/public/imageviewer .
 ln -s ${dir}/server/public/pointviewer .
+ln -s ${dir}/server/public/qrcode .
 
 cd ${dir}/server/dist/sharevol
 unlink data

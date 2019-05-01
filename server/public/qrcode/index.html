@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset=utf-8>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+		<title>QR Code for previs tag</title>
+		
+		<link rel="stylesheet" type="text/css" href="css/style.css">
+		
+    </head>
+    
+    <body>
+        <div>
+            <h4 id="info"></h4>
+            <p>You can download and print the QR code. Note: do not scale the image.</p>
+        </div>
+        
+        <div>
+            <button onclick="downloadQRImage()">Download QR image</button>
+            <button onclick="printQRImage()">Print QR image</button>
+        </div>
+        
+        <div id="qrcode"></div>
+
+        <script type="text/javascript" src="js/jquery.min.js"></script>
+        <script type="text/javascript" src="js/qrcode.min.js"></script>
+        <script type="text/javascript" src="js/main.js"></script>
+    </body>
+</html>
