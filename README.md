@@ -83,6 +83,11 @@ or
 
 ## Change log
 
+### v0.6.1
+
+- Upgrade client web app from Angular 6 to Angular 7
+- Support QR code generator for tag. The QR code can be used in Hololens app.
+
 ### v0.6.0
 
 - Add profile page and API key generation
