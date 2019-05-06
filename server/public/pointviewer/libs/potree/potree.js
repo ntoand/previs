@@ -22538,10 +22538,7 @@ initSidebar = (viewer) => {
 initSidebarCave = (viewer) => {
 
   //console.log(viewer);
-  var pointcloud = viewer.scene.pointclouds[0];
-  var material = pointcloud.material;
   var socket = io();
-  console.log(pointcloud);
   
   //get tag
   var url = new URL(window.location.href);
@@ -22574,9 +22571,36 @@ initSidebarCave = (viewer) => {
   var presetList = ['default'];
   var needUpdateList = true;
 
-  initGui();
-  buildGui();
+  //console.log(viewer);
+  var pointcloud = null;
+  var material = null;
   
+  var numRetry = 1;
+  function myInitLoop () {           
+    setTimeout(function () {    
+      pointcloud = viewer.scene.pointclouds[0];
+      if(pointcloud === null || pointcloud === undefined) {
+        numRetry++;
+        if(numRetry < 5) {
+          myInitLoop();
+        }
+        else {
+          alert("Error: failed to find pointcloud data");
+        }
+      }
+      else {
+        console.log(pointcloud);
+        material = pointcloud.material;
+        initGui();
+        buildGui();
+        socket.emit('getsavelist', { type: 'point', tag:  tag});
+      }                  
+    }, 1000)
+  }
+  
+  // start 
+  myInitLoop();
+
   
   function updateDatDropdown(target, list){   
     let innerHTMLStr = "";
@@ -22595,8 +22619,6 @@ initSidebarCave = (viewer) => {
     }
     if (innerHTMLStr != "") target.domElement.children[0].innerHTML = innerHTMLStr;
   }
-  
-  socket.emit('getsavelist', { type: 'point', tag:  tag});
   
   socket.on('getsavelist', function(data) {
     
