@@ -8,7 +8,7 @@ var execSync	= require('child_process').execSync;
 
 var myutils 	= require('./node-utils');
 var config		= require('./node-config').config; 
-var extract 	= require('extract-zip')
+var extract 	= require('extract-zip');
 
 function processUpload(io, data) {
 	
@@ -171,6 +171,9 @@ function processUploadFile(io, data) {
 			else if (datatype === 'image') {
 				processUploadFile_Images(io, data);
 			}
+			else if (datatype === 'photogrammetry') {
+				processUploadFile_Photogrammetry(io, data);
+			}
 			else {
 				myutils.packAndSend(io, 'processupload', {status: 'error', result: 'unsupported data type'});
 			}
@@ -230,6 +233,32 @@ function processUploadFile_Meshes(io, data) {
 		data.numobjects = JSON.parse(stdout);
 	    myutils.packAndSend(io, 'processupload', {status: 'working', result: 'Files unpacked, all groups processed..'})
 		sendViewDataToClient_Meshes(io, data);
+    });
+}
+
+//NH
+// process zip photogrammetry file @AH
+function processUploadFile_Photogrammetry(io, data) {
+	console.log('processUploadFile_Photogrammetry');
+	console.log(data);
+	
+	var inputfile = data.inputfile;
+	var settings = data.settings; // vol voxel size x, y, z, channel, timestep
+	var out_dir = data.tagdir + '/photogrammetry_result';
+	var cmd = 'cd ' + config.scripts_dir + ' && python processphotogrammetry.py -i ' + inputfile + ' -o ' + out_dir;
+	console.log(cmd);
+	myutils.packAndSend(io, 'processupload', {status: 'working', result: 'Processing photogrammetry images...'})
+	exec(cmd, function(err, stdout, stderr) 
+    {
+    	console.log(stdout);
+    	console.log(stderr);
+    	if(err)
+		{
+			myutils.packAndSend(io, 'processupload', {status: 'error', result: 'Processing images failed', detail: stderr});
+			myutils.sendEmail('fail', data, {status: 'error', result: 'Processing photogrammetry images failed.', detail: stderr});
+			return;
+		}
+		myutils.packAndSend(io, 'processupload', {status: 'working', result: 'Processing photogrammetry...'});
     });
 }
 
