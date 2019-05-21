@@ -14,5 +14,6 @@ export const environment = {
     projectId: "previs-dev",
     storageBucket: "previs-dev.appspot.com",
     messagingSenderId: "862413634236"
-  }
+  },
+  photogrammetry: true
 };

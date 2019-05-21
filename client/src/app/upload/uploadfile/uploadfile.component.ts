@@ -96,6 +96,13 @@ export class UploadfileComponent implements OnInit {
         return;
       }
     }
+     else if (this.dataType == "photogrammetry") {
+      if (fileext !== 'zip') {
+        this.errMsg = "Photogrammetry requires a .zip file";
+        this.renderer.selectRootElement('.uploadfile').value = '';
+        return;
+      }
+    }
     
     formData.append('uploads', file, file.name);
 

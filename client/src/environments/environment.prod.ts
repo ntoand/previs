@@ -9,5 +9,6 @@ export const environment = {
     projectId: 'previs2018',
     storageBucket: 'previs2018.appspot.com',
     messagingSenderId: '12491120058'
-  }
+  },
+  photogrammetry: false
 };
