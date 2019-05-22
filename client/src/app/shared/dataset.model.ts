@@ -60,7 +60,7 @@ export class Dataset {
     
     if (this.type === 'volume') {
       this.imgUrl =  environment.ws_url + '/' + dirPath + 'vol_web_thumb.png';  
-      this.viewUrl = environment.ws_url + '/sharevol/index.html?data=' + dirPath + 'vol_web.json'+ '&reset';
+      this.viewUrl = environment.ws_url + '/sharevol/index.html?tag=' + result.tag;
     } 
     else if (this.type === 'mesh') {
       this.imgUrl = 'assets/img/no-image-box.png';

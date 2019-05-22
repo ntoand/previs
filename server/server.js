@@ -340,9 +340,9 @@ function saveMeshParams(socket, data)
 
 function getSaveList(socket, data)
 {
-	let tag = data.tag;
+	let tagdir = data.dir || data.tag;
 	let type = data.type; // volume, mesh, point
-	let dir = config.tags_data_dir + data.tag + '/';
+	let dir = config.tags_data_dir + tagdir + '/';
 	let options = {};
 	let list = ['default'];
 	
