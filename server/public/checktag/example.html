@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset=utf-8>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+		<title>Test tag access before loading data</title>
+		
+		<link rel="stylesheet" type="text/css" href="css/previs.css">
+		
+    </head>
+    
+    <body>
+        <h1>Check tag</h1>
+
+        <div id="passwordModalDialog" class="modal">
+            <div class="modal-content">
+                <p><b>Password is required to view the dataset</b></p>
+                <p id="password-status"></p>
+                <input type="password" id="password" name="password" minlength="8" required>
+                <button id="password-button">Submit</button>
+            </div>
+        </div>
+
+        <script type="text/javascript" src="js/previs.js"></script>
+
+        <script>
+            var url = new URL(window.location.href);
+            var gTag = url.searchParams.get("tag");
+            console.log("Tag:" + gTag);
+            checkAndLoadPrevisTag(gTag, "", function(info) {
+                console.log("success: now can load data", info);
+            });
+        </script>
+    </body>
+</html>

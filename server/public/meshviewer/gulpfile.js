@@ -6,7 +6,7 @@ const concat = require('gulp-concat');
 const gutil = require('gulp-util');
 const del = require('del');
 
-var js_src_files = ['js/global.js', 'js/renderer.js', 'js/main.js']; 
+var js_src_files = ['js/previs.js', 'js/global.js', 'js/renderer.js', 'js/main.js']; 
 gulp.task('combine', function() {
     gulp.src(js_src_files)
         .pipe(concat('meshviewer-all.min.js'))

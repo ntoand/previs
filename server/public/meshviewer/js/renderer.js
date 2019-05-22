@@ -108,7 +108,7 @@ var PrevisMeshRenderer = (function () {
 	    if(preset && preset !== 'default') {
 	    	filename = 'mesh_' + preset + '.json';
 	    }
-	    xmlreq.open("GET", "data/tags/" + gTag + "/mesh_result/" + filename);
+	    xmlreq.open("GET", "data/tags/" + gDir + "/mesh_result/" + filename);
 	    xmlreq.send();
 	};
 	
@@ -137,7 +137,7 @@ var PrevisMeshRenderer = (function () {
 	
 	PrevisMeshRenderer.prototype._loadMeshObject = function(group, data, groupName, modelName) {
 		var scope = this;
-		var path =  "data/tags/" + gTag + "/mesh_result/" + groupName + "/";
+		var path =  "data/tags/" + gDir + "/mesh_result/" + groupName + "/";
 		var objLoader = new THREE.OBJLoader2();
 		showMessage('Loading model ' + modelName, true);
 		

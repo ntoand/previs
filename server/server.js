@@ -323,7 +323,7 @@ function saveMeshParams(socket, data)
 	if(preset && preset !== 'default') {
 		filename = 'mesh_' + preset + '.json';
 	}
-	var jsonfile = config.tags_data_dir + data.tag + '/mesh_result/' + filename;
+	var jsonfile = config.tags_data_dir + data.dir + '/mesh_result/' + filename;
 	fs.writeFile(jsonfile, data.jsonStr, function(err) {
 		if(err) {
 			console.log("Error: " + err);

@@ -5,6 +5,7 @@ var socket = io();
 // ======== ARGUMENTS ======
 var url = new URL(window.location.href);
 var gTag = url.searchParams.get("tag");
+var gDir = null;
 console.log(window.location);
 console.log("Tag:" + gTag);
 
