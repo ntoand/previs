@@ -191,6 +191,41 @@ app.get('/rest/info', function (req, res) {
 	});
 });
 
+app.post('/rest/info', function (req, res) {
+	var tag = req.body.tag;
+	var password = req.body.password;
+	if(!tag) {
+		res.setHeader('Content-Type', 'application/json');
+		res.send(JSON.stringify({ status: "error", result: "no tag provided" }, null, 4));
+		return;
+	}
+	console.log('/rest/info POST ' + tag);
+	fbmanager.getTag(tag, function(err, info) { 
+		//console.log(info);
+		if(err || !info) {
+			console.log(err);
+			res.setHeader('Content-Type', 'application/json');
+    		res.send(JSON.stringify({ status: "error", result: "cannot get info" }, null, 4));
+    		return;
+		}
+		if(info.password) {
+			if(!password || password === '') {
+				res.setHeader('Content-Type', 'application/json');
+				res.send(JSON.stringify({ status: "error", code: "101", result: "password is required" }, null, 4));
+				return;
+			}
+			if(info.password !== password) {
+				res.setHeader('Content-Type', 'application/json');
+				res.send(JSON.stringify({ status: "error", code: "102", result: "incorrect password" }, null, 4));
+				return;
+			}
+			info.password = "******";
+		}
+		res.setHeader('Content-Type', 'application/json');
+		res.send(info);
+	});
+});
+
 app.get('*', function(req, res) {
     res.redirect('/');
 });

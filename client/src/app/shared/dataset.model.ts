@@ -9,6 +9,7 @@ export class Dataset {
   viewUrl: string;
   qrUrl: string;
   note: string;
+  password: string;
   
   constructor() { 
     this.clear();
@@ -23,6 +24,7 @@ export class Dataset {
     this.viewUrl = '';
     this.qrUrl = '';
     this.note = '';
+    this.password = '';
   }
 
   parseResult(data) {
@@ -77,6 +79,11 @@ export class Dataset {
       this.note = result.note;
     else
       this.note = '';
+
+    if(result.password !== undefined && result.password !== null)
+      this.password = result.password;
+    else
+      this.password = '';
     
   }
   

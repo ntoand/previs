@@ -93,13 +93,14 @@ function deleteTags(io, data) {
 
 function updateTag(io, data) {
     var tag = data.tag;
+    var type = data.type || '';
     var updatedata = data.data;
     
     data.db.updateTag(tag, updatedata, function(err) {
         if (err) 
-            myutils.packAndSend(io, 'adminupdatetag', {status: 'error', result: err});
+            myutils.packAndSend(io, 'adminupdatetag', {status: 'error', type: type, result: err});
     	else 
-    	    myutils.packAndSend(io, 'adminupdatetag', {status: 'done', result: {tag: tag, data: updatedata}});
+    	    myutils.packAndSend(io, 'adminupdatetag', {status: 'done', type: type, result: {tag: tag, data: updatedata}});
     });
 }
 
