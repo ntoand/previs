@@ -111,7 +111,8 @@ export class ReviewComponent implements OnInit {
   
   onDeleteTag($event, childtag) {
     //console.log(childtag);
-    const tag = $event;
+    const tag = $event.tag;
+    const dir = $event.dir;
     if(tag !== childtag)
       return;
   
@@ -123,7 +124,7 @@ export class ReviewComponent implements OnInit {
 
     dialogRef.afterClosed().subscribe(result => {
       if (result === true) {
-          this.appService.sendMsg({action: 'admindeletetags', data: {tags: [{tag:tag, userId: this.authService.userDetails.uid}]}});
+          this.appService.sendMsg({action: 'admindeletetags', data: {tags: [{tag:tag, dir: dir, userId: this.authService.userDetails.uid}]}});
       }
     });
   }

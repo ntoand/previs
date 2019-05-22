@@ -36,8 +36,8 @@ export class TagDetailComponent implements OnInit {
     this.passwordStr = changes.dataset.currentValue.password;
   }
   
-  onDeleteTag(tag) {
-    this.deleteTagEvent.emit(tag);
+  onDeleteTag(tag, dir) {
+    this.deleteTagEvent.emit({tag: tag, dir: dir});
   }
   
   // note

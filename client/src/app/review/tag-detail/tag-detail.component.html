@@ -17,8 +17,8 @@
         <div *ngIf='passwordEditMode === false'> Password: 
           <span *ngIf='passwordShowMode === true'>{{passwordStr}} </span>
           <span *ngIf='passwordShowMode === false && passwordStr.length > 0'>******* </span>
-          <a *ngIf='passwordShowMode === false && passwordStr.length > 0' href="#" (click)="onPasswordToggleShow($event)"><mat-icon class="small-button">visibility</mat-icon></a> 
-          <a *ngIf='passwordShowMode === true && passwordStr.length > 0' href="#" (click)="onPasswordToggleShow($event)"><mat-icon class="small-button">visibility_off</mat-icon></a> 
+          <button *ngIf='passwordShowMode === false && passwordStr.length > 0' (click)="onPasswordToggleShow($event)">show</button> 
+          <button *ngIf='passwordShowMode === true && passwordStr.length > 0' (click)="onPasswordToggleShow($event)">hide</button> 
           <button (click)="onPasswordEnableEdit($event)">edit</button> 
         </div>
         <div *ngIf='passwordEditMode === true'>
@@ -34,6 +34,6 @@
   <mat-card-actions>
     <a href={{dataset.viewUrl}} target="_blank"><button mat-button color='primary'>VIEW WEB</button></a>
     <a href={{dataset.qrUrl}} target="_blank"><button mat-button color='primary'>QR</button></a>
-    <button mat-button color='warn' (click)="onDeleteTag(dataset.tag)">DELETE</button>
+    <button mat-button color='warn' (click)="onDeleteTag(dataset.tag, dataset.dir)">DELETE</button>
   </mat-card-actions>
 </mat-card>

@@ -9,13 +9,14 @@ var execSync	= require('child_process').execSync;
 var myutils 	= require('./node-utils');
 var config		= require('./node-config').config; 
 var extract 	= require('extract-zip');
+var crypto = require('crypto');
 
 function processUpload(io, data) {
 	
 	console.log('processUpload', data);
 	var file = data.file;
-	var filepath = config.tags_data_dir + file;
-	var datatype = data.datatype;
+	//var filepath = config.tags_data_dir + file;
+	//var datatype = data.datatype;
 	var uploadtype = data.uploadtype;
 	
 	if (uploadtype === 'local') {
@@ -146,7 +147,8 @@ function processUploadFile(io, data) {
 			return;
 		}
 		data.tag = tag_str;
-		data.tagdir = config.tags_data_dir + tag_str;
+		data.dir = tag_str + '_' + crypto.randomBytes(3).toString('hex');
+		data.tagdir = config.tags_data_dir + data.dir;
 		data.inputfile = data.tagdir + '/' + datatype + '.' + fileext;
 		data.inputfilename = datatype;
 		data.inputfileext = fileext;
@@ -213,10 +215,8 @@ function processUploadFile_Meshes(io, data) {
 	console.log(data);
 	
 	myutils.packAndSend(io, 'processupload', {status: 'working', result: 'Processing meshes...'});
-	var filename = data.file;
 	var inputfile = data.inputfile;
-	var inputfilename = data.inputfilename;
-
+	
 	var out_dir = data.tagdir + '/mesh_result';
 	var cmd = 'cd ' + config.scripts_dir + ' && python processmesh.py -i ' + inputfile + ' -o ' + out_dir;
 	console.log(cmd);
@@ -320,20 +320,22 @@ function processUploadFile_Images(io, data) {
 		var outputimages = JSON.parse(stdout);
 		
 		//save to database
-		var tag_url = 'data/tags/' + data.tag + '/';
+		//var tag_url = 'data/tags/' + data.dir + '/';
 		var tag_json = {};
 		tag_json.tag=data.tag;
+		tag_json.dir=data.dir;
 		tag_json.type=data.datatype;
 		tag_json.source=data.uploadtype;
 		tag_json.date=Date.now();
-		tag_json.data = tag_url + data.inputfilename + data.inputfileext;
-		tag_json.processedData = 'data/tags/' + data.tag + '/image_processed.zip';
+		//tag_json.data = tag_url + data.inputfilename + data.inputfileext;
+		tag_json.processedData = 'data/tags/' + data.dir + '/image_processed.zip';
 		tag_json.userId = data.userDetails.uid;
 		tag_json.userEmail = data.userDetails.email;
 			
 		var volumes = [];
 		var volume = {};
-		volume.data_dir = tag_url + 'image_result';
+		//volume.data_dir = tag_url + 'image_result';
+		volume.subdir = 'image_result';
 		volume.images = outputimages;
 		volume.res = [outputimages.length];
 		volumes.push(volume);
@@ -433,12 +435,12 @@ function sendViewDataToClient(io, data) {
 	var jsonfile_web = data.tagdir + '/'  + basename + '_result/vol_web.json';
 	var jsontemp = path.dirname(process.mainModule.filename) + '/src/template.json';
 
-	var tag_url = 'data/tags/' + data.tag + '/';
-	var jsonurl_full = tag_url + basename + '_result/vol_full.json';
-	var jsonurl_web = tag_url + basename + '_result/vol_web.json';
-	var thumburl = tag_url + basename + '_result/vol_web_thumb.png';
-	var pngurl = tag_url + basename + '_result/vol_web.png';
-	var xrwurl = tag_url + basename + '_result/vol.xrw';
+	var tag_url = 'data/tags/' + data.dir + '/';
+	//var jsonurl_full = tag_url + basename + '_result/vol_full.json';
+	//var jsonurl_web = tag_url + basename + '_result/vol_web.json';
+	//var thumburl = tag_url + basename + '_result/vol_web_thumb.png';
+	//var pngurl = tag_url + basename + '_result/vol_web.png';
+	//var xrwurl = tag_url + basename + '_result/vol.xrw';
 
 	fs.readFile(jsontemp, 'utf8', function (err, jsondata) {
 		if (err) {
@@ -472,21 +474,23 @@ function sendViewDataToClient(io, data) {
 				// save to database
 				var tag_json = {};
 				tag_json.tag=data.tag;
+				tag_json.dir=data.dir;
 				tag_json.type='volume'
 				tag_json.source='localupload';
 				tag_json.date=Date.now();
-				tag_json.data = data.tagdir + '/' + data.inputfilename + '.' + data.inputfileext;
+				//tag_json.data = data.tagdir + '/' + data.inputfilename + '.' + data.inputfileext;
 				tag_json.userId = data.userDetails.uid;
 				tag_json.userEmail = data.userDetails.email;
 					
 				var volumes = [];
 				var volume = {};
-				volume.data_dir='data/local/' + basename + '_result';
-				volume.json=jsonurl_full;
-				volume.json_web=jsonurl_web;
-				volume.thumb=thumburl;
-				volume.png=pngurl;
-				volume.xrw=xrwurl;
+				//volume.data_dir='data/local/' + basename + '_result';
+				//volume.json=jsonurl_full;
+				//volume.json_web=jsonurl_web;
+				//volume.thumb=thumburl;
+				//volume.png=pngurl;
+				//volume.xrw=xrwurl;
+				volume.subdir='volume_result';
 				volume.res=obj_full.objects[0].volume.res;
 				volume.res_web=obj_web.objects[0].volume.res;
 				volumes.push(volume);
@@ -511,26 +515,28 @@ function sendViewDataToClient_Meshes(io, data) {
 	
 	var basename = data.inputfilename;
 
-	var tag_url = 'data/tags/' + data.tag + '/';
-	var jsonurl = tag_url + basename + '_result/mesh.json';
-	var initurl = tag_url + basename + '_result/init.script';
+	var tag_url = 'data/tags/' + data.dir + '/';
+	//var jsonurl = tag_url + basename + '_result/mesh.json';
+	//var initurl = tag_url + basename + '_result/init.script';
 
 	// write to database
 	var tag_json = {};
 	tag_json.tag=data.tag;
+	tag_json.dir=data.dir;
 	tag_json.type='mesh'
 	tag_json.source= data.uploadtype;
 	tag_json.date=Date.now();
-	tag_json.data = data.file;
-	tag_json.processedData = 'data/tags/' + data.tag + '/mesh_processed.zip';
+	//tag_json.data = data.file;
+	tag_json.processedData = 'data/tags/' + data.dir + '/mesh_processed.zip';
 	tag_json.userId = data.userDetails.uid;
 	tag_json.userEmail = data.userDetails.email;
 
 	var volumes = [];
 	var volume = {};
-	volume.data_dir=tag_url + basename + '_result';
-	volume.json=jsonurl;
-	volume.initscr = initurl;
+	//volume.data_dir=tag_url + basename + '_result';
+	//volume.json=jsonurl;
+	//volume.initscr = initurl;
+	volume.subdir = 'mesh_result';
 	volume.res = data.numobjects; //[0, 0, 0];
 	volumes.push(volume);
 	tag_json.volumes=volumes;
@@ -559,7 +565,7 @@ function convertPointcloud(io, data, in_file) {
 	var fileext = in_file.split('.').pop().toLowerCase();;
 	var out_dir = data.tagdir + '/' + basename + '_result';
 	var convert_out_dir = out_dir + '/pointclouds/potree'; // to be compatible with previous converter having output html page
-	var tag_url = 'data/tags/' + data.tag + '/';
+	var tag_url = 'data/tags/' + data.dir + '/';
 	
 	var cmd = '';
 	if (fileext === 'xyz' || fileext === 'txt') {
@@ -602,19 +608,21 @@ function convertPointcloud(io, data, in_file) {
 			//save to database
 			var tag_json = {};
 			tag_json.tag=data.tag;
+			tag_json.dir=data.dir;
 			tag_json.type='point'
 			tag_json.source='localupload';
 			tag_json.date=Date.now();
-			tag_json.data = tag_url + data.inputfilename + data.inputfileext;
-			tag_json.processedData = 'data/tags/' + data.tag + '/point_processed.zip';
+			//tag_json.data = tag_url + data.inputfilename + data.inputfileext;
+			tag_json.processedData = 'data/tags/' + data.dir + '/point_processed.zip';
 			tag_json.userId = data.userDetails.uid;
 			tag_json.userEmail = data.userDetails.email;
 				
 			var potree_url = tag_url + basename + '_result/potree.html';
 			var volumes = [];
 			var volume = {};
-			volume.data_dir = tag_url + basename + '_result';
-			volume.potree_url = potree_url;
+			//volume.data_dir = tag_url + basename + '_result';
+			//volume.potree_url = potree_url;
+			volume.subdir = 'point_result';
 			volume.res = [numpoints];
 			volumes.push(volume);
 			tag_json.volumes=volumes;
@@ -636,8 +644,8 @@ function convertPointcloud(io, data, in_file) {
 }
 
 function saveDefaultPotreeSetting(data, callback) {
-	var tag = data.tag;
-	var destfile = config.tags_data_dir + tag + '/gigapoint.json';
+	var dir = data.dir;
+	var destfile = config.tags_data_dir + dir + '/gigapoint.json';
 	var jsonObj = {
 		version: 2,
 		dataDir: "potree",
@@ -662,7 +670,7 @@ function saveDefaultPotreeSetting(data, callback) {
 		cameraTarget: [0, 0, -2],
 		cameraUp: [0, 0, 1]
 	};
-	var cloudfile = config.tags_data_dir + tag + "/point_result/pointclouds/potree/cloud.js";
+	var cloudfile = config.tags_data_dir + dir + "/point_result/pointclouds/potree/cloud.js";
 	fs.readFile(cloudfile, 'utf8', function (err, data) {
 	    if (err) {
 	    	callback(err);
@@ -690,10 +698,10 @@ function saveDefaultPotreeSetting(data, callback) {
 
 // ==== for potree viewer ====
 function savePotreeSettings(io, data) {
-	var tag = data.Tag;
-	var destfile = config.tags_data_dir + tag + '/gigapoint.json';
+	var dir = data.Dir;
+	var destfile = config.tags_data_dir + dir + '/gigapoint.json';
 	if(data.Preset && data.Preset !== 'default') {
-		destfile = config.tags_data_dir + tag + '/gigapoint_' + data.Preset + '.json';
+		destfile = config.tags_data_dir + dir + '/gigapoint_' + data.Preset + '.json';
 	}
 	if(myutils.fileExists(destfile)) {
 		fs.unlinkSync(destfile);
@@ -746,11 +754,11 @@ function savePotreeSettings(io, data) {
 
 // for potree viewer
 function loadPotreeSettings(io, data) {
-	var tag = data.Tag;
+	var dir = data.Dir;
 	var preset = data.Preset;
-	var jsonfile = config.tags_data_dir + tag + '/gigapoint.json';
+	var jsonfile = config.tags_data_dir + dir + '/gigapoint.json';
 	if(preset && preset !== 'default') {
-		jsonfile = config.tags_data_dir + tag + '/gigapoint_' + preset + '.json';
+		jsonfile = config.tags_data_dir + dir + '/gigapoint_' + preset + '.json';
 	}
 	fs.readFile(jsonfile, 'utf8', function (err, data) {
 	    if (err) {
