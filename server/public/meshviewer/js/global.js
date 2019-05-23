@@ -9,9 +9,9 @@ var gDir = null;
 console.log(window.location);
 console.log("Tag:" + gTag);
 
-if(gTag === null || gTag === undefined) {
-    alert('Tag is not specified');
-    throw new Error("Tag is not specified!");
+if(gTag === null || gTag === undefined || gTag.length !== 6) {
+    alert('Tag is not specified or invalid');
+    throw new Error("Tag is not specified or invalid!");
 }
 
 var gPreset = url.searchParams.get("preset");

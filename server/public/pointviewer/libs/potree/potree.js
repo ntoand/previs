@@ -22541,12 +22541,10 @@ initSidebarCave = (viewer) => {
   var socket = io();
   
   //get tag
-  var url = new URL(window.location.href);
-  var tag = url.searchParams.get("tag");
-  var demo = tag.includes("000000_") ? true : false;
+  var demo = gTag.includes("000000_") ? true : false;
   var preset = url.searchParams.get("preset");
   if(preset === null || preset === undefined) preset = 'default';
-  console.log('initSidebarCave tag: ' + tag + ' preset: ' + preset);
+  console.log('initSidebarCave tag: ' + gTag + ' preset: ' + preset);
 
   // all color types
   var colorTypes = [
@@ -22593,7 +22591,7 @@ initSidebarCave = (viewer) => {
         material = pointcloud.material;
         initGui();
         buildGui();
-        socket.emit('getsavelist', { type: 'point', tag:  tag});
+        socket.emit('getsavelist', { type: 'point', tag:  gTag, dir: gDir});
       }                  
     }, 1000)
   }
@@ -22834,8 +22832,8 @@ initSidebarCave = (viewer) => {
   
   
   function loadSettings() {
-    console.log('loadSettings', tag,  gGui.obj.Preset);
-    socket.emit('loadpotreesettings', {Tag: tag, Preset: gGui.obj.Preset});
+    console.log('loadSettings', gTag, gGui.obj.Preset);
+    socket.emit('loadpotreesettings', {Tag: gTag, Dir: gDir, Preset: gGui.obj.Preset});
   }
 
 
@@ -22846,7 +22844,8 @@ initSidebarCave = (viewer) => {
     obj.CamTarget = viewer.scene.view.getPivot().toArray();
     
     //get tag
-    obj.Tag = tag;
+    obj.Tag = gTag;
+    obj.Dir = gDir;
     
     console.log(obj);
     
@@ -22947,7 +22946,7 @@ initSidebarCave = (viewer) => {
       setTimeout(hideMessage, 3000);
     }
     else if(data.status == "done") {
-      socket.emit('getsavelist', { type: 'point', tag:  tag});
+      socket.emit('getsavelist', { type: 'point', tag:  gTag, dir: gDir});
       
       $('#status').text("Saved succesfully!");
       info.show();
