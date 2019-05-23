@@ -176,19 +176,37 @@ app.post('/rest/adminlogin', function (req, res) {
 //url/info?tag=tag
 app.get('/rest/info', function (req, res) {
 	var tag = req.query.tag;
-	console.log(tag);
-	
-	fbmanager.getTag(tag, function(err, info) { 
-		console.log(info);
-		if(err || !info) {
-			console.log(err);
-			res.setHeader('Content-Type', 'application/json');
-    		res.send(JSON.stringify({ status: "error", result: "cannot get info" }, null, 4));
-    		return;
-		}
+	var key = req.query.key;
+	console.log(tag, key);
+	if(!key || !tag) {
 		res.setHeader('Content-Type', 'application/json');
-		res.send(info);
+		res.send(JSON.stringify({ status: "error", code: "100", result: "tag or api key is nor provided" }, null, 4));
+		return;
+	}
+
+	fbmanager.getKeyInfo(key, function(err, keydata) {
+		console.log(err);
+		console.log(keydata);
+		if(err) {
+			res.setHeader('Content-Type', 'application/json');
+			res.send(JSON.stringify({ status: "error", code: "100", result: "api key is nor provided or invalid" }, null, 4));
+			return;
+		}
+
+		fbmanager.getTag(tag, function(err, info) { 
+			console.log(info);
+			if(err || !info) {
+				console.log(err);
+				res.setHeader('Content-Type', 'application/json');
+				res.send(JSON.stringify({ status: "error", code: "100", result: "cannot get info" }, null, 4));
+				return;
+			}
+			if(info.password) info.password = "******";
+			res.setHeader('Content-Type', 'application/json');
+			res.send(info);
+		});
 	});
+	
 });
 
 app.post('/rest/info', function (req, res) {
@@ -196,7 +214,7 @@ app.post('/rest/info', function (req, res) {
 	var password = req.body.password;
 	if(!tag) {
 		res.setHeader('Content-Type', 'application/json');
-		res.send(JSON.stringify({ status: "error", result: "no tag provided" }, null, 4));
+		res.send(JSON.stringify({ status: "error", code: "100", result: "no tag provided" }, null, 4));
 		return;
 	}
 	console.log('/rest/info POST ' + tag);
@@ -205,7 +223,7 @@ app.post('/rest/info', function (req, res) {
 		if(err || !info) {
 			console.log(err);
 			res.setHeader('Content-Type', 'application/json');
-    		res.send(JSON.stringify({ status: "error", result: "cannot get info" }, null, 4));
+    		res.send(JSON.stringify({ status: "error", code: "100", result: "cannot get info" }, null, 4));
     		return;
 		}
 		if(info.password) {
