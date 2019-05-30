@@ -258,8 +258,10 @@ function processUploadFile_Photogrammetry(io, data) {
 			myutils.sendEmail('fail', data, {status: 'error', result: 'Processing photogrammetry images failed.', detail: stderr});
 			return;
 		}
-		myutils.packAndSend(io, 'processupload', {status: 'working', result: 'Processing photogrammetry...'});
+		myutils.packAndSend(io, 'processupload', {status: 'working', result: 'Processing photogrammetry...You will be notified via email when finished'+data.tag});
+		//myutils.packAndSend(io, 'processupload', {status: 'done', result: tag_json});
     });
+    //myutils.packAndSend(io, 'processupload', {status: 'done', result: "unknown"});
 }
 
 function processUploadFile_Points(io, data)
