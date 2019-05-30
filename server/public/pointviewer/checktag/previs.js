@@ -45,7 +45,7 @@ function checkAndLoadPrevisTag(tag, password, success, first=true) {
                     }
                 }
                 else {
-                    alert('unknown error');
+                    alert('Cannot get tag info');
                 }
             }
             else {

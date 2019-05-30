@@ -26,6 +26,7 @@ function checkAndLoadPrevisTag(tag, password, success, first=true) {
     http.onreadystatechange = function() {
         if(http.readyState == 4 && http.status == 200) {
             var data = JSON.parse(http.responseText);
+            console.log(data);
             if(data.status === 'error') {
                 if(data.code === '101' || data.code === '102') {
                     data.code === '102' ? askPassword("Error: incorrect password"): askPassword();
@@ -45,7 +46,7 @@ function checkAndLoadPrevisTag(tag, password, success, first=true) {
                     }
                 }
                 else {
-                    alert('unknown error');
+                    alert('Cannot get tag info');
                 }
             }
             else {

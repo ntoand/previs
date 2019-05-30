@@ -96,6 +96,7 @@ var buildGui = function() {
 		Preset: gPreset,
 		saveSettings: saveSettings,
 		saveSettingsAs: saveSettingsAs,
+		cameraControl: cameraControlList[0],
 		views: {
 			background: json.views.backgroundColour,
 			centreObjects: centreObjects,
@@ -119,6 +120,11 @@ var buildGui = function() {
 	
 	gui.add(obj, 'saveSettings').name('Save');
 	gui.add(obj, 'saveSettingsAs').name('Save as');
+
+	var cameraControl = gui.add(obj, 'cameraControl', cameraControlList).name('Camera Control').listen();
+	cameraControl.onFinishChange(function(value) {
+		app.switchCameraControl(value);
+	});
 	
 	var views = gui.addFolder("Views");
 	console.log(obj.views);

@@ -24,6 +24,7 @@ if(gPreset === null || gPreset === undefined) {
 var gGui = null;
 var hPreset = null;
 var presetList = ['default'];
+var cameraControlList = ['Orbit control', 'Fly control'];
 
 // ===== END PARAMETERS ====
 
