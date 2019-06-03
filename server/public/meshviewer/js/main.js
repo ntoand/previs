@@ -27,7 +27,7 @@ socket.on('savemeshjson', function(data) {
     console.log('savemeshjson');
     console.log(data);
     if(data.status == "error") {
-        showMessage('Can not save view parameters for examples - aborting!');
+        showMessage('Can not save view parameters!');
         setTimeout(resetMessage, 4000);
     }
     else {
@@ -54,7 +54,7 @@ var saveSettings = function() {
       up: app.camera.up.toArray()
     };
     json.views.camera = camSettings;
-    socket.emit('savemeshjson', {tag: gTag, preset: gPreset, jsonStr: JSON.stringify(json, null, 4)});	
+    socket.emit('savemeshjson', {tag: gTag, dir: gDir, preset: gPreset, jsonStr: JSON.stringify(json, null, 4)});	
 }
 
 function saveSettingsAs() {
@@ -71,7 +71,7 @@ function saveSettingsAs() {
     
     gPreset = preset;
     saveSettings();
-    socket.emit('getsavelist', { type: 'mesh', tag:  gTag});
+    socket.emit('getsavelist', { type: 'mesh', tag:  gTag, dir: gDir});
 }
 
 var loadSettings = function() {
@@ -96,6 +96,7 @@ var buildGui = function() {
 		Preset: gPreset,
 		saveSettings: saveSettings,
 		saveSettingsAs: saveSettingsAs,
+		cameraControl: cameraControlList[0],
 		views: {
 			background: json.views.backgroundColour,
 			centreObjects: centreObjects,
@@ -119,6 +120,11 @@ var buildGui = function() {
 	
 	gui.add(obj, 'saveSettings').name('Save');
 	gui.add(obj, 'saveSettingsAs').name('Save as');
+
+	var cameraControl = gui.add(obj, 'cameraControl', cameraControlList).name('Camera Control').listen();
+	cameraControl.onFinishChange(function(value) {
+		app.switchCameraControl(value);
+	});
 	
 	var views = gui.addFolder("Views");
 	console.log(obj.views);
@@ -185,14 +191,6 @@ var buildGui = function() {
 
 window.addEventListener( 'resize', resizeWindow, false );
 
-console.log( 'Starting initialisation phase...' );
-app.initGL();
-app.resizeDisplayGL();
-app.initContent( gPreset, function() {
-	buildGui();
-	socket.emit('getsavelist', { type: 'mesh', tag:  gTag});
-});
-
 socket.on('getsavelist', function(data) {
     if(data.status === 'error') {
     	showMessage("Error! Cannot get save list");
@@ -204,5 +202,16 @@ socket.on('getsavelist', function(data) {
     }
 });
 
-// kick off main loop
-render();
+checkAndLoadPrevisTag(gTag, "", function(info) {
+	console.log("success: now can load data", info);
+	console.log( 'Starting initialisation phase...' );
+	gDir = info.dir || gTag;
+	app.initGL();
+	app.resizeDisplayGL();
+	app.initContent( gPreset, function() {
+		buildGui();
+		socket.emit('getsavelist', { type: 'mesh', tag:  gTag});
+	});
+	// kick off main loop
+	render();
+});

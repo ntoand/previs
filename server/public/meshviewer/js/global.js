@@ -5,12 +5,13 @@ var socket = io();
 // ======== ARGUMENTS ======
 var url = new URL(window.location.href);
 var gTag = url.searchParams.get("tag");
+var gDir = null;
 console.log(window.location);
 console.log("Tag:" + gTag);
 
 if(gTag === null || gTag === undefined) {
-    alert('Tag is not specified');
-    throw new Error("Tag is not specified!");
+    alert('Tag is not specified or invalid');
+    throw new Error("Tag is not specified or invalid!");
 }
 
 var gPreset = url.searchParams.get("preset");
@@ -23,6 +24,7 @@ if(gPreset === null || gPreset === undefined) {
 var gGui = null;
 var hPreset = null;
 var presetList = ['default'];
+var cameraControlList = ['Orbit control', 'Fly control'];
 
 // ===== END PARAMETERS ====
 

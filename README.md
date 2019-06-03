@@ -83,6 +83,12 @@ or
 
 ## Change log
 
+### v0.8.0
+
+- Using secret dir to access data instead of tag
+- Add password protection for datasets
+- Metadata is simplified
+
 ### v0.6.1
 
 - Upgrade client web app from Angular 6 to Angular 7

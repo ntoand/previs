@@ -25,6 +25,7 @@ export class ReviewComponent implements OnInit {
   
   datasets: Dataset[] = [];
   noteStrPrev = '';
+  passwordStrPrev = '';
   
   ngOnInit() {
     this.appService.setMenuIdx(2);
@@ -81,12 +82,13 @@ export class ReviewComponent implements OnInit {
         if(msg.data.status === 'error') {
           this.message.type = 'error';
           this.message.content = 'failed to update tag';
-          this.updateTagNote(msg.data.result.tag, this.noteStrPrev);
+          this.updateTagNote(msg.data.result.tag, msg.data.type, this.noteStrPrev, this.passwordStrPrev);
           return;
         }
         const tag = msg.data.result.tag;
-        const note = msg.data.result.data.note;
-        this.updateTagNote(tag, note);
+        const note = msg.data.result.data.note || '';
+        const password = msg.data.result.data.password || ''; 
+        this.updateTagNote(tag, msg.data.type, note, password);
         this.message.type = 'success';
         this.message.content = 'Updated note for tag ' + tag;
       }
@@ -109,7 +111,8 @@ export class ReviewComponent implements OnInit {
   
   onDeleteTag($event, childtag) {
     //console.log(childtag);
-    const tag = $event;
+    const tag = $event.tag;
+    const dir = $event.dir;
     if(tag !== childtag)
       return;
   
@@ -121,7 +124,7 @@ export class ReviewComponent implements OnInit {
 
     dialogRef.afterClosed().subscribe(result => {
       if (result === true) {
-          this.appService.sendMsg({action: 'admindeletetags', data: {tags: [{tag:tag, userId: this.authService.userDetails.uid}]}});
+          this.appService.sendMsg({action: 'admindeletetags', data: {tags: [{tag:tag, dir: dir, userId: this.authService.userDetails.uid}]}});
       }
     });
   }
@@ -130,15 +133,21 @@ export class ReviewComponent implements OnInit {
     //console.log(childtag);
     if($event.tag !== childtag)
       return;
-      
-    this.noteStrPrev = $event.noteStrPrev;
-    this.appService.sendMsg({action: 'adminupdatetag', data: {tag: $event.tag, data: {note: $event.noteStr}}});
+    
+    if($event.type === 'note') {
+      this.noteStrPrev = $event.noteStrPrev;
+      this.appService.sendMsg({action: 'adminupdatetag', data: {tag: $event.tag, type: 'note', data: {note: $event.noteStr}}});
+    }
+    else if($event.type === 'password') {
+      this.passwordStrPrev = $event.passwordStrPrev;
+      this.appService.sendMsg({action: 'adminupdatetag', data: {tag: $event.tag, type: 'password', data: {password: $event.passwordStr}}});
+    }
   }
   
-  updateTagNote(tag, note) {
+  updateTagNote(tag, type, note, password) {
     for(var i=0; i < this.datasets.length; i++) {
       if(this.datasets[i].tag === tag) {
-        this.datasets[i].note = note;
+        type === 'note' ? this.datasets[i].note = note : this.datasets[i].password = password;
         break;
       }
     }

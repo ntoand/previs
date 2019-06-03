@@ -21,6 +21,7 @@ var PrevisMeshRenderer = (function () {
 		this.camera = null;
 		this.cameraTarget = this.cameraDefaults.posCameraTarget;
 
+		this.clock = new THREE.Clock();
 		this.controls = null;
 		
 		// data
@@ -33,6 +34,7 @@ var PrevisMeshRenderer = (function () {
 		this.numberOfModels;
 		this.modelCount = 0;
 		this.axis = null; //axes, grid
+		this.maxModelSize = 1;
 	}
 
 	PrevisMeshRenderer.prototype.initGL = function () {
@@ -48,7 +50,7 @@ var PrevisMeshRenderer = (function () {
 		this.camera = new THREE.PerspectiveCamera( this.cameraDefaults.fov, this.aspectRatio, this.cameraDefaults.near, this.cameraDefaults.far );
 		this.resetCamera();
 		this.controls = new THREE.TrackballControls( this.camera, this.renderer.domElement );
-
+		
 		//var ambientLight = new THREE.AmbientLight( 0x808088 );
 		//var directionalLight1 = new THREE.DirectionalLight( 0xC0C090 );
 		//var directionalLight2 = new THREE.DirectionalLight( 0xC0C090 );
@@ -108,7 +110,7 @@ var PrevisMeshRenderer = (function () {
 	    if(preset && preset !== 'default') {
 	    	filename = 'mesh_' + preset + '.json';
 	    }
-	    xmlreq.open("GET", "data/tags/" + gTag + "/mesh_result/" + filename);
+	    xmlreq.open("GET", "data/tags/" + gDir + "/mesh_result/" + filename);
 	    xmlreq.send();
 	};
 	
@@ -137,7 +139,7 @@ var PrevisMeshRenderer = (function () {
 	
 	PrevisMeshRenderer.prototype._loadMeshObject = function(group, data, groupName, modelName) {
 		var scope = this;
-		var path =  "data/tags/" + gTag + "/mesh_result/" + groupName + "/";
+		var path =  "data/tags/" + gDir + "/mesh_result/" + groupName + "/";
 		var objLoader = new THREE.OBJLoader2();
 		showMessage('Loading model ' + modelName, true);
 		
@@ -230,6 +232,7 @@ var PrevisMeshRenderer = (function () {
 	    
 	    var ml = Math.max(Math.abs(scope.bbox.max.x - scope.bbox.min.x), Math.abs(scope.bbox.max.y - scope.bbox.min.y));
 		ml = Math.max(ml, Math.abs(scope.bbox.max.z - scope.bbox.min.z));
+		scope.maxModelSize = ml;
 		console.log(ml);
 		
 	    //this.axis = new THREE.GridHelper( 5*ml, 50, 0xFF4444, 0xbbbbbb );
@@ -374,9 +377,25 @@ var PrevisMeshRenderer = (function () {
 		this.camera.updateProjectionMatrix();
 	};
 
+	PrevisMeshRenderer.prototype.switchCameraControl = function(type) {
+		var scope = this;
+		if(type === 'Fly control') {
+			this.controls = new THREE.FlyControls( this.camera, this.renderer.domElement );
+			let camControls = this.controls;
+			camControls.movementSpeed = Math.max(scope.maxModelSize/4, 1);
+			camControls.rollSpeed = 0.25;
+			camControls.dragToLook = true;
+			camControls.autoForward = false;
+		}
+		else {
+			this.controls = new THREE.TrackballControls( this.camera, this.renderer.domElement );
+		}
+	}
+
 	PrevisMeshRenderer.prototype.render = function () {
 		if ( ! this.renderer.autoClear ) this.renderer.clear();
-		this.controls.update();
+		var delta = this.clock.getDelta();
+		this.controls.update(delta);
 		this.renderer.render( this.scene, this.camera );
 	};
 

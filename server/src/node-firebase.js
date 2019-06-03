@@ -147,6 +147,17 @@ FirebaseManager.prototype.updateTag = function(tag, data, callback) {
     });
 }
 
+FirebaseManager.prototype.setTag = function(tag, data, callback) {
+    var tagRef = this.db.collection('tags').doc(tag);
+    tagRef.set(data)
+    .then(doc => {
+        callback(null);
+    })
+    .catch(err => {
+        callback(err);
+    });
+}
+
 FirebaseManager.prototype.getKeyInfo = function(key, callback) {
     var ref = this.db.collection('keys').where('key','==',key);
     ref.get().then(querySnapshot => {

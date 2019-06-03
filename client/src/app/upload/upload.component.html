@@ -13,6 +13,7 @@
           <mat-radio-button class="type-radio-button" value="mesh">Mesh</mat-radio-button>
           <mat-radio-button class="type-radio-button" value="point">Pointcloud</mat-radio-button>
           <mat-radio-button class="type-radio-button" value="image">Image</mat-radio-button>
+          <mat-radio-button *ngIf=photogrammetryEnabled class="type-radio-button" value="photogrammetry">Photogrammetry</mat-radio-button>
         </mat-radio-group>
     </div>
     
@@ -100,6 +101,19 @@
             <li>images/image01.tif</li>
             <li>images/image02.png</li>
           </ul>
+        </details>
+      </div>
+      
+      <div *ngIf="dataType === 'photogrammetry'">
+        <details>
+          <summary>
+            Upload a zip with photogrammetry images
+          </summary>
+          <p>
+            <li>A .zip file containing photogrammetry images</li>
+            
+          </p>
+         
         </details>
       </div>
       

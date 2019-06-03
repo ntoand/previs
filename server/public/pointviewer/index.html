@@ -14,7 +14,8 @@
 	<link rel="stylesheet" type="text/css" href="libs/spectrum/spectrum.css">
 	<link rel="stylesheet" type="text/css" href="libs/jstree/themes/mixed/style.css">
 	<link rel="stylesheet" type="text/css" href="libs/dat.gui/dat.gui.css">
-	
+	<link rel="stylesheet" type="text/css" href="checktag/previs.css">
+
 	<style>
 		.toolbox {
 		  z-index: 2000;
@@ -57,45 +58,68 @@
 	<script src="libs/potree/potree.js"></script>
 	<script src="libs/plasio/js/laslaz.js"></script>
 	<script src="libs/dat.gui/dat.gui.min.js"></script>
+	<script src="checktag/previs.js"></script>
 
 	<div class="potree_container" style="position: absolute; width: 100%; height: 100%; left: 0px; top: 0px; ">
 		<div id="potree_render_area"></div>
 		<div id="potree_sidebar_container"> </div>
 	</div>
 
+	<div id="passwordModalDialog" class="modal">
+		<div class="modal-content">
+				<p><b>Password is required to view the dataset</b></p>
+				<p id="password-status"></p>
+				<input type="password" id="password" name="password" minlength="8" required>
+				<button id="password-button">Submit</button>
+		</div>
+	</div>
+
 	<script>
+		$("#info").hide();
 	
 		var url = new URL(window.location.href);
-        var tag = url.searchParams.get("tag");
-        console.log(tag);
-        var dataloc = "data/tags/" + tag + "/point_result/pointclouds/potree/cloud.js";
+		var gTag = url.searchParams.get("tag");
+		var gDir = null;
+		console.log(gTag);
+		if(gTag === null || gTag === undefined) {
+			alert('Invalid tag');
+		}
+		else {
+			checkAndLoadPrevisTag(gTag, "", function(info) {
+				console.log("success: now can load data", info);
+				$("#info").show();
+				gDir = info.dir || info.tag;
+				var dataloc = "data/tags/" + gDir + "/point_result/pointclouds/potree/cloud.js";
 
-		window.viewer = new Potree.Viewer(document.getElementById("potree_render_area"));
+				window.viewer = new Potree.Viewer(document.getElementById("potree_render_area"));
+				viewer.setEDLEnabled(false);
+				viewer.setFOV(60);
+				viewer.setPointBudget(1*1000*1000);
+				viewer.loadSettingsFromURL();
+				viewer.setDescription("");
 
-		viewer.setEDLEnabled(false);
-		viewer.setFOV(60);
-		viewer.setPointBudget(1*1000*1000);
-		viewer.loadSettingsFromURL();
-
-		viewer.loadGUI(() => {
-			viewer.setLanguage('en');
-			$("#menu_tools").next().show();
-			$("#menu_clipping").next().show();
-		});
+				viewer.loadGUI(() => {
+					viewer.setLanguage('en');
+					$("#menu_appearance").next().show();
+					//$("#menu_tools").next().show();
+					//$("#menu_clipping").next().show();
+				});
 		
-		Potree.loadPointCloud(dataloc, "potree", e => {
-			let pointcloud = e.pointcloud;
-			let material = pointcloud.material;
-			viewer.scene.addPointCloud(pointcloud);
-			material.pointColorType = Potree.PointColorType.RGB; // any Potree.PointColorType.XXXX 
-			material.size = 1;
-			material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
-			material.shape = Potree.PointShape.SQUARE;
-			viewer.fitToScreen();
-		});
-		
+				Potree.loadPointCloud(dataloc, "potree", e => {
+					let pointcloud = e.pointcloud;
+					let material = pointcloud.material;
+					viewer.scene.addPointCloud(pointcloud);
+					material.pointColorType = Potree.PointColorType.RGB; // any Potree.PointColorType.XXXX 
+					material.size = 1;
+					material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
+					material.shape = Potree.PointShape.SQUARE;
+					viewer.fitToScreen();
+				});
+
+			});
+		}
+
 	</script>
-	
 	
   </body>
 </html>

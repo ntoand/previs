@@ -7,6 +7,7 @@ import { MytardisComponent } from './mytardis/mytardis.component';
 
 import { AuthService } from '../core/auth.service';
 import { LoginComponent } from '../login/login.component';
+import { environment } from '../../environments/environment';
 
 @Component({
   selector: 'app-upload',
@@ -32,6 +33,8 @@ export class UploadComponent implements OnInit {
   dataset: Dataset = new Dataset();
   
   navPath = "upload";
+
+  photogrammetryEnabled = environment.photogrammetry;
 
   constructor(private appService: AppService, public authService: AuthService) { }
 

@@ -176,15 +176,68 @@ app.post('/rest/adminlogin', function (req, res) {
 //url/info?tag=tag
 app.get('/rest/info', function (req, res) {
 	var tag = req.query.tag;
-	console.log(tag);
+	var key = req.query.key;
+	console.log(tag, key);
+	if(!key || !tag) {
+		res.setHeader('Content-Type', 'application/json');
+		res.send(JSON.stringify({ status: "error", code: "100", result: "tag or api key is nor provided" }, null, 4));
+		return;
+	}
+
+	fbmanager.getKeyInfo(key, function(err, keydata) {
+		console.log(err);
+		console.log(keydata);
+		if(err) {
+			res.setHeader('Content-Type', 'application/json');
+			res.send(JSON.stringify({ status: "error", code: "100", result: "api key is nor provided or invalid" }, null, 4));
+			return;
+		}
+
+		fbmanager.getTag(tag, function(err, info) { 
+			console.log(info);
+			if(err || !info) {
+				console.log(err);
+				res.setHeader('Content-Type', 'application/json');
+				res.send(JSON.stringify({ status: "error", code: "100", result: "cannot get info" }, null, 4));
+				return;
+			}
+			if(info.password) info.password = "******";
+			res.setHeader('Content-Type', 'application/json');
+			res.send(info);
+		});
+	});
 	
+});
+
+app.post('/rest/info', function (req, res) {
+	var tag = req.body.tag;
+	var password = req.body.password;
+	if(!tag) {
+		res.setHeader('Content-Type', 'application/json');
+		res.send(JSON.stringify({ status: "error", code: "100", result: "no tag provided" }, null, 4));
+		return;
+	}
+	console.log('/rest/info POST ' + tag);
 	fbmanager.getTag(tag, function(err, info) { 
-		console.log(info);
+		//console.log(info);
 		if(err || !info) {
 			console.log(err);
 			res.setHeader('Content-Type', 'application/json');
-    		res.send(JSON.stringify({ status: "error", result: "cannot get info" }, null, 4));
+    		res.send(JSON.stringify({ status: "error", code: "100", result: "cannot get info" }, null, 4));
     		return;
+		}
+		if(info.password) {
+			if(!password || password === '') {
+				res.setHeader('Content-Type', 'application/json');
+				res.send(JSON.stringify({ status: "error", code: "101", result: "password is required" }, null, 4));
+				return;
+			}
+			if(info.password !== password) {
+				res.setHeader('Content-Type', 'application/json');
+				res.send(JSON.stringify({ status: "error", code: "102", result: "incorrect password" }, null, 4));
+				return;
+			}
+			info.password = "******";
 		}
 		res.setHeader('Content-Type', 'application/json');
 		res.send(info);
@@ -288,7 +341,7 @@ function saveMeshParams(socket, data)
 	if(preset && preset !== 'default') {
 		filename = 'mesh_' + preset + '.json';
 	}
-	var jsonfile = config.tags_data_dir + data.tag + '/mesh_result/' + filename;
+	var jsonfile = config.tags_data_dir + data.dir + '/mesh_result/' + filename;
 	fs.writeFile(jsonfile, data.jsonStr, function(err) {
 		if(err) {
 			console.log("Error: " + err);
@@ -305,9 +358,9 @@ function saveMeshParams(socket, data)
 
 function getSaveList(socket, data)
 {
-	let tag = data.tag;
+	let tagdir = data.dir || data.tag;
 	let type = data.type; // volume, mesh, point
-	let dir = config.tags_data_dir + data.tag + '/';
+	let dir = config.tags_data_dir + tagdir + '/';
 	let options = {};
 	let list = ['default'];
 	
