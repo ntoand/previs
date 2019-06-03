@@ -2,6 +2,7 @@
 
 cd potree
 ./node_modules/gulp/bin/gulp.js build
+rollup -c rollup.config.js
 cd ..
 
 # run after build.sh

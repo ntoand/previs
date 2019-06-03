@@ -26,29 +26,29 @@
 
 
 :root{
-
+	
 	--color-0: 			rgba( 25, 40, 44, 1);
 	--color-1: 			rgba(122,129,132, 1);
 	--color-2: 			rgba( 57, 71, 75, 1);
 	--color-3: 			rgba( 45,109,130, 1);
 	--color-4: 			rgba( 16,143,185, 1);
-
+	
 	--bg-color:			var(--color-0);
 	--bg-color-2:		rgb(60, 80, 85);
 	--bg-light-color:	rgba( 48, 61, 65, 1);
 	--bg-dark-color:	rgba( 24, 31, 33, 1);
 	--bg-hover-color:	var(--color-2);
-
+	
 	--font-color:		#9AA1A4;
 	--font-color-2:		#ddd;
 	--font-color:		#cccccc;
 	--border-color:		black;
-
+	
 	--measurement-detail-node-bg-light:		var(--color-1);
 	--measurement-detail-node-bg-dark:		var(--color-2);
 	--measurement-detail-area-bg-color:		#eee;
 
-
+	
 }
 
 
@@ -82,7 +82,7 @@
 }
 
 .potree_message{
-	width: 300px;
+	width: 500px;
 	background-color: var(--bg-color);
 	padding: 5px;
 	margin: 5px;
@@ -92,13 +92,18 @@
 	opacity: 0.8;
 	border: 1px solid black;
 	display: flex;
+	overflow: auto;
+}
+
+.potree_message_error{
+	background-color: red;
 }
 
 #potree_description{
-	position: absolute;
-	top: 10px;
-	left: 50%;
-	transform: translateX(-50%);
+	position: absolute; 
+	top: 10px; 
+	left: 50%; 
+	transform: translateX(-50%); 
 	text-align: center;
 	z-index:	1000;
 }
@@ -112,7 +117,6 @@
 	font-size:	85%;
 	overflow: 	hidden;
 	border-right:	1px solid black;
-	left: 0px;
 	display: none;
 }
 
@@ -137,7 +141,7 @@
 	height:			2.5em;
 	z-index:		100;
 	cursor: 		pointer;
-	display: none;
+	display: 		none;
 }
 
 #potree_map_toggle{
@@ -160,8 +164,7 @@
 	left: 		0px;
 	right: 		0px;
 	overflow: 	hidden;
-	/* z-index: 	1; */
-	z-index: 0;
+	z-index: 	1;
 	-webkit-transition: left .35s;
 	transition: left .35s;
 }
@@ -200,7 +203,7 @@ a:hover, a:visited, a:link, a:active{
 	margin:			auto;
 	display:		table;
 	padding:		1px 8px;
-	cursor: 	pointer;
+	cursor: 		pointer;
 }
 
 .annotation-expand{
@@ -226,7 +229,7 @@ a:hover, a:visited, a:link, a:active{
 	width:			24px;
 	height:			24px;
 	cursor: 		pointer;
-
+	
 }
 
 .annotation-item {
@@ -286,7 +289,7 @@ a:hover, a:visited, a:link, a:active{
 	margin:			0px 0px 8px 8px;
 }
 
-
+	
 .annotation-description-content{
 	color:			white;
 }
@@ -300,13 +303,13 @@ a:hover, a:visited, a:link, a:active{
 }
 
 
-canvas {
-	width: 100%;
-	height: 100%
+canvas { 
+	width: 100%; 
+	height: 100% 
 }
 
-body{
-	margin: 	0;
+body{ 
+	margin: 	0; 
 	padding: 	0;
 	position:	absolute;
 	width: 		100%;
@@ -376,7 +379,7 @@ body{
 
 .pv-panel-heading{
 	padding: 	4px !important;
-	display: 	flex;
+	display: 	flex; 
 	flex-direction: row
 }
 
@@ -384,6 +387,7 @@ body{
 	list-style-type:	none;
 	padding:			0;
 	margin:				15px 0px;
+	overflow:			hidden;
 }
 
 .pv-menu-list > *{
@@ -532,12 +536,12 @@ body{
 	display: 		block;
 	text-align: 	center;
 	overflow: 		hidden;
-	white-space: 	nowrap;
+	white-space: 	nowrap; 
 	font-weight:	bold;
 	font-size:		90%;
 	letter-spacing:	1px;
-	margin-left:	-20px;
-	margin-right:	-20px;
+	margin-left:	0px;
+	margin-right:	0px;
 	margin-top: 	1px;
 	margin-bottom: 	1px;
 	padding:		1px !important;
@@ -598,9 +602,9 @@ body{
 }
 
 .input-grid-label{
-	flex-grow: 1;
-	margin: 0px 3px 0px 3px;
-	text-align:center;
+	flex-grow: 1; 
+	margin: 0px 3px 0px 3px; 
+	text-align:center; 
 	font-weight: bold;
 }
 
@@ -645,7 +649,7 @@ body{
 
 
 
-/**
+/** 
  * OVERRIDES
  */
 
@@ -686,4 +690,88 @@ body{
 	position: absolute;
 	height: 100%;
 	width: 100%;
+}
+
+
+
+
+.zs_widget{
+	padding: 2px;
+	height: 4em;
+	user-select: none;
+}
+.zs_core{
+	overflow: hidden;
+	position: relative;
+	height: 100%;
+}
+.zs_handle{
+	position: absolute;
+	top: 0px;
+	bottom: 0px;
+	border: 1px solid black;
+	border-radius: 3px;
+	background-color: rgb(166, 169, 170);
+	width: 8px;
+	user-select: none;
+	width: 1.2em;
+	height: 1.2em;
+	top: calc(50% - 0.6em);
+}
+.zs_stretch{
+	position: absolute;
+	top: 0px;
+	bottom: 0px;
+	border: 1px solid black;
+	border-radius: 3px;
+	background-color: rgb(166, 169, 170);
+	width: 8px;
+	user-select: none;
+	width: 1.2em;
+	height: 1.2em;
+	top: calc(50% - 0.6em);
+	color: black;
+	font-weight: bold;
+	font-size: 1.2em;
+	font-family: arial;
+}
+.zs_handle:hover{
+	background-color: lightgreen;
+}
+.zs_inside{
+	position: absolute !important;
+	width: 100%;
+	border: 1px solid black;
+	background-color: white;
+	top: calc(50% - 0.326em);
+	height: 0.652em;
+	cursor: zoom-in;
+}
+.zs_outside{
+	position: absolute !important;
+	width: 100%;
+	background-color: var(--color-1) !important;
+	top: calc(50% - 0.326em);
+	height: 0.652em;
+	cursor: zoom-in;
+}
+.zs_visible_range_label{
+	position: absolute;
+	bottom: 0px;
+	pointer-events:none;
+}
+.zs_visible_range_label_left{
+	left: 0px;
+}
+.zs_visible_range_label_right{
+	right: 0px;
+}
+.zs_chosen_range_label{
+	position: absolute;
+	pointer-events:none;
+}
+
+
+.dg.ac {
+	z-index: 2000 !important;
 }
