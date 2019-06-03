@@ -3,17 +3,17 @@ var config	= require('./node-config').config;
 const fbadmin = require("firebase-admin");
 
 // Constructor
-function FilebaseManager() {
+function FirebaseManager() {
     var serviceAccount = null;
     var dburl = null;
     if (process.env.NODE_ENV === "production")  {
         serviceAccount = require(config.firebase_service_acc_key);
-        dburl = "https://previs2018.firebaseio.com";
+        dburl = config.firebase_db_url;
         console.log("Production firebase key " + config.firebase_service_acc_key);
     }
     else {
         serviceAccount = require(config.firebase_service_acc_key_dev);
-        dburl = "https://previs-dev.firebaseio.com"
+        dburl = config.firebase_db_url;
         console.log("Development firebase key " + config.firebase_service_acc_key_dev);
     }
             
@@ -25,7 +25,7 @@ function FilebaseManager() {
 }
 
 // class methods
-FilebaseManager.prototype.createNewTag = function(callback) {
+FirebaseManager.prototype.createNewTag = function(callback) {
     
     var self = this;
     
@@ -46,19 +46,19 @@ FilebaseManager.prototype.createNewTag = function(callback) {
     });
 }
 
-FilebaseManager.prototype.insertNewTag = function(tagdata, callback) {
+FirebaseManager.prototype.insertNewTag = function(tagdata, callback) {
     var docRef = this.db.collection('tags').doc(tagdata.tag);
     var setAda = docRef.set(tagdata);
     callback(null, setAda);
 }
 
-FilebaseManager.prototype.addNewTag = function(tag, data, callback) {
+FirebaseManager.prototype.addNewTag = function(tag, data, callback) {
     var docRef = this.db.collection('tags').doc(tag);
     var setAda = docRef.set(data);
     callback(null, setAda);
 }
 
-FilebaseManager.prototype.getTag = function(tag, callback) {
+FirebaseManager.prototype.getTag = function(tag, callback) {
     
     var tagRef = this.db.collection('tags').doc(tag);
     var getDoc = tagRef.get()
@@ -77,7 +77,7 @@ FilebaseManager.prototype.getTag = function(tag, callback) {
     });
 }
 
-FilebaseManager.prototype.getTagsByUserEmail = function(email, callback) {
+FirebaseManager.prototype.getTagsByUserEmail = function(email, callback) {
     
     var tagsRef = this.db.collection('tags');
     var query = tagsRef.where('userEmail', '==', email).get()
@@ -101,7 +101,7 @@ FilebaseManager.prototype.getTagsByUserEmail = function(email, callback) {
         });
 }
 
-FilebaseManager.prototype.getAllTags = function(callback) {
+FirebaseManager.prototype.getAllTags = function(callback) {
     
     var tagsRef = this.db.collection('tags');
     var query = tagsRef.get()
@@ -125,7 +125,7 @@ FilebaseManager.prototype.getAllTags = function(callback) {
         });
 }
 
-FilebaseManager.prototype.deleteTag = function(tag, callback) {
+FirebaseManager.prototype.deleteTag = function(tag, callback) {
     var tagRef = this.db.collection('tags').doc(tag);
     tagRef.delete()
     .then(doc => {
@@ -136,7 +136,7 @@ FilebaseManager.prototype.deleteTag = function(tag, callback) {
     });
 }
 
-FilebaseManager.prototype.updateTag = function(tag, data, callback) {
+FirebaseManager.prototype.updateTag = function(tag, data, callback) {
     var tagRef = this.db.collection('tags').doc(tag);
     tagRef.update(data)
     .then(doc => {
@@ -147,5 +147,65 @@ FilebaseManager.prototype.updateTag = function(tag, data, callback) {
     });
 }
 
+FirebaseManager.prototype.setTag = function(tag, data, callback) {
+    var tagRef = this.db.collection('tags').doc(tag);
+    tagRef.set(data)
+    .then(doc => {
+        callback(null);
+    })
+    .catch(err => {
+        callback(err);
+    });
+}
+
+FirebaseManager.prototype.getKeyInfo = function(key, callback) {
+    var ref = this.db.collection('keys').where('key','==',key);
+    ref.get().then(querySnapshot => {
+        var data = null;
+        querySnapshot.forEach(function(doc) {
+            data = doc.data();
+        });
+        if(data === null) callback('key not found');
+        else callback(null, data);
+    })
+    .catch(err => {
+        callback(err);
+    });
+}
+
+FirebaseManager.prototype.loadApiKey = function(userDetails, callback) {
+    var ref = this.db.collection('keys').doc(userDetails.uid);
+    ref.get()
+    .then(doc => {
+        if (doc.exists) {
+            callback(null, doc.data());
+        } else {
+            callback(null, {key: '(not available, please genenerate one)', date: ''});
+        }
+    })
+    .catch(err => {
+       callback(err); 
+    });
+}
+
+FirebaseManager.prototype.generateApiKey = function(userDetails, callback) {
+    var ref = this.db.collection('keys').doc(userDetails.uid);
+    const uuidv4 = require('uuid/v4');
+    var data = {
+        id: userDetails.uid,
+        name: userDetails.displayName,
+        email: userDetails.email,
+        date: Date.now(),
+        key: uuidv4()
+    };
+    ref.set(data)
+    .then(function() {
+        callback(null, data);
+    })
+    .catch(err => {
+        callback(err); 
+    })
+}
+
 // export the class
-module.exports = FilebaseManager;
+module.exports = FirebaseManager;

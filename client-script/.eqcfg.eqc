@@ -1,0 +1,705 @@
+#Equalizer 1.0 ascii
+global
+{
+	EQ_CONFIG_FATTR_EYE_BASE 0.06
+	EQ_WINDOW_IATTR_PLANES_STENCIL ON
+}
+server
+{
+	connection
+	{
+		type TCPIP
+		port 24011
+	}
+	config
+	{
+		latency 0
+		appNode
+		{
+			attributes { thread_model DRAW_SYNC }
+			pipe
+			{
+				name = "headTile-0"
+				port = 0
+				device = 0
+				window
+				{
+					name "headTile"
+					viewport [0 0 1800 800]
+					channel { name "headTile"}
+				}
+			}
+		}
+		node
+		{
+			connection
+			{
+				type TCPIP
+				hostname "n01"
+				port 24011
+			}
+			attributes
+			{
+				thread_model DRAW_SYNC
+			}
+			pipe
+			{
+				name = "t0x0-0"
+				port = 0
+				device = 0
+				window
+				{
+					name "t0x0"
+					viewport [0 0 1366 3072]
+					channel { name "t0x0"}
+				}
+			}
+		}
+		node
+		{
+			connection
+			{
+				type TCPIP
+				hostname "n02"
+				port 24011
+			}
+			attributes
+			{
+				thread_model DRAW_SYNC
+			}
+			pipe
+			{
+				name = "t1x0-0"
+				port = 0
+				device = 0
+				window
+				{
+					name "t1x0"
+					viewport [0 0 1366 3072]
+					channel { name "t1x0"}
+				}
+			}
+		}
+		node
+		{
+			connection
+			{
+				type TCPIP
+				hostname "n03"
+				port 24011
+			}
+			attributes
+			{
+				thread_model DRAW_SYNC
+			}
+			pipe
+			{
+				name = "t2x0-0"
+				port = 0
+				device = 0
+				window
+				{
+					name "t2x0"
+					viewport [0 0 1366 3072]
+					channel { name "t2x0"}
+				}
+			}
+		}
+		node
+		{
+			connection
+			{
+				type TCPIP
+				hostname "n04"
+				port 24011
+			}
+			attributes
+			{
+				thread_model DRAW_SYNC
+			}
+			pipe
+			{
+				name = "t3x0-0"
+				port = 0
+				device = 0
+				window
+				{
+					name "t3x0"
+					viewport [0 0 1366 3072]
+					channel { name "t3x0"}
+				}
+			}
+		}
+		node
+		{
+			connection
+			{
+				type TCPIP
+				hostname "n05"
+				port 24011
+			}
+			attributes
+			{
+				thread_model DRAW_SYNC
+			}
+			pipe
+			{
+				name = "t4x0-0"
+				port = 0
+				device = 0
+				window
+				{
+					name "t4x0"
+					viewport [0 0 1366 3072]
+					channel { name "t4x0"}
+				}
+			}
+		}
+		node
+		{
+			connection
+			{
+				type TCPIP
+				hostname "n06"
+				port 24011
+			}
+			attributes
+			{
+				thread_model DRAW_SYNC
+			}
+			pipe
+			{
+				name = "t5x0-0"
+				port = 0
+				device = 0
+				window
+				{
+					name "t5x0"
+					viewport [0 0 1366 3072]
+					channel { name "t5x0"}
+				}
+			}
+		}
+		node
+		{
+			connection
+			{
+				type TCPIP
+				hostname "n07"
+				port 24011
+			}
+			attributes
+			{
+				thread_model DRAW_SYNC
+			}
+			pipe
+			{
+				name = "t6x0-0"
+				port = 0
+				device = 0
+				window
+				{
+					name "t6x0"
+					viewport [0 0 1366 3072]
+					channel { name "t6x0"}
+				}
+			}
+		}
+		node
+		{
+			connection
+			{
+				type TCPIP
+				hostname "n08"
+				port 24011
+			}
+			attributes
+			{
+				thread_model DRAW_SYNC
+			}
+			pipe
+			{
+				name = "t7x0-0"
+				port = 0
+				device = 0
+				window
+				{
+					name "t7x0"
+					viewport [0 0 1366 3072]
+					channel { name "t7x0"}
+				}
+			}
+		}
+		node
+		{
+			connection
+			{
+				type TCPIP
+				hostname "n09"
+				port 24011
+			}
+			attributes
+			{
+				thread_model DRAW_SYNC
+			}
+			pipe
+			{
+				name = "t8x0-0"
+				port = 0
+				device = 0
+				window
+				{
+					name "t8x0"
+					viewport [0 0 1366 3072]
+					channel { name "t8x0"}
+				}
+			}
+		}
+		node
+		{
+			connection
+			{
+				type TCPIP
+				hostname "n10"
+				port 24011
+			}
+			attributes
+			{
+				thread_model DRAW_SYNC
+			}
+			pipe
+			{
+				name = "t9x0-0"
+				port = 0
+				device = 0
+				window
+				{
+					name "t9x0"
+					viewport [0 0 1366 3072]
+					channel { name "t9x0"}
+				}
+			}
+		}
+		node
+		{
+			connection
+			{
+				type TCPIP
+				hostname "n11"
+				port 24011
+			}
+			attributes
+			{
+				thread_model DRAW_SYNC
+			}
+			pipe
+			{
+				name = "t10x0-0"
+				port = 0
+				device = 0
+				window
+				{
+					name "t10x0"
+					viewport [0 0 1366 3072]
+					channel { name "t10x0"}
+				}
+			}
+		}
+		node
+		{
+			connection
+			{
+				type TCPIP
+				hostname "n12"
+				port 24011
+			}
+			attributes
+			{
+				thread_model DRAW_SYNC
+			}
+			pipe
+			{
+				name = "t11x0-0"
+				port = 0
+				device = 0
+				window
+				{
+					name "t11x0"
+					viewport [0 0 1366 3072]
+					channel { name "t11x0"}
+				}
+			}
+		}
+		node
+		{
+			connection
+			{
+				type TCPIP
+				hostname "n13"
+				port 24011
+			}
+			attributes
+			{
+				thread_model DRAW_SYNC
+			}
+			pipe
+			{
+				name = "t12x0-0"
+				port = 0
+				device = 0
+				window
+				{
+					name "t12x0"
+					viewport [0 0 1366 3072]
+					channel { name "t12x0"}
+				}
+			}
+		}
+		node
+		{
+			connection
+			{
+				type TCPIP
+				hostname "n14"
+				port 24011
+			}
+			attributes
+			{
+				thread_model DRAW_SYNC
+			}
+			pipe
+			{
+				name = "t13x0-0"
+				port = 0
+				device = 0
+				window
+				{
+					name "t13x0"
+					viewport [0 0 1366 3072]
+					channel { name "t13x0"}
+				}
+			}
+		}
+		node
+		{
+			connection
+			{
+				type TCPIP
+				hostname "n15"
+				port 24011
+			}
+			attributes
+			{
+				thread_model DRAW_SYNC
+			}
+			pipe
+			{
+				name = "t14x0-0"
+				port = 0
+				device = 0
+				window
+				{
+					name "t14x0"
+					viewport [0 0 1366 3072]
+					channel { name "t14x0"}
+				}
+			}
+		}
+		node
+		{
+			connection
+			{
+				type TCPIP
+				hostname "n16"
+				port 24011
+			}
+			attributes
+			{
+				thread_model DRAW_SYNC
+			}
+			pipe
+			{
+				name = "t15x0-0"
+				port = 0
+				device = 0
+				window
+				{
+					name "t15x0"
+					viewport [0 0 1366 3072]
+					channel { name "t15x0"}
+				}
+			}
+		}
+		node
+		{
+			connection
+			{
+				type TCPIP
+				hostname "n17"
+				port 24011
+			}
+			attributes
+			{
+				thread_model DRAW_SYNC
+			}
+			pipe
+			{
+				name = "t16x0-0"
+				port = 0
+				device = 0
+				window
+				{
+					name "t16x0"
+					viewport [0 0 1366 3072]
+					channel { name "t16x0"}
+				}
+			}
+		}
+		node
+		{
+			connection
+			{
+				type TCPIP
+				hostname "n18"
+				port 24011
+			}
+			attributes
+			{
+				thread_model DRAW_SYNC
+			}
+			pipe
+			{
+				name = "t17x0-0"
+				port = 0
+				device = 0
+				window
+				{
+					name "t17x0"
+					viewport [0 0 1366 3072]
+					channel { name "t17x0"}
+				}
+			}
+		}
+		node
+		{
+			connection
+			{
+				type TCPIP
+				hostname "n19"
+				port 24011
+			}
+			attributes
+			{
+				thread_model DRAW_SYNC
+			}
+			pipe
+			{
+				name = "t18x0-0"
+				port = 0
+				device = 0
+				window
+				{
+					name "t18x0"
+					viewport [0 0 1366 3072]
+					channel { name "t18x0"}
+				}
+			}
+		}
+		node
+		{
+			connection
+			{
+				type TCPIP
+				hostname "n20"
+				port 24011
+			}
+			attributes
+			{
+				thread_model DRAW_SYNC
+			}
+			pipe
+			{
+				name = "t19x0-0"
+				port = 0
+				device = 0
+				window
+				{
+					name "t19x0"
+					viewport [0 0 1366 3072]
+					channel { name "t19x0"}
+				}
+			}
+		}
+		compound
+		{
+		compound { swapbarrier { name "defaultbarrier" } channel "t19x0" task [DRAW]
+			wall
+			{
+				bottom_left [ -1 -0.5 0 ]
+				bottom_right [ 1 -0.5 0 ]
+				top_left [ -1 0.5 0 ]
+			}
+}
+		compound { swapbarrier { name "defaultbarrier" } channel "t18x0" task [DRAW]
+			wall
+			{
+				bottom_left [ -1 -0.5 0 ]
+				bottom_right [ 1 -0.5 0 ]
+				top_left [ -1 0.5 0 ]
+			}
+}
+		compound { swapbarrier { name "defaultbarrier" } channel "t17x0" task [DRAW]
+			wall
+			{
+				bottom_left [ -1 -0.5 0 ]
+				bottom_right [ 1 -0.5 0 ]
+				top_left [ -1 0.5 0 ]
+			}
+}
+		compound { swapbarrier { name "defaultbarrier" } channel "t16x0" task [DRAW]
+			wall
+			{
+				bottom_left [ -1 -0.5 0 ]
+				bottom_right [ 1 -0.5 0 ]
+				top_left [ -1 0.5 0 ]
+			}
+}
+		compound { swapbarrier { name "defaultbarrier" } channel "t4x0" task [DRAW]
+			wall
+			{
+				bottom_left [ -1 -0.5 0 ]
+				bottom_right [ 1 -0.5 0 ]
+				top_left [ -1 0.5 0 ]
+			}
+}
+		compound { swapbarrier { name "defaultbarrier" } channel "t2x0" task [DRAW]
+			wall
+			{
+				bottom_left [ -1 -0.5 0 ]
+				bottom_right [ 1 -0.5 0 ]
+				top_left [ -1 0.5 0 ]
+			}
+}
+		compound { swapbarrier { name "defaultbarrier" } channel "t14x0" task [DRAW]
+			wall
+			{
+				bottom_left [ -1 -0.5 0 ]
+				bottom_right [ 1 -0.5 0 ]
+				top_left [ -1 0.5 0 ]
+			}
+}
+		compound { swapbarrier { name "defaultbarrier" } channel "t6x0" task [DRAW]
+			wall
+			{
+				bottom_left [ -1 -0.5 0 ]
+				bottom_right [ 1 -0.5 0 ]
+				top_left [ -1 0.5 0 ]
+			}
+}
+		compound { swapbarrier { name "defaultbarrier" } channel "headTile" task [DRAW]
+			wall
+			{
+				bottom_left [ -1 -0.5 0 ]
+				bottom_right [ 1 -0.5 0 ]
+				top_left [ -1 0.5 0 ]
+			}
+}
+		compound { swapbarrier { name "defaultbarrier" } channel "t8x0" task [DRAW]
+			wall
+			{
+				bottom_left [ -1 -0.5 0 ]
+				bottom_right [ 1 -0.5 0 ]
+				top_left [ -1 0.5 0 ]
+			}
+}
+		compound { swapbarrier { name "defaultbarrier" } channel "t3x0" task [DRAW]
+			wall
+			{
+				bottom_left [ -1 -0.5 0 ]
+				bottom_right [ 1 -0.5 0 ]
+				top_left [ -1 0.5 0 ]
+			}
+}
+		compound { swapbarrier { name "defaultbarrier" } channel "t0x0" task [DRAW]
+			wall
+			{
+				bottom_left [ -1 -0.5 0 ]
+				bottom_right [ 1 -0.5 0 ]
+				top_left [ -1 0.5 0 ]
+			}
+}
+		compound { swapbarrier { name "defaultbarrier" } channel "t11x0" task [DRAW]
+			wall
+			{
+				bottom_left [ -1 -0.5 0 ]
+				bottom_right [ 1 -0.5 0 ]
+				top_left [ -1 0.5 0 ]
+			}
+}
+		compound { swapbarrier { name "defaultbarrier" } channel "t1x0" task [DRAW]
+			wall
+			{
+				bottom_left [ -1 -0.5 0 ]
+				bottom_right [ 1 -0.5 0 ]
+				top_left [ -1 0.5 0 ]
+			}
+}
+		compound { swapbarrier { name "defaultbarrier" } channel "t5x0" task [DRAW]
+			wall
+			{
+				bottom_left [ -1 -0.5 0 ]
+				bottom_right [ 1 -0.5 0 ]
+				top_left [ -1 0.5 0 ]
+			}
+}
+		compound { swapbarrier { name "defaultbarrier" } channel "t7x0" task [DRAW]
+			wall
+			{
+				bottom_left [ -1 -0.5 0 ]
+				bottom_right [ 1 -0.5 0 ]
+				top_left [ -1 0.5 0 ]
+			}
+}
+		compound { swapbarrier { name "defaultbarrier" } channel "t9x0" task [DRAW]
+			wall
+			{
+				bottom_left [ -1 -0.5 0 ]
+				bottom_right [ 1 -0.5 0 ]
+				top_left [ -1 0.5 0 ]
+			}
+}
+		compound { swapbarrier { name "defaultbarrier" } channel "t12x0" task [DRAW]
+			wall
+			{
+				bottom_left [ -1 -0.5 0 ]
+				bottom_right [ 1 -0.5 0 ]
+				top_left [ -1 0.5 0 ]
+			}
+}
+		compound { swapbarrier { name "defaultbarrier" } channel "t15x0" task [DRAW]
+			wall
+			{
+				bottom_left [ -1 -0.5 0 ]
+				bottom_right [ 1 -0.5 0 ]
+				top_left [ -1 0.5 0 ]
+			}
+}
+		compound { swapbarrier { name "defaultbarrier" } channel "t10x0" task [DRAW]
+			wall
+			{
+				bottom_left [ -1 -0.5 0 ]
+				bottom_right [ 1 -0.5 0 ]
+				top_left [ -1 0.5 0 ]
+			}
+}
+		compound { swapbarrier { name "defaultbarrier" } channel "t13x0" task [DRAW]
+			wall
+			{
+				bottom_left [ -1 -0.5 0 ]
+				bottom_right [ 1 -0.5 0 ]
+				top_left [ -1 0.5 0 ]
+			}
+}
+		}
+	}
+}

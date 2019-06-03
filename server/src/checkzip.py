@@ -35,15 +35,25 @@ def isPointFile(file):
     if ext == ".las" or ext == ".laz" or ext == ".ptx" or ext == ".ply" or ext == ".xyz" or ext == ".txt":
         return True
     return False
+    
+def isPhotogrammetryFile(file):
+    """
+    Check if file is a photogrammetry file. Support .jpg   @AH add more? Don't know when this is called, or if it is called.
+    """
+    filename, ext = os.path.splitext(file)
+    ext = ext.lower()
+    if ext == ".jpg" or ext ==".jpeg":
+        return True
+    return False
+
 
 
 def main():
     zname = ""
     type = ""
-    
     parser = argparse.ArgumentParser(description='Checks if a zipfile has a tiff stack or OBJ files')
     parser.add_argument('-f', dest='filename', help='name of zipfile to process')
-    parser.add_argument('-t', dest='type', help='type of data to check {volume, mesh, point, image}')
+    parser.add_argument('-t', dest='type', help='type of data to check {volume, mesh, point, image, photogrammetry}')
 
     args = parser.parse_args()
     zname = args.filename
@@ -57,6 +67,7 @@ def main():
     hasImage = False
     hasMesh = False
     hasPoint = False
+    hasPhotogrammetry = False
     countImg = 0
     for cmpinfo in zinfolist:
         fname = string.lower(cmpinfo.filename)
@@ -71,6 +82,9 @@ def main():
         elif isPointFile(fname):
             hasPoint = True
         
+        elif isPhotogrammetryFile(fname):
+            hasPhotogrammetry = True
+            countImg = countImg + 1
         else:
             pass
     
@@ -90,6 +104,11 @@ def main():
     
     elif (type == "image"):
         if hasImage and not hasMesh and not hasPoint:
+            match = True
+            
+    elif (type == "photogrammetry"):
+        # AH: really not the best test in the world :(
+        if hasImage and not hasMesh and not hasPoint and countImg>2:
             match = True
     
     else:

@@ -83,6 +83,24 @@ or
 
 ## Change log
 
+### v0.8.0
+
+- Using secret dir to access data instead of tag
+- Add password protection for datasets
+- Metadata is simplified
+
+### v0.6.1
+
+- Upgrade client web app from Angular 6 to Angular 7
+- Support QR code generator for tag. The QR code can be used in Hololens app.
+
+### v0.6.0
+
+- Add profile page and API key generation
+- Support uploading via client scripts
+- Sending email when errors occur
+- Support presets in viewers
+
 ### v0.5.1
 
 - Upgrade client web app from Angular 5 to Angular 6

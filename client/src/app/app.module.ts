@@ -13,10 +13,11 @@ import { ReviewComponent } from './review/review.component';
 import { HeaderComponent } from './core/header/header.component';
 import { FooterComponent } from './core/footer/footer.component';
 import { FlexLayoutModule } from "@angular/flex-layout";
+import { ProfileComponent } from './profile/profile.component';
 
 import { MatToolbarModule, MatButtonModule, MatIconModule, MatInputModule, 
          MatCardModule, MatRadioModule, MatProgressBarModule, MatProgressSpinnerModule, MatSelectModule,
-         MatDialogModule, MatTooltipModule, MatCheckboxModule } from '@angular/material';
+         MatDialogModule, MatTooltipModule, MatCheckboxModule, MatMenuModule } from '@angular/material';
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 import { AppService } from './core/app.service';
 import { MytardisComponent } from './upload/mytardis/mytardis.component';
@@ -32,6 +33,7 @@ import { LoginComponent } from './login/login.component';
 import { AuthService } from './core/auth.service';
 import { ConfirmdialogComponent } from './core/confirmdialog/confirmdialog.component';
 import { TagDetailComponent } from './review/tag-detail/tag-detail.component';
+
 
 @NgModule({
   declarations: [
@@ -49,7 +51,8 @@ import { TagDetailComponent } from './review/tag-detail/tag-detail.component';
     DatasetDetailComponent,
     LoginComponent,
     ConfirmdialogComponent,
-    TagDetailComponent
+    TagDetailComponent,
+    ProfileComponent
   ],
   imports: [
     BrowserModule,
@@ -70,6 +73,7 @@ import { TagDetailComponent } from './review/tag-detail/tag-detail.component';
     MatSelectModule,
     MatDialogModule,
     MatCheckboxModule,
+    MatMenuModule,
     AngularFireModule.initializeApp(environment.firebase),
     AngularFirestoreModule, // imports firebase/firestore, only needed for database features
     AngularFireAuthModule // imports firebase/auth, only needed for auth features,

@@ -3,15 +3,24 @@
 	<head>
 		<meta charset=utf-8>
 		<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-		<title>Previs mesh viewer (v0.1.0)</title>
+		<title>Previs mesh viewer (v0.5.0)</title>
 		
+		<link rel="stylesheet" type="text/css" href="css/previs.css">
 		<link rel="stylesheet" type="text/css" href="css/style.css">
-		
 	</head>
 	<body>
 		
 		<div id="status-icon"><img src="img/spinner.gif" width=100 height=100 /></div>
 		<div id="status-message"></div>
+
+		<div id="passwordModalDialog" class="modal">
+			<div class="modal-content">
+				<p style="color: #000"><b>Password is required to view the dataset</b></p>
+				<p id="password-status"></p>
+				<input type="password" id="password" name="password" required>
+				<button id="password-button">Submit</button>
+			</div>
+		</div>
 		
 		<div id="container">
 			<canvas id="meshviewer"></canvas>
@@ -23,6 +32,8 @@
 		<script type="text/javascript" src="js/three.js/Detector.js"></script>
 		<script type="text/javascript" src="js/three.js/three.min.js"></script>
 		<script type="text/javascript" src="js/three.js/controls/TrackballControls.js"></script>
+		<script type="text/javascript" src="js/three.js/controls/FlyControls.js"></script>
+		<script type="text/javascript" src="js/three.js/controls/FirstPersonControls.js"></script>
 		<script type="text/javascript" src="js/three.js/stats.min.js"></script>
 		<script type="text/javascript" src="js/three.js/loaders/MTLLoader.js"></script>
 		<script type="text/javascript" src="js/three.js/loaders/LoaderSupport.js"></script>

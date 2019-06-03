@@ -7,17 +7,19 @@ import zipfile
 import requests
 import subprocess
 
+version = "v0.1.1"
 host = 'https://mivp-dws1.erc.monash.edu:3000'
 localdir = 'data'
+key = ""
 
 
-def getInfo(tag):
+def getInfo(tag, key):
     """
     Get Info in json format from tag
     :param tag: 
     :return: 
     """
-    url = host + '/rest/info?tag=' + tag
+    url = host + '/rest/info?tag=' + tag + '&key=' + key
     r = requests.get(url)
     if(r.status_code != 200):
         raise Exception("Cannot get json")
@@ -54,9 +56,9 @@ def downloadFile(remote_file, local_file):
 
 
 def runViewer(info):
-    os.chdir(info['tag_dir'])
+    os.chdir(info['local_tag_dir'])
     if(info['type'] == 'point'):
-        subprocess.check_output(['orun','-s', 'gigapoint_run.py'])
+        subprocess.check_output(['orun','-s', 'run_gigapoint.py'])
     elif (info['type'] == 'mesh'):
         subprocess.check_output(info['lavavu'])
     elif (info['type'] == 'image'):
@@ -76,15 +78,15 @@ def runVolume(info):
     :return: 
     """
     #download xrw
-    file_url = host + '/data/tags/' + info['tag'] + '/volume_result/vol.xrw'
-    file_local = info['tag_dir'] + '/vol.xrw'
+    file_url = host + '/data/tags/' + info['tag_dir'] + '/volume_result/vol.xrw'
+    file_local = info['local_tag_dir'] + '/vol.xrw'
     if not os.path.exists(file_local):
         print 'download', file_url
         downloadFile(file_url, file_local)
 
     #json
-    file_url = host + '/data/tags/' + info['tag'] + '/volume_result/vol_full.json'
-    file_local = info['tag_dir'] + '/vol_full.json'
+    file_url = host + '/data/tags/' + info['tag_dir'] + '/volume_result/vol_full.json'
+    file_local = info['local_tag_dir'] + '/vol_full.json'
     r = requests.get(file_url)
     if (r.status_code != 200):
         raise Exception("Cannot get json")
@@ -92,8 +94,8 @@ def runVolume(info):
     res =jsondata['objects'][0]['volume']['res'];
     #print('volfull', jsondata)
     
-    file_url = host + '/data/tags/' + info['tag'] + '/volume_result/vol_web.json'
-    file_local = info['tag_dir'] + '/vol_web.json'
+    file_url = host + '/data/tags/' + info['tag_dir'] + '/volume_result/vol_web.json'
+    file_local = info['local_tag_dir'] + '/vol_web.json'
     r = requests.get(file_url)
     jsondata = r.json()
     if (r.status_code != 200):
@@ -106,7 +108,7 @@ def runVolume(info):
         json.dump(jsondata, outfile, sort_keys=False, indent=4, ensure_ascii=False)
     
     # LavaVR run script    
-    cmd = ['cp', 'run_volume.py', info['tag_dir'] + '/init.py']
+    cmd = ['cp', 'run_volume.py', info['local_tag_dir'] + '/init.py']
     subprocess.check_output(cmd)
     
     #run
@@ -120,25 +122,25 @@ def runMesh(info):
     :return: 
     """
     #download data
-    file_url = host + '/data/tags/' + info['tag'] + '/mesh_processed.zip'
-    file_local = info['tag_dir'] + '/mesh_processed.zip'
+    file_url = host + '/data/tags/' + info['tag_dir'] + '/mesh_processed.zip'
+    file_local = info['local_tag_dir'] + '/mesh_processed.zip'
     if not os.path.exists(file_local):
         print 'download', file_url
         downloadFile(file_url, file_local)
         #unzip
-        os.chdir(info['tag_dir'])
+        os.chdir(info['local_tag_dir'])
         cmd='unzip -o mesh_processed.zip | pv -l >/dev/null'
         subprocess.check_output(cmd,shell=True)
         os.chdir(info['cwd'])
     
     # download update json
-    file_url = host + '/data/tags/' + info['tag'] + '/mesh_result/mesh.json'
-    file_local = info['tag_dir'] + '/mesh.json'
+    file_url = host + '/data/tags/' + info['tag_dir'] + '/mesh_result/mesh.json'
+    file_local = info['local_tag_dir'] + '/mesh.json'
     os.remove(file_local)
     print 'download', file_url
     downloadFile(file_url, file_local)
 
-    cmd = ['cp', 'run_mesh.py', info['tag_dir'] + '/init.py']
+    cmd = ['cp', 'run_mesh.py', info['local_tag_dir'] + '/init.py']
     subprocess.check_output(cmd)
 
     #run
@@ -152,29 +154,29 @@ def runPoint(info):
     :return: 
     """
     # download data
-    file_url = host + '/data/tags/' + info['tag'] + '/point_processed.zip'
-    file_local = info['tag_dir'] + '/point_processed.zip'
+    file_url = host + '/data/tags/' + info['tag_dir'] + '/point_processed.zip'
+    file_local = info['local_tag_dir'] + '/point_processed.zip'
     if not os.path.exists(file_local):
         print 'download', file_url
         downloadFile(file_url, file_local)
         # unzip
-        os.chdir(info['tag_dir'])
+        os.chdir(info['local_tag_dir'])
         cmd='unzip -o point_processed.zip | pv -l >/dev/null'
         subprocess.check_output(cmd,shell=True)
 
-    if not os.path.exists(info['tag_dir'] + '/gigapoint_resource'):
+    if not os.path.exists(info['local_tag_dir'] + '/gigapoint_resource'):
         subprocess.check_output(['ln','-s','/home/toand/git/projects/gigapoint/gigapoint/dist/gigapoint_resource'])
-    if not os.path.exists(info['tag_dir'] + '/gigapoint.so'):
+    if not os.path.exists(info['local_tag_dir'] + '/gigapoint.so'):
         subprocess.check_output(['ln','-s','/home/toand/git/projects/gigapoint/gigapoint/dist/gigapoint.so'])
     os.chdir(info['cwd'])
 
     #copy
-    cmd = ['cp', 'gigapoint_run.py', info['tag_dir']]
+    cmd = ['cp', 'run_gigapoint.py', info['local_tag_dir']]
     subprocess.check_output(cmd)
     
     # download gigapoint.json file
-    file_url = host + '/data/tags/' + info['tag'] + '/gigapoint.json'
-    file_local = info['tag_dir'] + '/gigapoint.json'
+    file_url = host + '/data/tags/' + info['tag_dir'] + '/gigapoint.json'
+    file_local = info['local_tag_dir'] + '/gigapoint.json'
     print 'download', file_url
     downloadFile(file_url, file_local)
 
@@ -189,14 +191,14 @@ def runImage(info):
     :return: 
     """
     # download data
-    file_url = host + '/data/tags/' + info['tag'] + '/image_processed.zip'
-    file_local = info['tag_dir'] + '/image_processed.zip'
+    file_url = host + '/data/tags/' + info['tag_dir'] + '/image_processed.zip'
+    file_local = info['local_tag_dir'] + '/image_processed.zip'
     
     if not os.path.exists(file_local):
         print 'download', file_url
         downloadFile(file_url, file_local)
         # unzip
-        os.chdir(info['tag_dir'])
+        os.chdir(info['local_tag_dir'])
         cmd='unzip -o image_processed.zip | pv -l >/dev/null'
         subprocess.check_output(cmd,shell=True)        
         os.chdir(info['cwd'])
@@ -204,33 +206,34 @@ def runImage(info):
     # generate run command
     #cmd = 'GO_CAVE2_DZ -b 256 -t 4 -p -m'
     cmd = '/home/toand/git/projects/vsviewer/build/CAVE2/GO_CAVE2_DZ -b 256 -t 4 -p -m'
-    jsonfile = info['tag_dir'] + '/image.json'
+    jsonfile = info['local_tag_dir'] + '/image.json'
     with open(jsonfile, 'rt') as f:
         data = json.load(f)
         for img in data:
-            cmd = cmd + ' -i ' + info['tag_dir']+'/'+img
+            cmd = cmd + ' -i ' + info['local_tag_dir']+'/'+img
     info['imagecmd'] = cmd.encode('ascii','ignore').split()
 
-    if not os.path.exists(info['tag_dir'] + '/default.cfg'):
+    if not os.path.exists(info['local_tag_dir'] + '/default.cfg'):
         #print "tagdir:", info['tag_dir']
-        subprocess.check_output(['ln','-t',info['tag_dir'],'-s','/home/toand/git/projects/vsviewer/data/default.cfg'])
+        subprocess.check_output(['ln','-t',info['local_tag_dir'],'-s','/home/toand/git/projects/vsviewer/data/default.cfg'])
 
     # run
     runViewer(info)
 
 
 def help():
-    print "runprevis.py [-s host] [-d localdir] input_tag"
+    print "runprevis.py [-s host] [-d localdir] -k apikey input_tag"
 
 def main(argv):
 
     try:
-        opts, args = getopt.getopt(argv, "s:d:", ["server=", "dir="])
+        opts, args = getopt.getopt(argv, "s:d:k:", ["server=", "dir=", "key="])
     except getopt.GetoptError:
         raise NameError("Cannot parse input arguments")
 
     global host
     global datadir
+    global key
     for opt, arg in opts:
         if opt == '-h':
             help()
@@ -239,29 +242,39 @@ def main(argv):
             host = arg
         elif opt in ("-d", "--dir"):
             localdir = arg
+        elif opt in ("-k", "--key"):
+            key = arg
+
+    if key == "":
+        print("Error: api key is required")
+        return
 
     tag = args[0]
-    print tag, host, localdir
-    info = getInfo(tag)
-    type = info['type']
+    print tag, key, host, localdir
+    info = getInfo(tag, key)
+    tag_type = info['type']
+    tag_dir = info['dir']
+    if(not tag_dir):
+        tag_dir = tag
 
     #create output directory
-    tag_dir = localdir + '/' + tag
-    print 'create directory:', tag_dir
-    if not os.path.exists(tag_dir):
-        os.makedirs(tag_dir)
-    info['tag_dir'] = os.path.abspath(tag_dir)
+    local_tag_dir = localdir + '/' + tag
+    print 'create directory:', local_tag_dir
+    if not os.path.exists(local_tag_dir):
+        os.makedirs(local_tag_dir)
+    info['local_tag_dir'] = os.path.abspath(local_tag_dir)
     info['lavavu'] = 'LavaVR.sh'
     info['cwd'] = os.getcwd()
+    info['tag_dir'] = tag_dir
 
     print info
-    if type == 'volume':
+    if tag_type == 'volume':
         runVolume(info)
-    elif type == 'mesh':
+    elif tag_type == 'mesh':
         runMesh(info)
-    elif type == 'point':
+    elif tag_type == 'point':
         runPoint(info)
-    elif type == 'image':
+    elif tag_type == 'image':
         runImage(info);
     else:
         raise Exception("invalid type")

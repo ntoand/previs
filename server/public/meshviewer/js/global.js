@@ -5,17 +5,26 @@ var socket = io();
 // ======== ARGUMENTS ======
 var url = new URL(window.location.href);
 var gTag = url.searchParams.get("tag");
+var gDir = null;
 console.log(window.location);
 console.log("Tag:" + gTag);
 
 if(gTag === null || gTag === undefined) {
-    alert('Tag is not specified');
-    throw new Error("Tag is not specified!");
+    alert('Tag is not specified or invalid');
+    throw new Error("Tag is not specified or invalid!");
+}
+
+var gPreset = url.searchParams.get("preset");
+if(gPreset === null || gPreset === undefined) {
+    gPreset = 'default';
 }
 // ======= END ARGUMENTS ===
 
 // ======== PARAMETERS =====
 var gGui = null;
+var hPreset = null;
+var presetList = ['default'];
+var cameraControlList = ['Orbit control', 'Fly control'];
 
 // ===== END PARAMETERS ====
 
@@ -36,5 +45,23 @@ function getCenter(bbox) {
         z: (bbox.min.z + bbox.max.z)/2
     }
     return center;
+}
+
+function updateDatDropdown(target, list){   
+    let innerHTMLStr = "";
+    if(list.constructor.name == 'Array'){
+        for(var i=0; i<list.length; i++){
+            var str = "<option value='" + list[i] + "'>" + list[i] + "</option>";
+            innerHTMLStr += str;        
+        }
+    }
+    
+    if(list.constructor.name == 'Object'){
+        for(var key in list){
+            var str = "<option value='" + list[key] + "'>" + key + "</option>";
+            innerHTMLStr += str;
+        }
+    }
+    if (innerHTMLStr != "") target.domElement.children[0].innerHTML = innerHTMLStr;
 }
 // ======== END UTILS =============

@@ -27,7 +27,7 @@ socket.on('savemeshjson', function(data) {
     console.log('savemeshjson');
     console.log(data);
     if(data.status == "error") {
-        showMessage('Can not save view parameters for examples - aborting!');
+        showMessage('Can not save view parameters!');
         setTimeout(resetMessage, 4000);
     }
     else {
@@ -54,19 +54,37 @@ var saveSettings = function() {
       up: app.camera.up.toArray()
     };
     json.views.camera = camSettings;
-    socket.emit('savemeshjson', {tag: gTag, jsonStr: JSON.stringify(json, null, 4)});	
+    socket.emit('savemeshjson', {tag: gTag, dir: gDir, preset: gPreset, jsonStr: JSON.stringify(json, null, 4)});	
 }
 
-var reloadSettings = function() {
-	showMessage("Reloading settings from server!");
-	app.loadJsonConfig(function () {
+function saveSettingsAs() {
+    let d = new Date();
+    let tstr = d.getYear() + '' + d.getMonth() + '' + d.getDay() + '-' + d.getHours() + '' + d.getMinutes();
+    var preset = prompt("Save current settings as", tstr);
+    if (preset === null) return;
+    if (preset === '') {
+    	showMessage('Error! Cannot save empty preset!');
+    	setTimeout(resetMessage, 3000);
+    	return;
+    }
+    preset = preset.replace(/ /g,"_");
+    
+    gPreset = preset;
+    saveSettings();
+    socket.emit('getsavelist', { type: 'mesh', tag:  gTag, dir: gDir});
+}
+
+var loadSettings = function() {
+	showMessage("Load settings from server!");
+	app.loadJsonConfig(gPreset, function () {
 		buildGui();
 		app.updateAll();
 		
-		showMessage("Reloaded settings successfully!");
+		showMessage("Settings have been loaded successfully!");
         setTimeout(resetMessage, 4000);
 	});
 }
+
 
 var buildGui = function() {
 	
@@ -75,8 +93,10 @@ var buildGui = function() {
 
 	// init data
 	var obj = {
+		Preset: gPreset,
 		saveSettings: saveSettings,
-		reloadSettings: reloadSettings,
+		saveSettingsAs: saveSettingsAs,
+		cameraControl: cameraControlList[0],
 		views: {
 			background: json.views.backgroundColour,
 			centreObjects: centreObjects,
@@ -91,8 +111,22 @@ var buildGui = function() {
 	gGui = new dat.GUI();
 	var gui = gGui;
 	
-	gui.add(obj, 'saveSettings').name('Save settings');
-	gui.add(obj, 'reloadSettings').name('Reload settings');
+	// Control
+	hPreset = gui.add(obj, 'Preset', presetList).name('Preset').listen();
+    hPreset.onFinishChange(function(value) {
+      gPreset = value;
+      loadSettings();
+	});
+	
+	if(!gTag.includes('000000')) {
+		gui.add(obj, 'saveSettings').name('Save');
+		gui.add(obj, 'saveSettingsAs').name('Save as');
+	}
+
+	var cameraControl = gui.add(obj, 'cameraControl', cameraControlList).name('Camera Control').listen();
+	cameraControl.onFinishChange(function(value) {
+		app.switchCameraControl(value);
+	});
 	
 	var views = gui.addFolder("Views");
 	console.log(obj.views);
@@ -159,12 +193,27 @@ var buildGui = function() {
 
 window.addEventListener( 'resize', resizeWindow, false );
 
-console.log( 'Starting initialisation phase...' );
-app.initGL();
-app.resizeDisplayGL();
-app.initContent( function() {
-	buildGui();
+socket.on('getsavelist', function(data) {
+    if(data.status === 'error') {
+    	showMessage("Error! Cannot get save list");
+    	setTimeout(resetMessage, 3000);
+    }
+    else if(data.status == "done") {
+    	presetList = data.result;
+    	updateDatDropdown(hPreset, presetList);
+    }
 });
 
-// kick off main loop
-render();
+checkAndLoadPrevisTag(gTag, "", function(info) {
+	console.log("success: now can load data", info);
+	console.log( 'Starting initialisation phase...' );
+	gDir = info.dir || gTag;
+	app.initGL();
+	app.resizeDisplayGL();
+	app.initContent( gPreset, function() {
+		buildGui();
+		socket.emit('getsavelist', { type: 'mesh', tag:  gTag});
+	});
+	// kick off main loop
+	render();
+});

@@ -18,9 +18,10 @@ var myadmin 	  = require('./src/node-admin');
 var myupload	  = require('./src/node-upload');
 var preview 	  = require('./src/node-preview');
 var mytardis	  = require('./src/node-mytardis');
+var myutils 	  = require('./src/node-utils');
 
-var FilebaseManager   = require('./src/node-firebase');
-var fbmanager = new FilebaseManager();
+var FirebaseManager   = require('./src/node-firebase');
+var fbmanager = new FirebaseManager();
 
 if (process.env.NODE_ENV === "production")  {
 	console.log("RUN PROD MODE");
@@ -51,43 +52,110 @@ server.listen(process.env.PORT || config.port, process.env.IP || "127.0.0.1", fu
 
 // ===== REST SERVICES =======
 // ===== LOCAL UPLOAD  =======
-app.post('/localupload', function (req, res) {
-	console.log('receive and process .zip file');
-
+function doLocalUpload(req, res) {
+	console.log('doLocalUpload');
 	var form = new formidable.IncomingForm(),
-		files = [],
-	  	fields = [];
+	files = [],
+  	fields = [];
 
-	  	form.uploadDir = config.tags_data_dir;
-	  	form.encoding = 'utf-8';
-	  	form.multiples = false;
-	  	form.keepExtensions = true;
+  	form.uploadDir = config.tags_data_dir;
+  	form.encoding = 'utf-8';
+  	form.multiples = false;
+  	form.keepExtensions = true;
 
-	  	form
-	  	.on('field', function(field, value) {
-	    	console.log(field, value);
-	    	fields.push([field, value]);
-	  	})
-	  	.on('file', function(field, file) {
-	    	console.log(field);
-	    	console.log(file.name);
-	    	console.log(file.path);
-	    	files.push([field, file]);
-	  	})
-	  	.on('error', function(err) {
-    		console.log('An error has occured: \n' + err);
-    		res.json({status: 'error', detail: err});
-  		})
-	  	.on('end', function() {
-	    	console.log('-> upload done');
-	    	var filebase = path.parse(files[0][1].path).base;
-	    	res.json({status: 'done', file: filebase});
-	    });
+  	form
+  	.on('field', function(field, value) {
+    	console.log(field, value);
+    	fields.push([field, value]);
+  	})
+  	.on('file', function(field, file) {
+    	console.log(field);
+    	console.log(file.name);
+    	console.log(file.path);
+    	files.push([field, file]);
+  	})
+  	.on('error', function(err) {
+		console.log('An error has occured: \n' + err);
+		res.json({status: 'error', detail: err});
+  	})
+  	.on('end', function() {
+    	console.log('-> upload done');
+    	var filebase = path.parse(files[0][1].path).base;
+    	res.json({status: 'done', file: filebase});
+    });
 
 	form.parse(req);
+}
 
+
+app.post('/localupload', function (req, res) {
+	console.log('receive and process .zip file');
+	
+	var key = req.query.key;
+	console.log('localupload', key);
+	// TODO: using key for web client upload
+	const myio = {
+		socket: null,
+		res: res
+	};
+	if(key !== undefined && key !== null) {
+		fbmanager.getKeyInfo(key, function(err, data) {
+			if(err) {
+				myutils.packAndSend(myio, 'processupload', {status: 'error', result: 'Invalid api key (processupload): ' + key});
+			}
+			else {
+				doLocalUpload(req, res);
+			}
+		});
+	}
+	else {
+		doLocalUpload(req, res);
+	}
 	return;
 });
+
+
+app.post('/rest/processupload', function (req, res) {
+	//params = {"file", "key", "type", 'voxelSizeX', 'voxelSizeY', 'voxelSizeZ', 'channel', 'time', 'sendEmail'}
+	var key = req.query.key;
+	var file = req.query.file;
+	console.log('processupload', key, file);
+	const myio = {
+		socket: null,
+		res: res
+	};
+	fbmanager.getKeyInfo(key, function(err, keydata) {
+		console.log(err);
+		console.log(keydata);
+		if(err) {
+			myutils.packAndSend(myio, 'processupload', {status: 'error', result: 'Invalid api key (processupload): ' + key});
+		}
+		else {
+			var data = {
+				db: fbmanager,
+				file: file,
+				userDetails: {
+					uid: keydata.id,
+					email: keydata.email,
+					displayName: keydata.name
+				},
+				datatype: req.query.type,
+				settings: {
+					voxelSizeX: parseFloat(req.query.voxelSizeX), 
+					voxelSizeY: parseFloat(req.query.voxelSizeY), 
+					voxelSizeZ: parseFloat(req.query.voxelSizeZ),
+            		channel: parseInt(req.query.channel), 
+            		time: parseInt(req.query.time), 
+            		sendEmail: req.query.sendEmail === 'True'
+				},
+				uploadtype: 'restupload'
+			};
+			myupload.processUploadFile(myio, data);
+		}
+	});
+	return;
+});
+
 
 app.post('/rest/adminlogin', function (req, res) {
 
@@ -104,18 +172,81 @@ app.post('/rest/adminlogin', function (req, res) {
 	res.send(JSON.stringify({ status: "success", result: "Can login" }, null, 4));
 });
 
+
 //url/info?tag=tag
 app.get('/rest/info', function (req, res) {
 	var tag = req.query.tag;
-	console.log(tag);
+	var key = req.query.key;
+	console.log(tag, key);
+	if(!key || !tag) {
+		res.setHeader('Content-Type', 'application/json');
+		res.send(JSON.stringify({ status: "error", code: "100", result: "tag or api key is nor provided" }, null, 4));
+		return;
+	}
+
+	fbmanager.getKeyInfo(key, function(err, keydata) {
+		console.log(err);
+		console.log(keydata);
+		if(err) {
+			res.setHeader('Content-Type', 'application/json');
+			res.send(JSON.stringify({ status: "error", code: "100", result: "api key is nor provided or invalid" }, null, 4));
+			return;
+		}
+
+		fbmanager.getTag(tag, function(err, info) { 
+			console.log(info);
+			if(err || !info) {
+				console.log(err);
+				res.setHeader('Content-Type', 'application/json');
+				res.send(JSON.stringify({ status: "error", code: "100", result: "cannot get info" }, null, 4));
+				return;
+			}
+			if(info.password) info.password = "******";
+			res.setHeader('Content-Type', 'application/json');
+			res.send(info);
+		});
+	});
+	
+});
+
+app.post('/rest/info', function (req, res) {
+	var tag = req.body.tag;
+	var password = req.body.password;
+	if(!tag) {
+		res.setHeader('Content-Type', 'application/json');
+		res.send(JSON.stringify({ status: "error", code: "100", result: "no tag provided" }, null, 4));
+		return;
+	}
+	console.log('/rest/info POST ' + tag);
+	
+	let demoTags = ['000000_arteries_brain', '000000_galaxy', '000000_hoyoverde',
+                    '000000_image_cmu1', '000000_mesh_baybridge', '000000_mesh_heart'];
+    if(demoTags.includes(tag)) {
+    	res.setHeader('Content-Type', 'application/json');
+    	res.send(JSON.stringify({tag: tag, dir: tag}));
+    	return;
+    }
 	
 	fbmanager.getTag(tag, function(err, info) { 
-		console.log(info);
+		//console.log(info);
 		if(err || !info) {
 			console.log(err);
 			res.setHeader('Content-Type', 'application/json');
-    		res.send(JSON.stringify({ status: "error", result: "cannot get info" }, null, 4));
+    		res.send(JSON.stringify({ status: "error", code: "100", result: "cannot get info" }, null, 4));
     		return;
+		}
+		if(info.password) {
+			if(!password || password === '') {
+				res.setHeader('Content-Type', 'application/json');
+				res.send(JSON.stringify({ status: "error", code: "101", result: "password is required" }, null, 4));
+				return;
+			}
+			if(info.password !== password) {
+				res.setHeader('Content-Type', 'application/json');
+				res.send(JSON.stringify({ status: "error", code: "102", result: "incorrect password" }, null, 4));
+				return;
+			}
+			info.password = "******";
 		}
 		res.setHeader('Content-Type', 'application/json');
 		res.send(info);
@@ -136,24 +267,31 @@ io.on('connection', function (socket) {
   	
   	socket.on('message', function(msg) {
   		console.log(msg);
+  		const myio = {
+			socket: socket,
+			res: null
+		};
   		//msg = JSON.parse(msg);	// 2018.07 new client socket service sends JSON directly 
   		msg.data.db = fbmanager;
   		if(msg.data.userId === undefined) msg.data.userId = 'none';
   		if(msg.data.userEmail === undefined) msg.data.userEmail = 'none';
   		if(msg.action === 'processtag') {
-  			preview.processTag(socket, msg.data);
+  			preview.processTag(myio, msg.data);
   		}
   		else if(msg.action === 'admindeletetags') {
-  			myadmin.deleteTags(socket, msg.data);
+  			myadmin.deleteTags(myio, msg.data);
   		}
   		else if(msg.action === 'adminupdatetag') {
-  			myadmin.updateTag(socket, msg.data);
+  			myadmin.updateTag(myio, msg.data);
   		}
   		else if (msg.action === 'processupload') {
-  			myupload.processUpload(socket, msg.data);
+  			myupload.processUpload(myio, msg.data);
   		}
   		else if (msg.action === 'processmytardis') {
-  			mytardis.processMytardis(socket, msg.data);
+  			mytardis.processMytardis(myio, msg.data);
+  		}
+  		else if (msg.action === 'processapikey') {
+  			processApiKey(myio, msg.data);
   		}
   	});
   	
@@ -207,7 +345,12 @@ function saveMeshParams(socket, data)
 	console.log("Received saveparams from mesh viewer");
 	console.log(data);
 	
-	var jsonfile = config.tags_data_dir + data.tag + '/mesh_result/mesh.json';
+	let filename = 'mesh.json';
+	let preset = data.preset;
+	if(preset && preset !== 'default') {
+		filename = 'mesh_' + preset + '.json';
+	}
+	var jsonfile = config.tags_data_dir + data.dir + '/mesh_result/' + filename;
 	fs.writeFile(jsonfile, data.jsonStr, function(err) {
 		if(err) {
 			console.log("Error: " + err);
@@ -224,9 +367,9 @@ function saveMeshParams(socket, data)
 
 function getSaveList(socket, data)
 {
-	let tag = data.tag;
+	let tagdir = data.dir || data.tag;
 	let type = data.type; // volume, mesh, point
-	let dir = config.tags_data_dir + data.tag + '/';
+	let dir = config.tags_data_dir + tagdir + '/';
 	let options = {};
 	let list = ['default'];
 	
@@ -261,4 +404,28 @@ function getSaveList(socket, data)
 	    socket.emit('getsavelist', { status: 'done', result: list });
 	})
 	
+}
+
+function processApiKey(myio, data)
+{
+	if(data.type === 'load') {
+		fbmanager.loadApiKey(data.userDetails, function(err, keydata) {
+			if(err) {
+				myutils.packAndSend(myio, 'processapikey', {status: 'error', result: 'Failed to get api key'});
+			}
+			else {
+				myutils.packAndSend(myio, 'processapikey', {status: 'done', result: keydata});
+			}
+		});
+	}
+	else if (data.type === 'generate') {
+		fbmanager.generateApiKey(data.userDetails, function(err, keydata) {
+			if(err) {
+				myutils.packAndSend(myio, 'processapikey', {status: 'error', result: 'Failed to generate api key'});
+			}
+			else {
+				myutils.packAndSend(myio, 'processapikey', {status: 'done', result: keydata});
+			}
+		});
+	}
 }

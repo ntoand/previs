@@ -1,7 +1,7 @@
 export const environment = {
   production: true,
   ws_url: 'https://mivp-dws1.erc.monash.edu:3000',
-  version: 'v0.5.1',
+  version: 'v0.8.0',
   firebase: {
     apiKey: 'AIzaSyCClh2ceNqqWi1D3xAxPksVXlGtHE-83rA',
     authDomain: 'previs2018.firebaseapp.com',
@@ -9,5 +9,6 @@ export const environment = {
     projectId: 'previs2018',
     storageBucket: 'previs2018.appspot.com',
     messagingSenderId: '12491120058'
-  }
+  },
+  photogrammetry: false
 };

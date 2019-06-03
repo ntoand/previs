@@ -53,6 +53,7 @@ var deleteFolderRecursive = function(dir) {
 
 function deleteTag(io, data, item) {
     var tag = item.tag;
+    var dir = item.dir || tag;
     var userId = item.userId;
     data.db.getTag(tag, function(err, res){
         if (err) {
@@ -68,7 +69,7 @@ function deleteTag(io, data, item) {
     		return;
     	}
     	//delete tag and data
-    	var tag_dir = config.tags_data_dir + tag;
+    	var tag_dir = config.tags_data_dir + dir;
         console.log('delete ' + tag_dir);
         deleteFolderRecursive(tag_dir);
         
@@ -93,13 +94,14 @@ function deleteTags(io, data) {
 
 function updateTag(io, data) {
     var tag = data.tag;
+    var type = data.type || '';
     var updatedata = data.data;
     
     data.db.updateTag(tag, updatedata, function(err) {
         if (err) 
-            myutils.packAndSend(io, 'adminupdatetag', {status: 'error', result: err});
+            myutils.packAndSend(io, 'adminupdatetag', {status: 'error', type: type, result: err});
     	else 
-    	    myutils.packAndSend(io, 'adminupdatetag', {status: 'done', result: {tag: tag, data: updatedata}});
+    	    myutils.packAndSend(io, 'adminupdatetag', {status: 'done', type: type, result: {tag: tag, data: updatedata}});
     });
 }
 

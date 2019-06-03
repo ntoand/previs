@@ -8,13 +8,15 @@ var execSync	= require('child_process').execSync;
 
 var myutils 	= require('./node-utils');
 var config		= require('./node-config').config; 
-var extract 	= require('extract-zip')
+var extract 	= require('extract-zip');
+var crypto 		= require('crypto');
 
 function processUpload(io, data) {
 	
+	console.log('processUpload', data);
 	var file = data.file;
-	var filepath = config.tags_data_dir + file;
-	var datatype = data.datatype;
+	//var filepath = config.tags_data_dir + file;
+	//var datatype = data.datatype;
 	var uploadtype = data.uploadtype;
 	
 	if (uploadtype === 'local') {
@@ -60,11 +62,13 @@ function processUploadLink(io, data) {
     	if(err)
 		{
 			myutils.packAndSend(io, 'processupload', {status: 'error', result: 'cannot download file from shared link', detail: stderr});
+			myutils.sendEmail('fail', data, {status: 'error', result: 'cannot download file from shared link', detail: stderr});
 			return;
 		}
 		//check file exist
 		if(myutils.fileExists(destfile) === false) {
 			myutils.packAndSend(io, 'processupload', {status: 'error', result: 'cannot download file from shared link', detail: stderr});
+			myutils.sendEmail('fail', data, {status: 'error', result: 'cannot download file from shared link', detail: stderr});
 			return;
 		}
 		
@@ -90,12 +94,14 @@ function processUploadMytardis(io, data) {
 		if(err) {
 			console.log(err);
 			myutils.packAndSend(io, 'processupload', {status: 'error', result: 'Fail to download file ' + fileid});
+			myutils.sendEmail('fail', data, {status: 'error', result: 'Fail to download file ' + fileid});
 			return;
 		}
 
 	   //check file exist
 		if(myutils.fileExists(destfile) === false) {
 			myutils.packAndSend(io, 'processupload', {status: 'error', result: 'cannot download file from mytardis'});
+			myutils.sendEmail('fail', data, {status: 'error', result: 'cannot download file from mytardis'});
 			return;
 		}
 		
@@ -123,12 +129,14 @@ function processUploadFile(io, data) {
 			console.log(out);
 			if (!out.match) {
 				myutils.packAndSend(io, 'processupload', {status: 'error', result: 'Zip file contents do not match type'});
+				myutils.sendEmail('fail', data, {status: 'error', result: 'Zip file contents do not match type'});
 				return;
 			}
 		}
 		catch(err) {
 			console.log("Error!: " + err.message);
 			myutils.packAndSend(io, 'processupload', {status: 'error', result: 'Checking zip file type failed!', detail: err.message});
+			myutils.sendEmail('fail', data, {status: 'error', result: 'Checking zip file type failed!', detail: err.message});
 			return;
 		}
 	}
@@ -139,7 +147,8 @@ function processUploadFile(io, data) {
 			return;
 		}
 		data.tag = tag_str;
-		data.tagdir = config.tags_data_dir + tag_str;
+		data.dir = tag_str + '_' + crypto.randomBytes(3).toString('hex');
+		data.tagdir = config.tags_data_dir + data.dir;
 		data.inputfile = data.tagdir + '/' + datatype + '.' + fileext;
 		data.inputfilename = datatype;
 		data.inputfileext = fileext;
@@ -163,6 +172,9 @@ function processUploadFile(io, data) {
 			}
 			else if (datatype === 'image') {
 				processUploadFile_Images(io, data);
+			}
+			else if (datatype === 'photogrammetry') {
+				processUploadFile_Photogrammetry(io, data);
 			}
 			else {
 				myutils.packAndSend(io, 'processupload', {status: 'error', result: 'unsupported data type'});
@@ -189,6 +201,7 @@ function processUploadFile_Volumes(io, data) {
     	if(err)
 		{
 			myutils.packAndSend(io, 'processupload', {status: 'error', result: 'cannot convert image stack to xrw', detail: stderr});
+			myutils.sendEmail('fail', data, {status: 'error', result: 'cannot convert image stack to xrw', detail: stderr});
 			return;
 		}
 		myutils.packAndSend(io, 'processupload', {status: 'working', result: 'Converting xrw to png...'});
@@ -202,10 +215,8 @@ function processUploadFile_Meshes(io, data) {
 	console.log(data);
 	
 	myutils.packAndSend(io, 'processupload', {status: 'working', result: 'Processing meshes...'});
-	var filename = data.file;
 	var inputfile = data.inputfile;
-	var inputfilename = data.inputfilename;
-
+	
 	var out_dir = data.tagdir + '/mesh_result';
 	var cmd = 'cd ' + config.scripts_dir + ' && python processmesh.py -i ' + inputfile + ' -o ' + out_dir;
 	console.log(cmd);
@@ -216,12 +227,41 @@ function processUploadFile_Meshes(io, data) {
     	if(err)
 		{
 			myutils.packAndSend(io, 'processupload', {status: 'error', result: 'Processing the meshes archive failed!', detail: stderr});
+			myutils.sendEmail('fail', data, {status: 'error', result: 'Processing the meshes archive failed!', detail: stderr});
 			return;
 		}
 		data.numobjects = JSON.parse(stdout);
 	    myutils.packAndSend(io, 'processupload', {status: 'working', result: 'Files unpacked, all groups processed..'})
 		sendViewDataToClient_Meshes(io, data);
     });
+}
+
+//NH
+// process zip photogrammetry file @AH
+function processUploadFile_Photogrammetry(io, data) {
+	console.log('processUploadFile_Photogrammetry');
+	console.log(data);
+	
+	var inputfile = data.inputfile;
+	var settings = data.settings; // vol voxel size x, y, z, channel, timestep
+	var out_dir = data.tagdir + '/photogrammetry_result';
+	var cmd = 'cd ' + config.scripts_dir + ' && python processphotogrammetry.py -i ' + inputfile + ' -o ' + out_dir;
+	console.log(cmd);
+	myutils.packAndSend(io, 'processupload', {status: 'working', result: 'Processing photogrammetry images...'})
+	exec(cmd, function(err, stdout, stderr) 
+    {
+    	console.log(stdout);
+    	console.log(stderr);
+    	if(err)
+		{
+			myutils.packAndSend(io, 'processupload', {status: 'error', result: 'Processing images failed', detail: stderr});
+			myutils.sendEmail('fail', data, {status: 'error', result: 'Processing photogrammetry images failed.', detail: stderr});
+			return;
+		}
+		myutils.packAndSend(io, 'processupload', {status: 'working', result: 'Processing photogrammetry...You will be notified via email when finished'+data.tag});
+		//myutils.packAndSend(io, 'processupload', {status: 'done', result: tag_json});
+    });
+    //myutils.packAndSend(io, 'processupload', {status: 'done', result: "unknown"});
 }
 
 function processUploadFile_Points(io, data)
@@ -249,6 +289,7 @@ function processUploadFile_Points(io, data)
 			    }
 			    if (found === false) {
 			    	myutils.packAndSend(io, 'processupload', {status: 'error', result: 'Cannot find pointcloud file', detail: err});
+			    	myutils.sendEmail('fail', data, {status: 'error', result: 'Cannot find pointcloud file', detail: err});
 					return;
 			    }
 			});
@@ -274,26 +315,29 @@ function processUploadFile_Images(io, data) {
     	console.log(stderr);
     	if(err) {
 			myutils.packAndSend(io, 'processupload', {status: 'error', result: 'Failed to convert images', detail: stderr});
+			myutils.sendEmail('fail', data, {status: 'error', result: 'Failed to convert images', detail: stderr});
 			return;
 		}
 		
 		var outputimages = JSON.parse(stdout);
 		
 		//save to database
-		var tag_url = 'data/tags/' + data.tag + '/';
+		//var tag_url = 'data/tags/' + data.dir + '/';
 		var tag_json = {};
 		tag_json.tag=data.tag;
+		tag_json.dir=data.dir;
 		tag_json.type=data.datatype;
 		tag_json.source=data.uploadtype;
 		tag_json.date=Date.now();
-		tag_json.data = tag_url + data.inputfilename + data.inputfileext;
-		tag_json.processedData = 'data/tags/' + data.tag + '/image_processed.zip';
+		//tag_json.data = tag_url + data.inputfilename + data.inputfileext;
+		tag_json.processedData = 'data/tags/' + data.dir + '/image_processed.zip';
 		tag_json.userId = data.userDetails.uid;
 		tag_json.userEmail = data.userDetails.email;
 			
 		var volumes = [];
 		var volume = {};
-		volume.data_dir = tag_url + 'image_result';
+		//volume.data_dir = tag_url + 'image_result';
+		volume.subdir = 'image_result';
 		volume.images = outputimages;
 		volume.res = [outputimages.length];
 		volumes.push(volume);
@@ -326,6 +370,7 @@ function convertXRWToPNG(io, data) {
 	exec(cmd, function(err, stdout, stderr) {
 		if (err) {
 			myutils.packAndSend(io, 'processupload', {status: 'error', result: 'cannot_run_xrwinfo'});
+			myutils.sendEmail('fail', data, {status: 'error', result: 'cannot_run_xrwinfo'});
 			return;
 		} 
     	
@@ -376,6 +421,7 @@ function convertXRWToPNG(io, data) {
 	    	if(err)
 			{
 				myutils.packAndSend(io, 'processupload', {status: 'error', result: 'cannot_convert_to_png', detail: stderr});
+				myutils.sendEmail('fail', data, {status: 'error', result: 'cannot_convert_to_png', detail: stderr});
 				return;
 			}
 			myutils.packAndSend(io, 'processupload', {status: 'working', result: 'Preparing json file...'});
@@ -391,12 +437,12 @@ function sendViewDataToClient(io, data) {
 	var jsonfile_web = data.tagdir + '/'  + basename + '_result/vol_web.json';
 	var jsontemp = path.dirname(process.mainModule.filename) + '/src/template.json';
 
-	var tag_url = 'data/tags/' + data.tag + '/';
-	var jsonurl_full = tag_url + basename + '_result/vol_full.json';
-	var jsonurl_web = tag_url + basename + '_result/vol_web.json';
-	var thumburl = tag_url + basename + '_result/vol_web_thumb.png';
-	var pngurl = tag_url + basename + '_result/vol_web.png';
-	var xrwurl = tag_url + basename + '_result/vol.xrw';
+	var tag_url = 'data/tags/' + data.dir + '/';
+	//var jsonurl_full = tag_url + basename + '_result/vol_full.json';
+	//var jsonurl_web = tag_url + basename + '_result/vol_web.json';
+	//var thumburl = tag_url + basename + '_result/vol_web_thumb.png';
+	//var pngurl = tag_url + basename + '_result/vol_web.png';
+	//var xrwurl = tag_url + basename + '_result/vol.xrw';
 
 	fs.readFile(jsontemp, 'utf8', function (err, jsondata) {
 		if (err) {
@@ -430,21 +476,23 @@ function sendViewDataToClient(io, data) {
 				// save to database
 				var tag_json = {};
 				tag_json.tag=data.tag;
+				tag_json.dir=data.dir;
 				tag_json.type='volume'
 				tag_json.source='localupload';
 				tag_json.date=Date.now();
-				tag_json.data = data.tagdir + '/' + data.inputfilename + '.' + data.inputfileext;
+				//tag_json.data = data.tagdir + '/' + data.inputfilename + '.' + data.inputfileext;
 				tag_json.userId = data.userDetails.uid;
 				tag_json.userEmail = data.userDetails.email;
 					
 				var volumes = [];
 				var volume = {};
-				volume.data_dir='data/local/' + basename + '_result';
-				volume.json=jsonurl_full;
-				volume.json_web=jsonurl_web;
-				volume.thumb=thumburl;
-				volume.png=pngurl;
-				volume.xrw=xrwurl;
+				//volume.data_dir='data/local/' + basename + '_result';
+				//volume.json=jsonurl_full;
+				//volume.json_web=jsonurl_web;
+				//volume.thumb=thumburl;
+				//volume.png=pngurl;
+				//volume.xrw=xrwurl;
+				volume.subdir='volume_result';
 				volume.res=obj_full.objects[0].volume.res;
 				volume.res_web=obj_web.objects[0].volume.res;
 				volumes.push(volume);
@@ -452,8 +500,7 @@ function sendViewDataToClient(io, data) {
 				
 				data.db.insertNewTag(tag_json, function(err, res) {
 					if (err) {
-						io.emit('processupload', {status: 'error', result: 'cannot_generate_tag_json'});
-						//throw err;
+						myutils.packAndSend(io, 'processupload', {status: 'error', result: 'cannot_generate_tag_json'});
 						return;
 					} 
 					myutils.packAndSend(io, 'processupload', {status: 'done', result: tag_json});
@@ -470,26 +517,28 @@ function sendViewDataToClient_Meshes(io, data) {
 	
 	var basename = data.inputfilename;
 
-	var tag_url = 'data/tags/' + data.tag + '/';
-	var jsonurl = tag_url + basename + '_result/mesh.json';
-	var initurl = tag_url + basename + '_result/init.script';
+	var tag_url = 'data/tags/' + data.dir + '/';
+	//var jsonurl = tag_url + basename + '_result/mesh.json';
+	//var initurl = tag_url + basename + '_result/init.script';
 
 	// write to database
 	var tag_json = {};
 	tag_json.tag=data.tag;
+	tag_json.dir=data.dir;
 	tag_json.type='mesh'
 	tag_json.source= data.uploadtype;
 	tag_json.date=Date.now();
-	tag_json.data = data.file;
-	tag_json.processedData = 'data/tags/' + data.tag + '/mesh_processed.zip';
+	//tag_json.data = data.file;
+	tag_json.processedData = 'data/tags/' + data.dir + '/mesh_processed.zip';
 	tag_json.userId = data.userDetails.uid;
 	tag_json.userEmail = data.userDetails.email;
 
 	var volumes = [];
 	var volume = {};
-	volume.data_dir=tag_url + basename + '_result';
-	volume.json=jsonurl;
-	volume.initscr = initurl;
+	//volume.data_dir=tag_url + basename + '_result';
+	//volume.json=jsonurl;
+	//volume.initscr = initurl;
+	volume.subdir = 'mesh_result';
 	volume.res = data.numobjects; //[0, 0, 0];
 	volumes.push(volume);
 	tag_json.volumes=volumes;
@@ -518,7 +567,7 @@ function convertPointcloud(io, data, in_file) {
 	var fileext = in_file.split('.').pop().toLowerCase();;
 	var out_dir = data.tagdir + '/' + basename + '_result';
 	var convert_out_dir = out_dir + '/pointclouds/potree'; // to be compatible with previous converter having output html page
-	var tag_url = 'data/tags/' + data.tag + '/';
+	var tag_url = 'data/tags/' + data.dir + '/';
 	
 	var cmd = '';
 	if (fileext === 'xyz' || fileext === 'txt') {
@@ -533,6 +582,7 @@ function convertPointcloud(io, data, in_file) {
     	console.log(stderr);
     	if(err) {
 			myutils.packAndSend(io, 'processupload', {status: 'error', result: 'cannot_convert_pointcloud', detail: stderr});
+			myutils.sendEmail('fail', data, {status: 'error', result: 'cannot_convert_pointcloud', detail: stderr});
 			return;
 		}
 		
@@ -553,25 +603,28 @@ function convertPointcloud(io, data, in_file) {
 			console.log(numpoints);
 			if(numpoints === '0') {
 				myutils.packAndSend(io, 'processupload', {status: 'error', result: "numpoints = 0; failed to convert pointcloud, please check data format"});
+				myutils.sendEmail('fail', data, {status: 'error', result: "numpoints = 0; failed to convert pointcloud, please check data format"});
 				return;
 			}
 	
 			//save to database
 			var tag_json = {};
 			tag_json.tag=data.tag;
+			tag_json.dir=data.dir;
 			tag_json.type='point'
 			tag_json.source='localupload';
 			tag_json.date=Date.now();
-			tag_json.data = tag_url + data.inputfilename + data.inputfileext;
-			tag_json.processedData = 'data/tags/' + data.tag + '/point_processed.zip';
+			//tag_json.data = tag_url + data.inputfilename + data.inputfileext;
+			tag_json.processedData = 'data/tags/' + data.dir + '/point_processed.zip';
 			tag_json.userId = data.userDetails.uid;
 			tag_json.userEmail = data.userDetails.email;
 				
 			var potree_url = tag_url + basename + '_result/potree.html';
 			var volumes = [];
 			var volume = {};
-			volume.data_dir = tag_url + basename + '_result';
-			volume.potree_url = potree_url;
+			//volume.data_dir = tag_url + basename + '_result';
+			//volume.potree_url = potree_url;
+			volume.subdir = 'point_result';
 			volume.res = [numpoints];
 			volumes.push(volume);
 			tag_json.volumes=volumes;
@@ -593,8 +646,8 @@ function convertPointcloud(io, data, in_file) {
 }
 
 function saveDefaultPotreeSetting(data, callback) {
-	var tag = data.tag;
-	var destfile = config.tags_data_dir + tag + '/gigapoint.json';
+	var dir = data.dir;
+	var destfile = config.tags_data_dir + dir + '/gigapoint.json';
 	var jsonObj = {
 		version: 2,
 		dataDir: "potree",
@@ -619,7 +672,7 @@ function saveDefaultPotreeSetting(data, callback) {
 		cameraTarget: [0, 0, -2],
 		cameraUp: [0, 0, 1]
 	};
-	var cloudfile = config.tags_data_dir + tag + "/point_result/pointclouds/potree/cloud.js";
+	var cloudfile = config.tags_data_dir + dir + "/point_result/pointclouds/potree/cloud.js";
 	fs.readFile(cloudfile, 'utf8', function (err, data) {
 	    if (err) {
 	    	callback(err);
@@ -647,10 +700,10 @@ function saveDefaultPotreeSetting(data, callback) {
 
 // ==== for potree viewer ====
 function savePotreeSettings(io, data) {
-	var tag = data.Tag;
-	var destfile = config.tags_data_dir + tag + '/gigapoint.json';
+	var dir = data.Dir;
+	var destfile = config.tags_data_dir + dir + '/gigapoint.json';
 	if(data.Preset && data.Preset !== 'default') {
-		destfile = config.tags_data_dir + tag + '/gigapoint_' + data.Preset + '.json';
+		destfile = config.tags_data_dir + dir + '/gigapoint_' + data.Preset + '.json';
 	}
 	if(myutils.fileExists(destfile)) {
 		fs.unlinkSync(destfile);
@@ -681,7 +734,13 @@ function savePotreeSettings(io, data) {
 		cameraUpdatePosOri: 1,
 		cameraPosition: data.CamLocation,
 		cameraTarget: data.CamTarget,
-		cameraUp: [0, 0, 1]
+		cameraUp: [0, 0, 1],
+		//for web only
+		forWebOnly: {
+			PointBudget: data.PointBudget,
+			FOV: data.FOV,
+			PointSize: data.PointSize
+		}
 	};
 	
 	var json = JSON.stringify(jsonObj, null, 4);
@@ -697,11 +756,11 @@ function savePotreeSettings(io, data) {
 
 // for potree viewer
 function loadPotreeSettings(io, data) {
-	var tag = data.Tag;
+	var dir = data.Dir;
 	var preset = data.Preset;
-	var jsonfile = config.tags_data_dir + tag + '/gigapoint.json';
+	var jsonfile = config.tags_data_dir + dir + '/gigapoint.json';
 	if(preset && preset !== 'default') {
-		jsonfile = config.tags_data_dir + tag + '/gigapoint_' + preset + '.json';
+		jsonfile = config.tags_data_dir + dir + '/gigapoint_' + preset + '.json';
 	}
 	fs.readFile(jsonfile, 'utf8', function (err, data) {
 	    if (err) {
@@ -715,5 +774,6 @@ function loadPotreeSettings(io, data) {
 
 // EXPORT
 module.exports.processUpload = processUpload;
+module.exports.processUploadFile = processUploadFile;	//for REST upload using scripts 
 module.exports.savePotreeSettings = savePotreeSettings;
 module.exports.loadPotreeSettings = loadPotreeSettings;

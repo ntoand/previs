@@ -5,6 +5,7 @@ dir=`pwd`
 
 cd ${dir}/client
 npm run build
+cp ${dir}/client-script/previs-upload.py ${dir}/server/dist/assets/previs-upload.py
 
 rm -rf ${dir}/server/dist
 mv ${dir}/server/dist-dev ${dir}/server/dist
@@ -14,6 +15,7 @@ ln -s ${dir}/server/public/sharevol .
 ln -s ${dir}/server/public/meshviewer .
 ln -s ${dir}/server/public/imageviewer .
 ln -s ${dir}/server/public/pointviewer .
+ln -s ${dir}/server/public/qrcode .
 
 cd ${dir}/server/dist/sharevol
 unlink data

@@ -20,7 +20,14 @@ function trim(str) {
 }
 
 function packAndSend(io, action, data) {
-    io.emit('message', {action: action, data: data});
+    if(io.socket) {
+        io.socket.emit('message', {action: action, data: data});
+    }
+    else {
+        if(io.res && data.status !== 'working') {
+            io.res.json({action: action, data: data});
+        }
+    }
 }
 
 function createDirSync(dir) {
@@ -145,7 +152,7 @@ function zipDirectory(dir, dirname, zipfile, cb) {
 }
 
 
-function sendEmail(type, data) {
+function sendEmail(type, data, detail) {
     
     // send email
     if(!data.settings.sendEmail) return;
@@ -177,12 +184,13 @@ function sendEmail(type, data) {
         mail_subject = 'You previs data with tag ' + mail.tag +  ' is ready';
         mail_body = mail_body + '<p>Your ' + mail.datatype + ' data uploaded to previs is now ready to view on web at the following link:</p>';
         
+        const config	= require('./node-config').config; 
         var hosturl = '';
         if (process.env.NODE_ENV === "production")  {
-            hosturl = "https://mivp-dws1.erc.monash.edu:3000";
+            hosturl = config.hosturl;
         }
         else {
-            hosturl = "http://118.138.241.179:3000"
+            hosturl = config.hosturl_dev;
         }
         var url = hosturl;
        
@@ -206,7 +214,8 @@ function sendEmail(type, data) {
     }
     else if (mail.type === 'fail') {
         mail_subject = 'Previs failed to process your previs data';
-        mail_body = '<p>Unfortunately previs was unable to process your ' + mail.datatype + ' data. Please try again or contact MIVP team</p>';
+        mail_body = mail_body + '<p>Unfortunately previs was unable to process your ' + mail.datatype + ' data. Please try again or contact MIVP team</p>';
+        if(detail) mail_body = mail_body + '<p>Log:</p><p>' + JSON.stringify(detail) + '</p>'
         mail_body = mail_body + '<p>Kind regards,</p><p>MIVP previs team</p>';
     }
     

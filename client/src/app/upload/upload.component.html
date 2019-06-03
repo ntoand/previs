@@ -13,6 +13,7 @@
           <mat-radio-button class="type-radio-button" value="mesh">Mesh</mat-radio-button>
           <mat-radio-button class="type-radio-button" value="point">Pointcloud</mat-radio-button>
           <mat-radio-button class="type-radio-button" value="image">Image</mat-radio-button>
+          <mat-radio-button *ngIf=photogrammetryEnabled class="type-radio-button" value="photogrammetry">Photogrammetry</mat-radio-button>
         </mat-radio-group>
     </div>
     
@@ -103,6 +104,19 @@
         </details>
       </div>
       
+      <div *ngIf="dataType === 'photogrammetry'">
+        <details>
+          <summary>
+            Upload a zip with photogrammetry images
+          </summary>
+          <p>
+            <li>A .zip file containing photogrammetry images</li>
+            
+          </p>
+         
+        </details>
+      </div>
+      
       <div *ngIf="dataType === 'volume'" class="collapse-able">
         <details>
           <summary>
@@ -170,6 +184,7 @@
         <p>Date: {{dataset.dateStr}}</p>
         <p>Size: {{dataset.size}}</p>
         <a href={{dataset.viewUrl}} target="_blank"><button mat-button color='primary'>VIEW ON WEB</button></a>
+        <a href={{dataset.qrUrl}} target="_blank"><button mat-button color='primary'>QR CODE</button></a>
       </div>
     </div>
   </mat-card>
