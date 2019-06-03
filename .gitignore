@@ -7,3 +7,4 @@ node_modules
 .git.bk
 server/private
 package-lock.json
+.eqcfg.eqc
