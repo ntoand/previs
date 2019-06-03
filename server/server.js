@@ -218,6 +218,15 @@ app.post('/rest/info', function (req, res) {
 		return;
 	}
 	console.log('/rest/info POST ' + tag);
+	
+	let demoTags = ['000000_arteries_brain', '000000_galaxy', '000000_hoyoverde',
+                    '000000_image_cmu1', '000000_mesh_baybridge', '000000_mesh_heart'];
+    if(demoTags.includes(tag)) {
+    	res.setHeader('Content-Type', 'application/json');
+    	res.send(JSON.stringify({tag: tag, dir: tag}));
+    	return;
+    }
+	
 	fbmanager.getTag(tag, function(err, info) { 
 		//console.log(info);
 		if(err || !info) {

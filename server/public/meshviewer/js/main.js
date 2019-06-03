@@ -118,8 +118,10 @@ var buildGui = function() {
       loadSettings();
 	});
 	
-	gui.add(obj, 'saveSettings').name('Save');
-	gui.add(obj, 'saveSettingsAs').name('Save as');
+	if(!gTag.includes('000000')) {
+		gui.add(obj, 'saveSettings').name('Save');
+		gui.add(obj, 'saveSettingsAs').name('Save as');
+	}
 
 	var cameraControl = gui.add(obj, 'cameraControl', cameraControlList).name('Camera Control').listen();
 	cameraControl.onFinishChange(function(value) {

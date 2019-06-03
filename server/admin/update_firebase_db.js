@@ -28,29 +28,33 @@ function updateTag(tags, index=0) {
     var tag = tags[index];
     // update tag
     data = tag.data;
+    console.log(data);
     if(!tag.data.dir) {
         var dir = data.tag + '_' + crypto.randomBytes(3).toString('hex');
     
         delete data.data;
-        delete data.volumes[0].data_dir;    
-
         const type = tag.data.type;
-        if(type === 'volume') {
-            delete data.volumes[0].json;
-            delete data.volumes[0].json_web;
-            delete data.volumes[0].png;
-            delete data.volumes[0].thumb;
-            delete data.volumes[0].xrw;
-        }
-        else if(type === 'mesh') {
-            delete data.volumes[0].initscr;
-            delete data.volumes[0].json;
-        }
-        else if(type === 'point') {
-            delete data.volumes[0].potree_url;
-        }
-        else if(type === 'image') {
+        if(data.volumes)
+        {
+            delete data.volumes[0].data_dir;    
 
+            if(type === 'volume') {
+                delete data.volumes[0].json;
+                delete data.volumes[0].json_web;
+                delete data.volumes[0].png;
+                delete data.volumes[0].thumb;
+                delete data.volumes[0].xrw;
+            }
+            else if(type === 'mesh') {
+                delete data.volumes[0].initscr;
+                delete data.volumes[0].json;
+            }
+            else if(type === 'point') {
+                delete data.volumes[0].potree_url;
+            }
+            else if(type === 'image') {
+    
+            }
         }
         // add new
         data.dir = dir;
@@ -58,7 +62,9 @@ function updateTag(tags, index=0) {
             data.processedData = 'data/tags/' + dir + '/' + type + '_processed.zip';
         else 
             delete data.processedData;
-        data.volumes[0].subdir = type + '_result';
+        
+        if(data.volumes)
+            data.volumes[0].subdir = type + '_result';
 
         console.log(JSON.stringify(data, null, 4));
         object.setTag(data.tag, data, function(err, res) {

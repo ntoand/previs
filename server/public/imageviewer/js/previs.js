@@ -12,6 +12,7 @@ function askPassword(msg) {
 }
 
 function checkAndLoadPrevisTag(tag, password, success, first=true) {
+    
     var http = new XMLHttpRequest();
     var url = "/rest/info";
     var params = 'tag=' + tag;

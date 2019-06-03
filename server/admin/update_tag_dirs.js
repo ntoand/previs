@@ -9,7 +9,7 @@ var tagpath = '';
 
 if (process.env.NODE_ENV === "production")  {
    console.log('Mode: production')
-   tagpath = '';
+   tagpath = '/home/ubuntu/git/previs/server/public/data/tags/';
 }
 else {
    console.log('Mod: development');

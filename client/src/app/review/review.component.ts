@@ -90,7 +90,7 @@ export class ReviewComponent implements OnInit {
         const password = msg.data.result.data.password || ''; 
         this.updateTagNote(tag, msg.data.type, note, password);
         this.message.type = 'success';
-        this.message.content = 'Updated note for tag ' + tag;
+        this.message.content = 'Updated tag ' + tag;
       }
       
     });
