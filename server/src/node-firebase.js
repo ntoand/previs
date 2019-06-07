@@ -173,6 +173,20 @@ FirebaseManager.prototype.getKeyInfo = function(key, callback) {
     });
 }
 
+FirebaseManager.prototype.getKeyByAppName = function(appname, callback) {
+    var ref = this.db.collection('keys').where('appname','==',appname);
+    ref.get().then(querySnapshot => {
+        var data = null;
+        querySnapshot.forEach(function(doc) {
+            data = doc.data();
+        });
+        callback(null, data);
+    })
+    .catch(err => {
+        callback(err);
+    });
+}
+
 FirebaseManager.prototype.loadApiKey = function(userDetails, callback) {
     var ref = this.db.collection('keys').doc(userDetails.uid);
     ref.get()
@@ -206,6 +220,20 @@ FirebaseManager.prototype.generateApiKey = function(userDetails, callback) {
         callback(err); 
     })
 }
+
+
+FirebaseManager.prototype.generateAppApiKey = function(keyinfo, callback) {
+    var ref = this.db.collection('keys').doc();
+    keyinfo.id = ref.id;
+    ref.set(keyinfo)
+    .then(function() {
+        callback(null, keyinfo);
+    })
+    .catch(err => {
+        callback(err); 
+    })
+}
+
 
 // export the class
 module.exports = FirebaseManager;

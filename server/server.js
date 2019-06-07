@@ -180,14 +180,14 @@ app.get('/rest/info', function (req, res) {
 	console.log(tag, key);
 	if(!key || !tag) {
 		res.setHeader('Content-Type', 'application/json');
-		res.send(JSON.stringify({ status: "error", code: "100", result: "tag or api key is nor provided" }, null, 4));
+		res.send(JSON.stringify({ status: "error", code: "100", result: "tag or api key is not provided" }, null, 4));
 		return;
 	}
 
 	fbmanager.getKeyInfo(key, function(err, keydata) {
 		console.log(err);
 		console.log(keydata);
-		if(err) {
+		if(err || keydata.type !== 'app') {
 			res.setHeader('Content-Type', 'application/json');
 			res.send(JSON.stringify({ status: "error", code: "100", result: "api key is nor provided or invalid" }, null, 4));
 			return;
