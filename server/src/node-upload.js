@@ -11,9 +11,11 @@ var config		= require('./node-config').config;
 var extract 	= require('extract-zip');
 var crypto 		= require('crypto');
 
+const winston 	= require('winston');
+
 function processUpload(io, data) {
 	
-	console.log('processUpload', data);
+	winston.info('processUpload');
 	var file = data.file;
 	//var filepath = config.tags_data_dir + file;
 	//var datatype = data.datatype;
@@ -29,7 +31,7 @@ function processUpload(io, data) {
 		processUploadMytardis(io, data);
 	}
 	else {
-		console.log ('Invalid upload type');
+		winston.info ('Invalid upload type');
 		myutils.packAndSend(io, 'processupload', {status: 'error', result: 'Invalid upload type'});
 		return;
 	}
@@ -53,12 +55,12 @@ function processUploadLink(io, data) {
 	
 	var destfile = config.tags_data_dir + id + '.' + data.ext;
 	var cmd = 'cd ' + config.scripts_dir + ' && python downloadlink.py ' + service + ' ' + id + ' ' + destfile;
-	console.log(cmd);
+	winston.info(cmd);
 	myutils.packAndSend(io, 'processupload', {status: 'working', result: 'Downloading file from shared link...'})
 	exec(cmd, function(err, stdout, stderr) 
     {
-    	console.log(stdout);
-    	console.log(stderr);
+    	winston.info(stdout);
+    	winston.info(stderr);
     	if(err)
 		{
 			myutils.packAndSend(io, 'processupload', {status: 'error', result: 'cannot download file from shared link', detail: stderr});
@@ -88,11 +90,11 @@ function processUploadMytardis(io, data) {
 	
 	// download file
 	var url = 'https://' + host + '/api/v1/dataset_file/' + fileid + '/download/';
-	console.log(url);
+	winston.info(url);
 	myutils.packAndSend(io, 'processupload', {status: 'working', result: 'Downloading file from mytardis...'})
 	myutils.downloadFileHttps(url, apikey, destfile, function(err) {
 		if(err) {
-			console.log(err);
+			winston.error(err);
 			myutils.packAndSend(io, 'processupload', {status: 'error', result: 'Fail to download file ' + fileid});
 			myutils.sendEmail('fail', data, {status: 'error', result: 'Fail to download file ' + fileid});
 			return;
@@ -123,10 +125,10 @@ function processUploadFile(io, data) {
 		var cmd_test = 'cd ' + config.scripts_dir + ' && python checkzip.py -f ' + filepath + " -t " + datatype;
 		
 		try {
-			console.log(cmd_test);
+			winston.info(cmd_test);
 			var out = execSync(cmd_test).toString();
 			out = JSON.parse(out)
-			console.log(out);
+			winston.info(out);
 			if (!out.match) {
 				myutils.packAndSend(io, 'processupload', {status: 'error', result: 'Zip file contents do not match type'});
 				myutils.sendEmail('fail', data, {status: 'error', result: 'Zip file contents do not match type'});
@@ -134,7 +136,7 @@ function processUploadFile(io, data) {
 			}
 		}
 		catch(err) {
-			console.log("Error!: " + err.message);
+			winston.error(err.message);
 			myutils.packAndSend(io, 'processupload', {status: 'error', result: 'Checking zip file type failed!', detail: err.message});
 			myutils.sendEmail('fail', data, {status: 'error', result: 'Checking zip file type failed!', detail: err.message});
 			return;
@@ -185,19 +187,18 @@ function processUploadFile(io, data) {
 
 // process zip volume file
 function processUploadFile_Volumes(io, data) {
-	console.log('processUploadFile_Volumes');
-	console.log(data);
+	winston.info('processUploadFile_Volumes');
 	
 	var inputfile = data.inputfile;
 	var settings = data.settings; // vol voxel size x, y, z, channel, timestep
 	var out_dir = data.tagdir + '/volume_result';
 	var cmd = 'cd ' + config.scripts_dir + ' && python processvolume.py -i ' + inputfile + ' -o ' + out_dir + ' -c ' + settings.channel + ' -t ' + settings.time;
-	console.log(cmd);
+	winston.info(cmd);
 	myutils.packAndSend(io, 'processupload', {status: 'working', result: 'Converting image stack to xrw...'})
 	exec(cmd, function(err, stdout, stderr) 
     {
-    	console.log(stdout);
-    	console.log(stderr);
+    	winston.info(stdout);
+    	winston.info(stderr);
     	if(err)
 		{
 			myutils.packAndSend(io, 'processupload', {status: 'error', result: 'cannot convert image stack to xrw', detail: stderr});
@@ -211,19 +212,18 @@ function processUploadFile_Volumes(io, data) {
 
 // DW
 function processUploadFile_Meshes(io, data) {
-	console.log('processUploadFile_Meshes');
-	console.log(data);
+	winston.info('processUploadFile_Meshes');
 	
 	myutils.packAndSend(io, 'processupload', {status: 'working', result: 'Processing meshes...'});
 	var inputfile = data.inputfile;
 	
 	var out_dir = data.tagdir + '/mesh_result';
 	var cmd = 'cd ' + config.scripts_dir + ' && python processmesh.py -i ' + inputfile + ' -o ' + out_dir;
-	console.log(cmd);
+	winston.info(cmd);
 	exec(cmd, function(err, stdout, stderr) 
     {
-    	console.log(stdout);
-    	console.log(stderr);
+    	winston.info(stdout);
+    	winston.info(stderr);
     	if(err)
 		{
 			myutils.packAndSend(io, 'processupload', {status: 'error', result: 'Processing the meshes archive failed!', detail: stderr});
@@ -239,19 +239,18 @@ function processUploadFile_Meshes(io, data) {
 //NH
 // process zip photogrammetry file @AH
 function processUploadFile_Photogrammetry(io, data) {
-	console.log('processUploadFile_Photogrammetry');
-	console.log(data);
+	winston.info('processUploadFile_Photogrammetry');
 	
 	var inputfile = data.inputfile;
 	var settings = data.settings; // vol voxel size x, y, z, channel, timestep
 	var out_dir = data.tagdir + '/photogrammetry_result';
 	var cmd = 'cd ' + config.scripts_dir + ' && python processphotogrammetry.py -i ' + inputfile + ' -o ' + out_dir;
-	console.log(cmd);
+	winston.info(cmd);
 	myutils.packAndSend(io, 'processupload', {status: 'working', result: 'Processing photogrammetry images...'})
 	exec(cmd, function(err, stdout, stderr) 
     {
-    	console.log(stdout);
-    	console.log(stderr);
+    	winston.info(stdout);
+    	winston.info(stderr);
     	if(err)
 		{
 			myutils.packAndSend(io, 'processupload', {status: 'error', result: 'Processing images failed', detail: stderr});
@@ -277,7 +276,7 @@ function processUploadFile_Points(io, data)
 			}
 			fs.unlinkSync(data.inputfile);
 			fs.readdir(out_dir, function(err, items) {
-			    console.log(items);
+			    winston.info(items);
 			    var found = false;
 			    for (var i=0; i<items.length; i++) {
 			        var ext = items[i].split('.').pop().toLowerCase();
@@ -302,17 +301,16 @@ function processUploadFile_Points(io, data)
 
 // process images file
 function processUploadFile_Images(io, data) {
-	console.log('processUploadFile_Images');
-	console.log(data);
+	winston.info('processUploadFile_Images');
 	
 	var inputfile = data.inputfile;
 	var out_dir = data.tagdir + '/image_result';
 	var cmd = 'cd ' + config.scripts_dir + ' && python processimage.py -i ' + inputfile + ' -o ' + out_dir;
-	console.log(cmd);
+	winston.info(cmd);
 	myutils.packAndSend(io, 'processupload', {status: 'working', result: 'Converting images...'})
 	exec(cmd, function(err, stdout, stderr) {
-    	console.log(stdout);
-    	console.log(stderr);
+    	winston.info(stdout);
+    	winston.info(stderr);
     	if(err) {
 			myutils.packAndSend(io, 'processupload', {status: 'error', result: 'Failed to convert images', detail: stderr});
 			myutils.sendEmail('fail', data, {status: 'error', result: 'Failed to convert images', detail: stderr});
@@ -365,7 +363,7 @@ function convertXRWToPNG(io, data) {
 	var xrwfile = result_dir + '/vol.xrw';
 	
 	var cmd = 'xrwinfo ' + xrwfile + ' | grep dimensions';
-	console.log(cmd);
+	winston.info(cmd);
 	
 	exec(cmd, function(err, stdout, stderr) {
 		if (err) {
@@ -389,7 +387,7 @@ function convertXRWToPNG(io, data) {
     	*/
     	var resize_factor = 1;
     	var total_res = parseInt(res[2]) * parseInt(res[3]) * parseInt(res[4]);
-    	console.log('total res: ', total_res);
+    	winston.info('total res: ', total_res);
     	if(total_res > 4069*4096*4096)
     		resize_factor = 9;
     	else if(total_res > 2048*2048*2048)
@@ -408,16 +406,15 @@ function convertXRWToPNG(io, data) {
     	data.vol_scale_full = [1, data.vol_res_full[1]*settings.voxelSizeY/xref_full, data.vol_res_full[2]*settings.voxelSizeZ/xref_full];
     	var xref_web = data.vol_res_web[0]*settings.voxelSizeX;
     	data.vol_scale_web = [1, data.vol_res_web[1]*settings.voxelSizeY/xref_web, data.vol_res_web[2]*settings.voxelSizeZ/xref_web];
-    	console.log(data);
-    
+    	
     	var cmd = 'cd ' + config.scripts_dir + ' && xrw2pngmos -f ' + result_dir + '/vol.xrw -o ' + result_dir + '/vol_web.png -s ' 
     		 	+ resize_factor + ' ' + resize_factor + ' ' + resize_factor  
 			  	+ ' && convert ' + result_dir + '/vol_web.png -thumbnail 256 ' + result_dir + '/vol_web_thumb.png';
-		console.log(cmd);
+		winston.info(cmd);
 	
 		exec(cmd, function(err, stdout, stderr) {
-	    	console.log(stdout);
-	    	console.log(stderr);
+	    	winston.info(stdout);
+	    	winston.info(stderr);
 	    	if(err)
 			{
 				myutils.packAndSend(io, 'processupload', {status: 'error', result: 'cannot_convert_to_png', detail: stderr});
@@ -575,11 +572,11 @@ function convertPointcloud(io, data, in_file) {
 	} else {
 		cmd = 'cd ' + config.potree_converter_dir + ' && ./PotreeConverter ' + in_file + ' -o ' + convert_out_dir;
 	} 
-	console.log(cmd);
+	winston.info(cmd);
 	myutils.packAndSend(io, 'processupload', {status: 'working', result: 'Converting pointcloud...(it takes long time to process big data e.g. ~10min for 100k points)'});
 	exec(cmd, function(err, stdout, stderr) {
-    	console.log(stdout);
-    	console.log(stderr);
+    	winston.info(stdout);
+    	winston.info(stderr);
     	if(err) {
 			myutils.packAndSend(io, 'processupload', {status: 'error', result: 'cannot_convert_pointcloud', detail: stderr});
 			myutils.sendEmail('fail', data, {status: 'error', result: 'cannot_convert_pointcloud', detail: stderr});
@@ -600,7 +597,7 @@ function convertPointcloud(io, data, in_file) {
 				if(item === 'points')
 					numpoints = stdout[i-1];
 			}
-			console.log(numpoints);
+			winston.info(numpoints);
 			if(numpoints === '0') {
 				myutils.packAndSend(io, 'processupload', {status: 'error', result: "numpoints = 0; failed to convert pointcloud, please check data format"});
 				myutils.sendEmail('fail', data, {status: 'error', result: "numpoints = 0; failed to convert pointcloud, please check data format"});
@@ -678,7 +675,7 @@ function saveDefaultPotreeSetting(data, callback) {
 	    	callback(err);
 	    	return;
 	    }
-	    //console.log(data);
+	    //winston.info(data);
 	    var obj = JSON.parse(data);
 	    var tbb = obj.tightBoundingBox;
 	    var center = [(tbb.ux+tbb.lx)/2, (tbb.uy+tbb.ly)/2, (tbb.uz+tbb.lz)/2];
@@ -687,7 +684,7 @@ function saveDefaultPotreeSetting(data, callback) {
 	    jsonObj.cameraTarget = target;
 	    
 	    var json = JSON.stringify(jsonObj, null, 4);
-		//console.log(json);
+		//winston.info(json);
 		fs.writeFile(destfile, json, 'utf8', function(err) {
 			if (err) {
 				callback(err);
@@ -708,7 +705,7 @@ function savePotreeSettings(io, data) {
 	if(myutils.fileExists(destfile)) {
 		fs.unlinkSync(destfile);
 	}
-	//console.log(destfile);
+	//winston.info(destfile);
 	
 	var range_min = Math.min(data.ElevRangeMin, data.ElevRangeMax);
 	var range_max = Math.max(data.ElevRangeMin, data.ElevRangeMax);
@@ -744,7 +741,7 @@ function savePotreeSettings(io, data) {
 	};
 	
 	var json = JSON.stringify(jsonObj, null, 4);
-	//console.log(json);
+	//winston.info(json);
 	fs.writeFile(destfile, json, 'utf8', function(err) {
 		if (err) {
 			io.emit('savepotreesettings', {status: 'error', result: 'cannot_save_json_file'});

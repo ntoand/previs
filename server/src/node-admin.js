@@ -5,6 +5,8 @@ var path        = require('path');
 var config		= require('./node-config').config; 
 var myutils 	= require('./node-utils');
 
+const winston   = require('winston');
+
 // ===============================
 function getTags(io, data) {
 
@@ -70,7 +72,7 @@ function deleteTag(io, data, item) {
     	}
     	//delete tag and data
     	var tag_dir = config.tags_data_dir + dir;
-        console.log('delete ' + tag_dir);
+        winston.info('delete ' + tag_dir);
         deleteFolderRecursive(tag_dir);
         
         //delete tag in database
@@ -87,7 +89,7 @@ function deleteTag(io, data, item) {
 function deleteTags(io, data) {
     for (var i=0, l=data.tags.length; i < l; i++) {
         var item =  data.tags[i];
-        console.log(item);
+        winston.info(item);
         deleteTag(io, data, item);
     }
 }

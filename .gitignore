@@ -8,3 +8,4 @@ node_modules
 server/private
 package-lock.json
 .eqcfg.eqc
+server/logs

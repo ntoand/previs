@@ -1,6 +1,6 @@
-var crypto = require('crypto');
-var config	= require('./node-config').config; 
-const fbadmin = require("firebase-admin");
+var crypto      = require('crypto');
+var config	    = require('./node-config').config; 
+const fbadmin   = require("firebase-admin");
 
 // Constructor
 function FirebaseManager() {

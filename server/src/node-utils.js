@@ -237,6 +237,14 @@ function sendEmail(type, data, detail) {
 
 }
 
+function getTimeString() {
+    const d = new Date();
+    const monthstr = (d.getMonth()+1) < 9 ? '0'+ (d.getMonth()+1).toString() : (d.getMonth()+1).toString();
+    const datestr = d.getDate() < 9 ? '0' + d.getDate().toString() : d.getDate().toString();
+    const timestr = d.getFullYear().toString() + monthstr + datestr + '_' + d.toLocaleTimeString().replace(/:/g, '-');
+    return timestr;
+}
+
 
 module.exports.fileExists = fileExists;
 module.exports.trim = trim;
@@ -247,3 +255,4 @@ module.exports.extractGoogleId = extractGoogleId;
 module.exports.downloadFileHttps = downloadFileHttps;
 module.exports.zipDirectory = zipDirectory;
 module.exports.sendEmail = sendEmail;
+module.exports.getTimeString = getTimeString;

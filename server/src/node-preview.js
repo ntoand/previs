@@ -2,10 +2,11 @@
 'use strict';
 
 var myutils 	= require('./node-utils');
+const winston   = require('winston');
 
 function processTag(io, data) {
     
-    console.log('node-preview - processTag');
+    winston.info('node-preview processTag email: %s', data.userEmail);
     if(data.userEmail !== undefined) {
         data.db.getTagsByUserEmail(data.userEmail, function(err, res){
            if(err) {

@@ -23,14 +23,32 @@ var myutils 	  = require('./src/node-utils');
 var FirebaseManager   = require('./src/node-firebase');
 var fbmanager = new FirebaseManager();
 
+// init default winston logger
+const winston = require('winston');
+winston.configure({
+	format: winston.format.combine(
+		winston.format.timestamp({
+			format: 'YYYY-MM-DD HH:mm:ss'
+		}),
+		winston.format.errors({ stack: true }),
+		winston.format.splat(),
+		winston.format.json()
+	),
+	transports: [
+		new winston.transports.File({ filename: 'logs/combined_' + myutils.getTimeString() + '.log' }),
+		new winston.transports.Console({ format: winston.format.simple() })
+	]
+});
+winston.info('server starts');
+
 if (process.env.NODE_ENV === "production")  {
-	console.log("RUN PROD MODE");
+	winston.info("RUN PROD MODE");
 } else {
-	console.log("RUN DEV MODE");
+	winston.info("RUN DEV MODE");
 }
 
 process.argv.forEach(function (val, index, array) {
-  console.log(index + ': ' + val);
+	winston.info(index + ': ' + val);
 });
 
 
@@ -47,13 +65,13 @@ app.use(bodyParser.urlencoded({ extended: true })); // support encoded bodies
 //server.listen(process.env.PORT || config.port, process.env.IP || "0.0.0.0", function(){
 server.listen(process.env.PORT || config.port, process.env.IP || "127.0.0.1", function(){
 	var addr = server.address();
-  	console.log("previs server listening at", addr.address + ":" + addr.port);
+	winston.info("previs server listening at " + addr.address + ":" + addr.port);
 });
 
 // ===== REST SERVICES =======
 // ===== LOCAL UPLOAD  =======
 function doLocalUpload(req, res) {
-	console.log('doLocalUpload');
+	winston.info('doLocalUpload');
 	var form = new formidable.IncomingForm(),
 	files = [],
   	fields = [];
@@ -65,21 +83,20 @@ function doLocalUpload(req, res) {
 
   	form
   	.on('field', function(field, value) {
-    	console.log(field, value);
+    	winston.info(field, value);
     	fields.push([field, value]);
   	})
   	.on('file', function(field, file) {
-    	console.log(field);
-    	console.log(file.name);
-    	console.log(file.path);
+    	winston.info(field);
+    	winston.info(file);
     	files.push([field, file]);
   	})
   	.on('error', function(err) {
-		console.log('An error has occured: \n' + err);
+		winston.error(err);
 		res.json({status: 'error', detail: err});
   	})
   	.on('end', function() {
-    	console.log('-> upload done');
+    	winston.info('-> upload done');
     	var filebase = path.parse(files[0][1].path).base;
     	res.json({status: 'done', file: filebase});
     });
@@ -89,10 +106,10 @@ function doLocalUpload(req, res) {
 
 
 app.post('/localupload', function (req, res) {
-	console.log('receive and process .zip file');
+	winston.info('receive and process .zip file');
 	
 	var key = req.query.key;
-	console.log('localupload', key);
+	winston.info('localupload', key);
 	// TODO: using key for web client upload
 	const myio = {
 		socket: null,
@@ -119,14 +136,14 @@ app.post('/rest/processupload', function (req, res) {
 	//params = {"file", "key", "type", 'voxelSizeX', 'voxelSizeY', 'voxelSizeZ', 'channel', 'time', 'sendEmail'}
 	var key = req.query.key;
 	var file = req.query.file;
-	console.log('processupload', key, file);
+	winston.info('processupload ' + key + ' ' + file);
 	const myio = {
 		socket: null,
 		res: res
 	};
 	fbmanager.getKeyInfo(key, function(err, keydata) {
-		console.log(err);
-		console.log(keydata);
+		winston.error(err);
+		winston.info(keydata);
 		if(err) {
 			myutils.packAndSend(myio, 'processupload', {status: 'error', result: 'Invalid api key (processupload): ' + key});
 		}
@@ -177,7 +194,7 @@ app.post('/rest/adminlogin', function (req, res) {
 app.get('/rest/info', function (req, res) {
 	var tag = req.query.tag;
 	var key = req.query.key;
-	console.log(tag, key);
+	winston.info(req.query);
 	if(!key || !tag) {
 		res.setHeader('Content-Type', 'application/json');
 		res.send(JSON.stringify({ status: "error", code: "100", result: "tag or api key is not provided" }, null, 4));
@@ -185,8 +202,8 @@ app.get('/rest/info', function (req, res) {
 	}
 
 	fbmanager.getKeyInfo(key, function(err, keydata) {
-		console.log(err);
-		console.log(keydata);
+		winston.error(err);
+		winston.info(keydata);
 		if(err || keydata.type !== 'app') {
 			res.setHeader('Content-Type', 'application/json');
 			res.send(JSON.stringify({ status: "error", code: "100", result: "api key is nor provided or invalid" }, null, 4));
@@ -194,9 +211,9 @@ app.get('/rest/info', function (req, res) {
 		}
 
 		fbmanager.getTag(tag, function(err, info) { 
-			console.log(info);
+			winston.info(info);
 			if(err || !info) {
-				console.log(err);
+				winston.error(err);
 				res.setHeader('Content-Type', 'application/json');
 				res.send(JSON.stringify({ status: "error", code: "100", result: "cannot get info" }, null, 4));
 				return;
@@ -217,7 +234,7 @@ app.post('/rest/info', function (req, res) {
 		res.send(JSON.stringify({ status: "error", code: "100", result: "no tag provided" }, null, 4));
 		return;
 	}
-	console.log('/rest/info POST ' + tag);
+	winston.info('/rest/info POST ' + tag);
 	
 	let demoTags = ['000000_arteries_brain', '000000_galaxy', '000000_hoyoverde',
                     '000000_image_cmu1', '000000_mesh_baybridge', '000000_mesh_heart'];
@@ -230,7 +247,7 @@ app.post('/rest/info', function (req, res) {
 	fbmanager.getTag(tag, function(err, info) { 
 		//console.log(info);
 		if(err || !info) {
-			console.log(err);
+			winston.error(err);
 			res.setHeader('Content-Type', 'application/json');
     		res.send(JSON.stringify({ status: "error", code: "100", result: "cannot get info" }, null, 4));
     		return;
@@ -259,14 +276,14 @@ app.get('*', function(req, res) {
 
 // ===== SOCKET IO ===========
 io.on('connection', function (socket) {
-	console.log("A client connected!");
-
+	winston.info('A client connected');
+	
 	socket.on('disconnect', function(){
-    	console.log('user disconnected');
+    	winston.info('user disconnected');
   	});
   	
   	socket.on('message', function(msg) {
-  		console.log(msg);
+		winston.info(msg);
   		const myio = {
 			socket: socket,
 			res: null
@@ -297,41 +314,40 @@ io.on('connection', function (socket) {
   	
     // sharevol
 	socket.on('savedatajson', function(data) {
-		console.log(data);
+		winston.info(data);
 		saveDataJson(socket, data);
 	});
 
 	// meshviewer
 	socket.on('savemeshjson', function(data) {
-		console.log(data);
+		winston.info(data);
 		saveMeshParams(socket, data);
 	});
 	
 	// potree viewer
 	socket.on('savepotreesettings', function(data) {
-		console.log(data);
+		winston.info(data);
 		myupload.savePotreeSettings(socket, data);
 	});
 	socket.on('loadpotreesettings', function(data) {
-		console.log(data);
+		winston.info(data);
 		myupload.loadPotreeSettings(socket, data);
 	});
 	
 	// get save list
 	socket.on('getsavelist', function(data) {
-		console.log(data);
+		winston.info(data);
 		getSaveList(socket, data);
 	})
 });
 
 function saveDataJson(socket, data) {
 	var filename = config.public_dir + "/" + data.file;
-	console.log(config.public_dir);
-	console.log(filename);
+	winston.info('saveDataJson %s, %s', config.public_dir, filename);
 	//write
 	fs.writeFile( filename, data.json, function(err) {
 		if (err) {
-			console.log(err);
+			winston.error(err);
 			socket.emit('savedatajson', {status: 'error', result: 'cannot_save_json', detail: err });
 			//throw err;
 			return;
@@ -342,8 +358,8 @@ function saveDataJson(socket, data) {
 
 function saveMeshParams(socket, data)
 {
-	console.log("Received saveparams from mesh viewer");
-	console.log(data);
+	winston.info("Received saveparams from mesh viewer");
+	winston.info(data);
 	
 	let filename = 'mesh.json';
 	let preset = data.preset;
@@ -353,13 +369,13 @@ function saveMeshParams(socket, data)
 	var jsonfile = config.tags_data_dir + data.dir + '/mesh_result/' + filename;
 	fs.writeFile(jsonfile, data.jsonStr, function(err) {
 		if(err) {
-			console.log("Error: " + err);
+			winston.error(err);
 			// send a message to the viewer
 			socket.emit('savemeshjson', { status: 'error', result: err });
 			return;
 		}
 		
-		console.log("Saved");
+		winston.info("Saved mesh params");
 		socket.emit('savemeshjson', { status: 'done', result: data });
 	});
 }
@@ -386,21 +402,21 @@ function getSaveList(socket, data)
 		dir += 'gigapoint_*.json';
 		startind = 10;
 	}
-	console.log(dir);
+	winston.info(dir);
 		
 	glob(dir, options, function (err, files) {
 	    if(err) { 
-	        console.log(err)
+	        winston.error(err)
 	        socket.emit('getsavelist', { status: 'done', result: list });
 	        return;
 	    }
-	    console.log(files);
+	    //winston.info(files);
 	    for(var i=0; i < files.length; i++) {
 	        let basename = path.basename(files[i], '.json');
 	        basename = basename.substr(startind);
 	        list.push(basename);
 	    }
-	    console.log(list);
+	    winston.info(list);
 	    socket.emit('getsavelist', { status: 'done', result: list });
 	})
 	
