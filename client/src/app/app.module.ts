@@ -17,7 +17,9 @@ import { ProfileComponent } from './profile/profile.component';
 
 import { MatToolbarModule, MatButtonModule, MatIconModule, MatInputModule, 
          MatCardModule, MatRadioModule, MatProgressBarModule, MatProgressSpinnerModule, MatSelectModule,
-         MatDialogModule, MatTooltipModule, MatCheckboxModule, MatMenuModule } from '@angular/material';
+         MatDialogModule, MatTooltipModule, MatCheckboxModule, MatMenuModule, 
+         MatTableModule, MatSortModule } from '@angular/material';
+
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 import { AppService } from './core/app.service';
 import { MytardisComponent } from './upload/mytardis/mytardis.component';
@@ -33,7 +35,6 @@ import { LoginComponent } from './login/login.component';
 import { AuthService } from './core/auth.service';
 import { ConfirmdialogComponent } from './core/confirmdialog/confirmdialog.component';
 import { TagDetailComponent } from './review/tag-detail/tag-detail.component';
-
 
 @NgModule({
   declarations: [
@@ -74,12 +75,14 @@ import { TagDetailComponent } from './review/tag-detail/tag-detail.component';
     MatDialogModule,
     MatCheckboxModule,
     MatMenuModule,
+    MatTableModule,
+    MatSortModule,
     AngularFireModule.initializeApp(environment.firebase),
     AngularFirestoreModule, // imports firebase/firestore, only needed for database features
     AngularFireAuthModule // imports firebase/auth, only needed for auth features,
   ],
   providers: [AppService, AuthService],
   bootstrap: [AppComponent],
-  entryComponents: [ConfirmdialogComponent]
+  entryComponents: [ConfirmdialogComponent, TagDetailComponent]
 })
 export class AppModule { }

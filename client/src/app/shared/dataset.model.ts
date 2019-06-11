@@ -11,6 +11,7 @@ export class Dataset {
   qrUrl: string;
   note: string;
   password: string;
+  hasPassword: string;
   
   constructor() { 
     this.clear();
@@ -27,6 +28,7 @@ export class Dataset {
     this.qrUrl = '';
     this.note = '';
     this.password = '';
+    this.hasPassword = 'no';
   }
 
   parseResult(data) {
@@ -86,10 +88,13 @@ export class Dataset {
     else
       this.note = '';
 
-    if(result.password !== undefined && result.password !== null)
+    if(result.password !== undefined && result.password !== null) {
       this.password = result.password;
-    else
+    }
+    else {
       this.password = '';
+    }
+    if(this.password !== '') this.hasPassword = 'yes';
     
   }
   

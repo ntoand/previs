@@ -11,15 +11,91 @@
   <div class="alert-box {{message.type}}" *ngIf="message.content !== ''">
     <span>{{message.type}}: </span>{{message.content}}
   </div>
+
+  <mat-card *ngIf="showOptions" class="tag-option">
+    <span class="collection-label">Collection</span>
+    <span>
+      <button mat-button [matMenuTriggerFor]="menu" class="collection-button">{{currCollection.name}}</button>
+      <mat-menu #menu="matMenu">
+        <ng-container *ngFor="let collection of collections">
+            <button mat-menu-item (click)="onCollectionMenuClick(collection)">{{collection.name}}</button>
+        </ng-container>
+      </mat-menu>
+    </span>
+    <span class="mouse-hover"><mat-icon class="collection-edit-icon">edit</mat-icon></span>
+    <span class="hoz-spacer"></span>
+    <span *ngIf="listView == true" class="mouse-hover"><mat-icon (click)="toogleViewType()">view_module</mat-icon></span>
+    <span *ngIf="listView == false" class="mouse-hover"><mat-icon (click)="toogleViewType()">view_list</mat-icon></span>
+  </mat-card>
   
   <div *ngIf="datasets.length > 0">
-   
-    <div fxLayout="row wrap" fxLayoutAlign="start center" fxLayoutGap="10px">
+
+    <!-- list/table view -->
+    <table *ngIf="listView == true" mat-table [dataSource]="dataSource" matSort class="mat-elevation-z8">
+
+      <ng-container matColumnDef="tag">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header> Tag </th>
+        <td mat-cell *matCellDef="let element"> {{element.tag}} </td>
+      </ng-container>
+
+      <ng-container matColumnDef="type">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header> Type </th>
+        <td mat-cell *matCellDef="let element"> {{element.type}} </td>
+      </ng-container>
+
+      <ng-container matColumnDef="dateStr">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header> Date </th>
+        <td mat-cell *matCellDef="let element"> {{element.dateStr}} </td>
+      </ng-container>
+
+      <ng-container matColumnDef="size">
+        <th mat-header-cell *matHeaderCellDef> Size </th>
+        <td mat-cell *matCellDef="let element"> {{element.size}} </td>
+      </ng-container>
+
+      <ng-container matColumnDef="hasPassword">
+        <th mat-header-cell *matHeaderCellDef> Password </th>
+        <td mat-cell *matCellDef="let element"> {{element.hasPassword}} </td>
+      </ng-container>
+
+      <ng-container matColumnDef="note">
+        <th mat-header-cell *matHeaderCellDef> Note </th>
+        <td mat-cell *matCellDef="let element"> {{element.note}} </td>
+      </ng-container>
+
+      <ng-container matColumnDef="summary">
+          <td mat-footer-cell *matFooterCellDef colspan="6">
+            Number of datasets: {{datasets.length}}
+          </td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns;" class="mouse-hover"
+        (click)="onDatasetClick(row)">
+      </tr>
+      <tr mat-footer-row *matFooterRowDef="['summary']" class="dataset-table-footer"></tr>
+    </table>
       
+    <!-- grid view -->
+    <div *ngIf="listView == false" fxLayout="row wrap" fxLayoutAlign="start center" fxLayoutGap="10px">
       <div class = "tag-detail" *ngFor="let dataset of datasets">
-        <app-tag-detail [dataset]="dataset" (deleteTagEvent)="onDeleteTag($event, dataset.tag)" (updateTagEvent)="onUpdateTag($event, dataset.tag)"></app-tag-detail>
+        
+        <mat-card (click)="onDatasetClick(dataset)" class="mouse-hover">
+          <mat-card-header>
+            <mat-card-title><b>{{dataset.tag}} ({{dataset.type | lowercase}})</b></mat-card-title>
+            <mat-card-subtitle >
+              <div>
+                <div>Date: {{dataset.dateStr}}</div>
+                <div>Size: {{dataset.size}}</div>
+                <div>Note: {{dataset.note}}</div> 
+                <div>Password protection: {{dataset.hasPassword}}</div>
+              </div>
+            </mat-card-subtitle>
+          </mat-card-header>
+          <img mat-card-image src={{dataset.imgUrl}} height="200" alt={{dataset.tag}}>
+        </mat-card>
+
       </div>
-      
     </div>
       
   </div>

@@ -1,43 +1,46 @@
-import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
-
-import { Dataset } from '../../shared/dataset.model';
+import { Component, EventEmitter, Inject } from '@angular/core';
+import { MatDialogRef, MAT_DIALOG_DATA} from '@angular/material/dialog';
 
 @Component({
   selector: 'app-tag-detail',
   templateUrl: './tag-detail.component.html',
   styleUrls: ['./tag-detail.component.css']
 })
-export class TagDetailComponent implements OnInit {
+export class TagDetailComponent {
 
-  constructor() { }
-  
-  @Input() dataset: Dataset = null;
-  
-  @Output() deleteTagEvent = new EventEmitter();
-  @Output() updateTagEvent = new EventEmitter();
-  
   // note
   editMode = false;
   noteStr = '';
+  noteStrPrev = '';
   // password
   passwordShowMode = false;
   passwordEditMode = false;
   passwordStr = '';
-  
-  ngOnInit() {
-    if(this.dataset) {
-      this.noteStr = this.dataset.note;
-      this.passwordStr = this.dataset.password;
-    }
+  passwordStrPrev = '';
+
+  onUpdateTag = new EventEmitter();
+
+  constructor(public dialogRef: MatDialogRef<TagDetailComponent>,
+    @Inject(MAT_DIALOG_DATA) public data: any) {
+
+      this.noteStr = this.data.note;
+      this.noteStrPrev = this.noteStr;
+      this.passwordStr = this.data.password;
+      this.passwordStrPrev = this.passwordStr;
   }
-  
+   
   ngOnChanges(changes) {
-    this.noteStr = changes.dataset.currentValue.note;
-    this.passwordStr = changes.dataset.currentValue.password;
+    this.noteStr = changes.data.currentValue.note;
+    this.passwordStr = changes.data.currentValue.password;
   }
   
   onDeleteTag(tag, dir) {
-    this.deleteTagEvent.emit({tag: tag, dir: dir});
+    //this.deleteTagEvent.emit({tag: tag, dir: dir});
+    var cn = confirm('Do you want to delete tag: ' + tag + '?');
+    if(cn){
+      console.log('delete and close');
+      this.dialogRef.close({type: 'delete', tag: tag, dir: dir});
+    }
   }
   
   // note
@@ -49,14 +52,16 @@ export class TagDetailComponent implements OnInit {
   onNoteEditCancel($event) {
     $event.preventDefault();
     this.editMode = false;
-    this.noteStr = this.dataset.note;
+    this.noteStr = this.noteStrPrev;
   }
   
   onNoteEditGo($event) {
     $event.preventDefault();
     this.editMode = false;
-    if(this.noteStr !== this.dataset.note) 
-      this.updateTagEvent.emit({tag: this.dataset.tag, type: 'note', noteStr: this.noteStr, noteStrPrev: this.dataset.note});
+    if(this.noteStr !== this.data.note) {
+      this.onUpdateTag.emit({tag: this.data.tag, type: 'note', noteStr: this.noteStr, noteStrPrev: this.data.note});
+      this.noteStrPrev = this.noteStr;
+    }
   }
 
   // password
@@ -73,14 +78,16 @@ export class TagDetailComponent implements OnInit {
   onPasswordEditCancel($event) {
     $event.preventDefault();
     this.passwordEditMode = false;
-    this.passwordStr = this.dataset.password;
+    this.passwordStr = this.passwordStrPrev;
   }
 
   onPasswordEditGo($event) {
     $event.preventDefault();
     this.passwordEditMode = false;
-    if(this.passwordStr !== this.dataset.password) 
-      this.updateTagEvent.emit({tag: this.dataset.tag, type: 'password', passwordStr: this.passwordStr, passwordStrPrev: this.dataset.password});
+    if(this.passwordStr !== this.data.password) {
+      this.onUpdateTag.emit({tag: this.data.tag, type: 'password', passwordStr: this.passwordStr, passwordStrPrev: this.data.password});
+      this.passwordStrPrev = this.passwordStr;
+    }
   }
 
 }

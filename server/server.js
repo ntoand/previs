@@ -23,6 +23,14 @@ var myutils 	  = require('./src/node-utils');
 var FirebaseManager   = require('./src/node-firebase');
 var fbmanager = new FirebaseManager();
 
+var logFilename = "logs/combined.log";
+if (process.env.NODE_ENV === "production")  {
+	console.log("RUN PROD MODE");
+	logFilename ='logs/combined_' + myutils.getTimeString() + '.log';
+} else {
+	console.log("RUN DEV MODE");
+}
+
 // init default winston logger
 const winston = require('winston');
 winston.configure({
@@ -35,17 +43,12 @@ winston.configure({
 		winston.format.json()
 	),
 	transports: [
-		new winston.transports.File({ filename: 'logs/combined_' + myutils.getTimeString() + '.log' }),
+		new winston.transports.File({ filename: logFilename }),
 		new winston.transports.Console({ format: winston.format.simple() })
 	]
 });
 winston.info('server starts');
 
-if (process.env.NODE_ENV === "production")  {
-	winston.info("RUN PROD MODE");
-} else {
-	winston.info("RUN DEV MODE");
-}
 
 process.argv.forEach(function (val, index, array) {
 	winston.info(index + ': ' + val);

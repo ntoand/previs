@@ -7,3 +7,42 @@
     padding-top: 10px;
     width: 360px;
 }
+
+table {
+  width: 100%;
+}
+
+th.mat-sort-header-sorted {
+  color: black;
+}
+
+.tag-option {
+  display: flex;
+  margin-bottom: 10px;
+  align-items: center;
+}
+
+.hoz-spacer {
+  flex: 1 1 auto;
+}
+
+.collection-label {
+  margin-right: 5px;
+}
+
+.mouse-hover {
+  cursor: pointer;
+}
+
+.dataset-table-footer {
+  font-weight: bold;
+}
+
+.collection-button {
+  font-size: 14px;
+}
+
+.collection-edit-icon {
+  font-size: 18px;
+  margin-left: 4px;
+}

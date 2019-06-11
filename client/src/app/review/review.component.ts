@@ -1,13 +1,18 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { AppService } from '../core/app.service';
 import { Dataset } from '../shared/dataset.model';
+import { Collection } from '../shared/collection.model';
 
 import { AuthService } from '../core/auth.service';
 import { LoginComponent } from '../login/login.component';
 import { TagDetailComponent } from './tag-detail/tag-detail.component';
 
-import { MatDialog, MatDialogRef  } from '@angular/material';
+import { MatDialog } from '@angular/material';
 import { ConfirmdialogComponent } from '../core/confirmdialog/confirmdialog.component';
+
+import {MatSort} from '@angular/material/sort';
+import {MatTableDataSource} from '@angular/material/table';
+import { addListener } from 'cluster';
 
 @Component({
   selector: 'app-review',
@@ -24,12 +29,37 @@ export class ReviewComponent implements OnInit {
   navPath = "review";
   
   datasets: Dataset[] = [];
-  noteStrPrev = '';
-  passwordStrPrev = '';
+  collections: Collection[] = [];
+  currCollection = new Collection('--all--', '-- all --');
+  showOptions = false;
+
+  listView = true;
+  displayedColumns: string[] = ['tag', 'type', 'dateStr', 'size', 'hasPassword', 'note'];
+  dataSource = new MatTableDataSource(this.datasets);
+
+  private sort: MatSort;
+  
+  @ViewChild(MatSort) set matSort(ms: MatSort) {
+    this.sort = ms;
+    this.setDataSourceAttributes();
+  }
+
+  setDataSourceAttributes() {
+    this.dataSource.sort = this.sort;
+  }
+
+  loadData() {
+    this.datasets = [];
+    this.message.type = 'working';
+    this.message.content = 'Loading tags...';
+    this.appService.sendMsg({action: 'processtag', data: {userEmail: this.authService.userDetails.email}});
+  }
   
   ngOnInit() {
     this.appService.setMenuIdx(2);
     
+    this.resetCollections();
+
     this.connection = this.appService.onMessage().subscribe(msg => {
       if(msg.action === 'processtag') {
         console.log(msg.data);
@@ -58,6 +88,13 @@ export class ReviewComponent implements OnInit {
           d.parseResultData(tags[i].data);
           this.datasets.push(d);
         }
+        this.dataSource.data = this.datasets;
+
+        // tempt collections
+        this.resetCollections();
+        this.collections.push(new Collection('aaaaaa', 'collection 1'));
+        this.collections.push(new Collection('bbbbbb', 'collection 2'));
+        console.log(this.collections);
       }
       
       else if(msg.action === 'admindeletetags') {
@@ -69,10 +106,7 @@ export class ReviewComponent implements OnInit {
           this.message.content = 'failed to delete tag';
           return;
         }
-        this.datasets = [];
-        this.message.type = 'working';
-        this.message.content = 'Loading tags...';
-        this.appService.sendMsg({action: 'processtag', data: {userEmail: this.authService.userDetails.email}});
+        this.loadData();
       }
       
       else if(msg.action === 'adminupdatetag') {
@@ -82,15 +116,14 @@ export class ReviewComponent implements OnInit {
         if(msg.data.status === 'error') {
           this.message.type = 'error';
           this.message.content = 'failed to update tag';
-          this.updateTagNote(msg.data.result.tag, msg.data.type, this.noteStrPrev, this.passwordStrPrev);
           return;
         }
         const tag = msg.data.result.tag;
         const note = msg.data.result.data.note || '';
         const password = msg.data.result.data.password || ''; 
-        this.updateTagNote(tag, msg.data.type, note, password);
         this.message.type = 'success';
         this.message.content = 'Updated tag ' + tag;
+        this.updateTagNote(tag, msg.data.type, note, password);
       }
       
     });
@@ -103,54 +136,74 @@ export class ReviewComponent implements OnInit {
   onLoadTags($event) {
     $event.preventDefault();
     console.log('load my tags clicked');
-    this.datasets = [];
-    this.message.type = 'working';
-    this.message.content = 'Loading tags...';
-    this.appService.sendMsg({action: 'processtag', data: {userEmail: this.authService.userDetails.email}});
+    this.loadData();
+    this.showOptions = true;
   }
   
-  onDeleteTag($event, childtag) {
-    //console.log(childtag);
+  deleteTag($event) {
     const tag = $event.tag;
     const dir = $event.dir;
-    if(tag !== childtag)
-      return;
-  
+    
     console.log('delete ' + tag);
-    let dialogRef = this.dialog.open(ConfirmdialogComponent, {
-      width: '300px',
-      data: { title: "Delete tag " + tag }
-    });
-
-    dialogRef.afterClosed().subscribe(result => {
-      if (result === true) {
-          this.appService.sendMsg({action: 'admindeletetags', data: {tags: [{tag:tag, dir: dir, userId: this.authService.userDetails.uid}]}});
-      }
-    });
+    this.appService.sendMsg({action: 'admindeletetags', data: {tags: [{tag:tag, dir: dir, userId: this.authService.userDetails.uid}]}});
   }
   
-  onUpdateTag($event, childtag) {
-    //console.log(childtag);
-    if($event.tag !== childtag)
-      return;
-    
+  updateTag($event) {
     if($event.type === 'note') {
-      this.noteStrPrev = $event.noteStrPrev;
       this.appService.sendMsg({action: 'adminupdatetag', data: {tag: $event.tag, type: 'note', data: {note: $event.noteStr}}});
     }
     else if($event.type === 'password') {
-      this.passwordStrPrev = $event.passwordStrPrev;
       this.appService.sendMsg({action: 'adminupdatetag', data: {tag: $event.tag, type: 'password', data: {password: $event.passwordStr}}});
     }
   }
-  
+
   updateTagNote(tag, type, note, password) {
     for(var i=0; i < this.datasets.length; i++) {
       if(this.datasets[i].tag === tag) {
-        type === 'note' ? this.datasets[i].note = note : this.datasets[i].password = password;
+        if(type === 'note') {
+          this.datasets[i].note = note
+        } 
+        else if (type == 'password') {
+          this.datasets[i].password = password;
+          this.datasets[i].hasPassword = password !== '' ? 'yes' : 'no';
+        }
         break;
       }
     }
+  }
+  
+  resetCollections() {
+    this.collections = [];
+    this.collections.push(new Collection('--all--', '-- all --'));
+    this.collections.push(new Collection('--sharedtags--', '-- shared tags --'));
+    this.currCollection = this.collections[0];
+  }
+
+  toogleViewType() {
+    this.listView = !this.listView;
+  }
+
+  onCollectionMenuClick(collection) {
+    this.currCollection = collection;
+  }
+
+  onDatasetClick(dataset) {
+    console.log('onDatasetClick', dataset);
+    const dialogRef = this.dialog.open(TagDetailComponent, {
+      width: '800px',
+      data: dataset
+    });
+    const sub = dialogRef.componentInstance.onUpdateTag.subscribe((data) => {
+      // do something
+      console.log('Update tag', data);
+      this.updateTag(data);
+    });
+    dialogRef.afterClosed().subscribe(result => {
+      console.log(result);
+      if(result !== undefined && result.type === 'delete') {
+        this.deleteTag(result);
+      }
+    });
   }
 
 }
