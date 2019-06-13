@@ -83,6 +83,12 @@ or
 
 ## Change log
 
+### v0.9.0
+
+- Add list/table view
+- Add collections
+- Add sharing feture
+
 ### v0.8.0
 
 - Using secret dir to access data instead of tag

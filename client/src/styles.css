@@ -126,3 +126,7 @@ button {
 button :hover {
   cursor: pointer;
 }
+
+.hoz-spacer {
+  flex: 1 1 auto;
+}

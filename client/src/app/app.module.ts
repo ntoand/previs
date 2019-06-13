@@ -35,6 +35,7 @@ import { LoginComponent } from './login/login.component';
 import { AuthService } from './core/auth.service';
 import { ConfirmdialogComponent } from './core/confirmdialog/confirmdialog.component';
 import { TagDetailComponent } from './review/tag-detail/tag-detail.component';
+import { CollectionComponent } from './review/collection/collection.component';
 
 @NgModule({
   declarations: [
@@ -53,7 +54,8 @@ import { TagDetailComponent } from './review/tag-detail/tag-detail.component';
     LoginComponent,
     ConfirmdialogComponent,
     TagDetailComponent,
-    ProfileComponent
+    ProfileComponent,
+    CollectionComponent
   ],
   imports: [
     BrowserModule,
@@ -83,6 +85,6 @@ import { TagDetailComponent } from './review/tag-detail/tag-detail.component';
   ],
   providers: [AppService, AuthService],
   bootstrap: [AppComponent],
-  entryComponents: [ConfirmdialogComponent, TagDetailComponent]
+  entryComponents: [ConfirmdialogComponent, TagDetailComponent, CollectionComponent]
 })
 export class AppModule { }

@@ -3,8 +3,9 @@ import { environment } from '../../environments/environment';
 export class Collection {
   id: string;
   name: string;
+  numtags: number;
   
-  constructor(id: string, name:string) { 
+  constructor(id: string = '', name: string = '') { 
     this.clear();
     this.id = id;
     this.name = name;
@@ -13,20 +14,13 @@ export class Collection {
   clear() {
     this.id = '';
     this.name = '';
+    this.numtags = 0;
   }
 
-  parseResult(data) {
-    var result = data.result;
-    if(data.status === 'done' && result) {
-      this.parseResultData(result);
-    }
-    else {
-      this.clear();
-    }
-  }
-  
   parseResultData(result) {
-
+    this.id = result.id;
+    this.name = result.name
+    this.numtags = result.numtags;
   }
   
 }

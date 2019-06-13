@@ -22,10 +22,6 @@ th.mat-sort-header-sorted {
   align-items: center;
 }
 
-.hoz-spacer {
-  flex: 1 1 auto;
-}
-
 .collection-label {
   margin-right: 5px;
 }
@@ -45,4 +41,10 @@ th.mat-sort-header-sorted {
 .collection-edit-icon {
   font-size: 18px;
   margin-left: 4px;
+}
+
+.select-collection {
+  padding: 2px 2px;
+  margin-right: 5px;
+  max-width: 200px;
 }

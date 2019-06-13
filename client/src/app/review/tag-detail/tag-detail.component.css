@@ -20,3 +20,14 @@
     padding-top: 5px;
     padding-bottom: 5px;
 }
+
+.select-collection {
+    width: 300px;
+    vertical-align: middle;
+    padding: 2px 2px;
+    margin-right: 10px;
+}
+
+.action-button {
+    margin-right: 3px;
+}

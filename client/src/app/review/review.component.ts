@@ -6,13 +6,13 @@ import { Collection } from '../shared/collection.model';
 import { AuthService } from '../core/auth.service';
 import { LoginComponent } from '../login/login.component';
 import { TagDetailComponent } from './tag-detail/tag-detail.component';
+import { CollectionComponent } from './collection/collection.component';
 
 import { MatDialog } from '@angular/material';
-import { ConfirmdialogComponent } from '../core/confirmdialog/confirmdialog.component';
 
 import {MatSort} from '@angular/material/sort';
 import {MatTableDataSource} from '@angular/material/table';
-import { addListener } from 'cluster';
+import { addListener } from 'cluste, eventNamesr';
 
 @Component({
   selector: 'app-review',
@@ -30,11 +30,12 @@ export class ReviewComponent implements OnInit {
   
   datasets: Dataset[] = [];
   collections: Collection[] = [];
-  currCollection = new Collection('--all--', '-- all --');
+  collectionId = 'my';
   showOptions = false;
+  needReloadCollections = false;
 
   listView = true;
-  displayedColumns: string[] = ['tag', 'type', 'dateStr', 'size', 'hasPassword', 'note'];
+  displayedColumns: string[] = ['tag', 'type', 'dateStr', 'size', 'collection', 'hasPassword', 'note'];
   dataSource = new MatTableDataSource(this.datasets);
 
   private sort: MatSort;
@@ -52,7 +53,33 @@ export class ReviewComponent implements OnInit {
     this.datasets = [];
     this.message.type = 'working';
     this.message.content = 'Loading tags...';
-    this.appService.sendMsg({action: 'processtag', data: {userEmail: this.authService.userDetails.email}});
+    this.appService.sendMsg({action: 'admingetdatabundle', data: {userEmail: this.authService.userDetails.email, collection: 'my'}});
+  }
+
+  findCollectionName(id) {
+    for(var i=0; i < this.collections.length; i++) {
+      if(this.collections[i].id === id) {
+        let name = this.collections[i].name;
+        return (name.length>20)? name.slice(0, 20)+'..' : (name)
+      } 
+    }
+    return '';
+  }
+
+  isComponentMessage(action) {
+    if(action === 'admingetdatabundle' || action === 'admingettags' || action === 'admingetcollections' 
+    || action === 'admindeletetags' || action === 'adminupdatetag' || action === 'adminupdatetagcollection')
+      return true;
+    return false;
+  }
+
+  getErrorMessage(action) {
+    if(action === 'admingetdatabundle') return 'failed to get data bundle';
+    if(action === 'admingettags') return 'faied to get tags';
+    if(action === 'admingetcollections') return 'failed to get collections';
+    if(action === 'admindeletetags') return 'failed to delete tag(s)';
+    if(action === 'adminupdatetag' || action === 'adminupdatetagcollection') return 'failed to update tag';
+    return '';
   }
   
   ngOnInit() {
@@ -60,70 +87,95 @@ export class ReviewComponent implements OnInit {
     
     this.resetCollections();
 
+    var scope = this;
+
     this.connection = this.appService.onMessage().subscribe(msg => {
-      if(msg.action === 'processtag') {
-        console.log(msg.data);
-        
-        this.message.type = '';
-        this.message.content = '';
-        if(msg.data.status === 'error') {
-          this.message.type = 'error';
-          this.message.content = 'failed to get tags';
-          return;
-        }
-        
-        var tags = msg.data.result;
+
+      if(!scope.isComponentMessage(msg.action)) return;
+
+      console.log(msg.data);
+      scope.message.type = '';
+      scope.message.content = '';
+      if(msg.data.status === 'error') {
+        scope.message.type = 'error';
+        scope.message.content = scope.getErrorMessage(msg.action);
+        return;
+      }
+
+      if(msg.action === 'admingetdatabundle') {
+        var tags = msg.data.result.tags;
         if(tags.length > 0) {
-          this.message.type = 'success';
-          this.message.content = 'Found ' + tags.length + ' tag(s)';
+          scope.message.type = 'success';
+          scope.message.content = 'Found ' + tags.length + ' tag(s)';
         }
         else {
-          this.message.type = 'warning';
-          this.message.content = 'No tags found!';
+          scope.message.type = 'warning';
+          scope.message.content = 'No tags found!';
         }
         
-        this.datasets = [];
+        scope.datasets = [];
         for(var i=0; i < tags.length; i++) {
           var d = new Dataset();
           d.parseResultData(tags[i].data);
-          this.datasets.push(d);
+          scope.datasets.push(d);
         }
-        this.dataSource.data = this.datasets;
+        scope.dataSource.data = scope.datasets;
 
         // tempt collections
-        this.resetCollections();
-        this.collections.push(new Collection('aaaaaa', 'collection 1'));
-        this.collections.push(new Collection('bbbbbb', 'collection 2'));
-        console.log(this.collections);
+        var collections = msg.data.result.collections;
+        scope.resetCollections();
+        for(var i=0; i < collections.length; i++) {
+          var c = new Collection();
+          c.parseResultData(collections[i].data);
+          scope.collections.push(c);
+        }
+      }
+
+      else if(msg.action === 'admingettags') {
+        var tags = msg.data.result;
+        if(tags.length > 0) {
+          scope.message.type = 'success';
+          scope.message.content = 'Found ' + tags.length + ' tag(s)';
+        }
+        else {
+          scope.message.type = 'warning';
+          scope.message.content = 'No tags found!';
+        }
+        
+        scope.datasets = [];
+        for(var i=0; i < tags.length; i++) {
+          var d = new Dataset();
+          d.parseResultData(tags[i].data);
+          scope.datasets.push(d);
+        }
+        scope.dataSource.data = scope.datasets;
+      }
+
+      else if(msg.action === 'admingetcollections') {
+        // tempt collections
+        var collections = msg.data.result;
+        scope.resetCollections();
+        for(var i=0; i < collections.length; i++) {
+          var c = new Collection();
+          c.parseResultData(collections[i].data);
+          scope.collections.push(c);
+        }
+        scope.message.type = 'success';
+        scope.message.content = 'collections reloaded';
       }
       
       else if(msg.action === 'admindeletetags') {
-        console.log(msg.data);
-        this.message.type = '';
-        this.message.content = '';
-        if(msg.data.status === 'error') {
-          this.message.type = 'error';
-          this.message.content = 'failed to delete tag';
-          return;
-        }
-        this.loadData();
+        scope.loadData();
       }
       
-      else if(msg.action === 'adminupdatetag') {
-        console.log(msg.data);
-        this.message.type = '';
-        this.message.content = '';
-        if(msg.data.status === 'error') {
-          this.message.type = 'error';
-          this.message.content = 'failed to update tag';
-          return;
-        }
+      else if(msg.action === 'adminupdatetag' || msg.action === 'adminupdatetagcollection') {
         const tag = msg.data.result.tag;
         const note = msg.data.result.data.note || '';
         const password = msg.data.result.data.password || ''; 
-        this.message.type = 'success';
-        this.message.content = 'Updated tag ' + tag;
-        this.updateTagNote(tag, msg.data.type, note, password);
+        const collection = msg.data.result.data.collection || ''; 
+        scope.message.type = 'success';
+        scope.message.content = 'Updated tag ' + tag;
+        scope.updateTagNote(tag, msg.data.type, note, password, collection);
       }
       
     });
@@ -135,7 +187,6 @@ export class ReviewComponent implements OnInit {
   
   onLoadTags($event) {
     $event.preventDefault();
-    console.log('load my tags clicked');
     this.loadData();
     this.showOptions = true;
   }
@@ -155,17 +206,23 @@ export class ReviewComponent implements OnInit {
     else if($event.type === 'password') {
       this.appService.sendMsg({action: 'adminupdatetag', data: {tag: $event.tag, type: 'password', data: {password: $event.passwordStr}}});
     }
+    else if($event.type === 'collection') {
+      this.appService.sendMsg({action: 'adminupdatetagcollection', data: {tag: $event.tag, type: 'collection', collectionPrev: $event.collectionPrev, data: {collection: $event.collection}}});
+    }
   }
 
-  updateTagNote(tag, type, note, password) {
+  updateTagNote(tag, type, note, password, collection = '') {
     for(var i=0; i < this.datasets.length; i++) {
       if(this.datasets[i].tag === tag) {
         if(type === 'note') {
           this.datasets[i].note = note
         } 
-        else if (type == 'password') {
+        else if (type === 'password') {
           this.datasets[i].password = password;
           this.datasets[i].hasPassword = password !== '' ? 'yes' : 'no';
+        }
+        else if (type === 'collection') {
+          this.datasets[i].collection = collection;
         }
         break;
       }
@@ -174,36 +231,70 @@ export class ReviewComponent implements OnInit {
   
   resetCollections() {
     this.collections = [];
-    this.collections.push(new Collection('--all--', '-- all --'));
-    this.collections.push(new Collection('--sharedtags--', '-- shared tags --'));
-    this.currCollection = this.collections[0];
+    this.collections.push(new Collection('my', '-- my tags --'));
+    this.collections.push(new Collection('shared', '-- shared tags --'));
+    this.collectionId = 'my';
   }
 
   toogleViewType() {
     this.listView = !this.listView;
   }
 
-  onCollectionMenuClick(collection) {
-    this.currCollection = collection;
+  onCollectionEdit() {
+    var scope = this;
+    var clone = this.collections.slice(0); clone.splice(0, 2);
+    const dialogRef = this.dialog.open(CollectionComponent, {
+      width: '600px',
+      data: clone
+    });
+
+    dialogRef.componentInstance.needReloadCollections.subscribe((data) => {
+      console.log('needReloadCollections.subscribe');
+      scope.needReloadCollections = true;
+    });
+
+    dialogRef.afterClosed().subscribe( result => {
+      if(scope.needReloadCollections) {
+        scope.needReloadCollections = false;
+        scope.appService.sendMsg({action: 'admingetcollections', data: {userEmail: scope.authService.userDetails.email}});
+      }
+    });
   }
 
   onDatasetClick(dataset) {
-    console.log('onDatasetClick', dataset);
+    var scope = this;
+    var clone = this.collections.slice(0); clone.splice(0, 2);
     const dialogRef = this.dialog.open(TagDetailComponent, {
       width: '800px',
-      data: dataset
+      data: {dataset: dataset, collections: clone}
     });
-    const sub = dialogRef.componentInstance.onUpdateTag.subscribe((data) => {
+
+    dialogRef.componentInstance.onUpdateTag.subscribe((data) => {
       // do something
       console.log('Update tag', data);
-      this.updateTag(data);
+      scope.updateTag(data);
     });
+
+    dialogRef.componentInstance.needReloadCollections.subscribe((data) => {
+      console.log('needReloadCollections.subscribe');
+      scope.needReloadCollections = true;
+    });
+    
     dialogRef.afterClosed().subscribe(result => {
       console.log(result);
       if(result !== undefined && result.type === 'delete') {
-        this.deleteTag(result);
+        scope.deleteTag(result);
+      }
+      if(scope.needReloadCollections) {
+        scope.needReloadCollections = false;
+        scope.appService.sendMsg({action: 'admingetcollections', data: {userEmail: scope.authService.userDetails.email}});
       }
     });
+  }
+
+  onCollectionChange() {
+    //console.log('onCollectionChange', this.collectionId);
+    this.appService.sendMsg({action: 'admingettags', data: {userEmail: this.authService.userDetails.email, collection: this.collectionId}});
   }
 
 }

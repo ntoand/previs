@@ -12,6 +12,7 @@ export class Dataset {
   note: string;
   password: string;
   hasPassword: string;
+  collection: string;
   
   constructor() { 
     this.clear();
@@ -29,6 +30,7 @@ export class Dataset {
     this.note = '';
     this.password = '';
     this.hasPassword = 'no';
+    this.collection = '';
   }
 
   parseResult(data) {
@@ -51,6 +53,7 @@ export class Dataset {
     this.dir = result.dir || result.tag;
     this.type = result.type;
     this.size = result.volumes[0].res.toString();
+    if(result.collection) this.collection = result.collection;
     
     let d = new Date(result.date);
     //this.dateStr = d.toString();

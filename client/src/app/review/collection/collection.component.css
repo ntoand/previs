@@ -1,0 +1,14 @@
+.full-width {
+    width: 100%;
+}
+
+.collection-container {
+    display: flex;
+    margin-bottom: 3px;
+    align-items: center;
+}
+
+.item-input-str {
+    width: 400px;
+    padding: 2px 2px;
+}

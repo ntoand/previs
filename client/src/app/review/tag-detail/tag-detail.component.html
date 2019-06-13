@@ -1,13 +1,26 @@
-<h1 mat-dialog-title>{{data.tag}} ({{data.type | lowercase}})</h1>
+<h1 mat-dialog-title>{{dataset.tag}} ({{dataset.type | lowercase}})</h1>
 <div mat-dialog-content>
-  <div class='info-session'>Date: {{data.dateStr}}</div>
-  <div class='info-session'>Size: {{data.size}}</div>
-  <div class='info-session'>Collection: a collection</div>
+  <div *ngIf="dataset.imgUrl != 'assets/img/no-image-box.png'" [ngStyle]="getImageContainerStyles(dataset.imgUrl)"></div>
+  <div class='info-session'>Date: {{dataset.dateStr}}</div>
+  <div class='info-session'>Size: {{dataset.size}}</div>
+
+  <div class='info-session' *ngIf='collectionEditMode === false'>Collection: {{collectionName}}
+    <button (click)="onCollectionEnableEdit($event)" class='action-button'>edit</button>
+    <button (click)="onCollectionRemove($event)" class='action-button'>remove</button>
+  </div>
+  <div class='info-session' *ngIf='collectionEditMode === true'>
+    <select [(ngModel)]="collectionId" class="select-collection">
+        <option [value]="c.id" *ngFor="let c of collections">{{c.name}} ({{c.id}})</option>
+    </select>
+    <span><a href="#" (click)="onCollectionEditGo($event)"><mat-icon class="small-button">check</mat-icon></a></span>
+    <span><a href="#" (click)="onCollectionEditCancel($event)"><mat-icon class="small-button">close</mat-icon></a></span>
+  </div>
+
 
   <div class='info-session' *ngIf='editMode === false'>Note: {{noteStr}} 
-    <button (click)="onNoteEnableEdit($event)">edit</button>
+    <button (click)="onNoteEnableEdit($event)" class='action-button'>edit</button>
   </div>
-  <div class='info-session' *ngIf='editMode === true'>
+  <div class='info-session' *ngIf='editMode === true'>Note: 
     <span><input [(ngModel)]="noteStr" class="input-str"></span>
     <span><a href="#" (click)="onNoteEditGo($event)"><mat-icon class="small-button">check</mat-icon></a></span>
     <span><a href="#" (click)="onNoteEditCancel($event)"><mat-icon class="small-button">close</mat-icon></a></span>
@@ -18,9 +31,9 @@
     <span *ngIf='passwordShowMode === false && passwordStr.length > 0'>******* </span>
     <button *ngIf='passwordShowMode === false && passwordStr.length > 0' (click)="onPasswordToggleShow($event)">show</button> 
     <button *ngIf='passwordShowMode === true && passwordStr.length > 0' (click)="onPasswordToggleShow($event)">hide</button> 
-    <button (click)="onPasswordEnableEdit($event)">edit</button> 
+    <button (click)="onPasswordEnableEdit($event)" class='action-button'>edit</button> 
   </div>
-  <div class='info-session' *ngIf='passwordEditMode === true'>
+  <div class='info-session' *ngIf='passwordEditMode === true'> Password: 
     <span><input [(ngModel)]="passwordStr" class="input-str"></span>
     <span><a href="#" (click)="onPasswordEditGo($event)"><mat-icon class="small-button">check</mat-icon></a></span>
     <span><a href="#" (click)="onPasswordEditCancel($event)"><mat-icon class="small-button">close</mat-icon></a></span>
@@ -28,50 +41,7 @@
 
 </div>
 <div mat-dialog-actions>
-  <a href={{data.viewUrl}} target="_blank"><button mat-button color='primary'>VIEW WEB</button></a>
-  <a href={{data.qrUrl}} target="_blank"><button mat-button color='primary'>QR</button></a>
-  <button mat-button color='warn' (click)="onDeleteTag(data.tag, data.dir)">DELETE</button>
+  <a href={{dataset.viewUrl}} target="_blank"><button mat-button color='primary'>VIEW WEB</button></a>
+  <a href={{dataset.qrUrl}} target="_blank"><button mat-button color='primary'>QR</button></a>
+  <button mat-button color='warn' (click)="onDeleteTag(dataset.tag, dataset.dir)">DELETE</button>
 </div>
-
-
-<!--
-<mat-card *ngIf='dataset'>
-  <mat-card-header>
-    <mat-card-title><b>{{dataset.tag}} ({{dataset.type | lowercase}})</b></mat-card-title>
-    <mat-card-subtitle >
-      
-      <div class="width-100">
-        <div>Date: {{dataset.dateStr}}</div>
-        <div>Size: {{dataset.size}}</div>
-        <div *ngIf='editMode === false'>Note: {{noteStr}} 
-          <button (click)="onNoteEnableEdit($event)">edit</button>
-        </div>
-        <div *ngIf='editMode === true'>
-          <span><input [(ngModel)]="noteStr" class="input-str"></span>
-          <span><a href="#" (click)="onNoteEditGo($event)"><mat-icon class="small-button">check</mat-icon></a></span>
-          <span><a href="#" (click)="onNoteEditCancel($event)"><mat-icon class="small-button">close</mat-icon></a></span>
-        </div>
-        <div *ngIf='passwordEditMode === false'> Password: 
-          <span *ngIf='passwordShowMode === true'>{{passwordStr}} </span>
-          <span *ngIf='passwordShowMode === false && passwordStr.length > 0'>******* </span>
-          <button *ngIf='passwordShowMode === false && passwordStr.length > 0' (click)="onPasswordToggleShow($event)">show</button> 
-          <button *ngIf='passwordShowMode === true && passwordStr.length > 0' (click)="onPasswordToggleShow($event)">hide</button> 
-          <button (click)="onPasswordEnableEdit($event)">edit</button> 
-        </div>
-        <div *ngIf='passwordEditMode === true'>
-          <span><input [(ngModel)]="passwordStr" class="input-str"></span>
-          <span><a href="#" (click)="onPasswordEditGo($event)"><mat-icon class="small-button">check</mat-icon></a></span>
-          <span><a href="#" (click)="onPasswordEditCancel($event)"><mat-icon class="small-button">close</mat-icon></a></span>
-        </div>
-      </div>
-    
-    </mat-card-subtitle>
-  </mat-card-header>
-  <img mat-card-image src={{dataset.imgUrl}} height="200" alt={{dataset.tag}}>
-  <mat-card-actions>
-    <a href={{dataset.viewUrl}} target="_blank"><button mat-button color='primary'>VIEW WEB</button></a>
-    <a href={{dataset.qrUrl}} target="_blank"><button mat-button color='primary'>QR</button></a>
-    <button mat-button color='warn' (click)="onDeleteTag(dataset.tag, dataset.dir)">DELETE</button>
-  </mat-card-actions>
-</mat-card>
--->

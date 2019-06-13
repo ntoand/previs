@@ -2,8 +2,8 @@ var FilebaseManager   = require('../src/node-firebase');
 
 var object = new FilebaseManager();
 
-test = 5; //0: add/get some data;  1: check and create new tag; 2: retrieve tags; 3: get a tag
-        // 5: key test
+test = 6; //0: add/get some data;  1: check and create new tag; 2: retrieve tags; 3: get a tag
+        // 5: key test; 6: bundle query test
 
 if(test === 0) {
     var tag = '1111';
@@ -135,4 +135,14 @@ else if (test ===5) {
         }
         console.log(doc);
     })
+}
+
+else if (test ===6) {
+    object.getDataBundleByUserEmail('ntoand@gmail.com', function(err, data) {
+        if(err) {
+            console.log(err);
+            return;
+        }
+        console.log(data);
+    });
 }

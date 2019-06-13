@@ -1,0 +1,37 @@
+<h1 mat-dialog-title>Collections</h1>
+<div mat-dialog-content>
+
+  <div class="alert-box {{message.type}}" *ngIf="message.content !== ''">
+    <span>{{message.type}}: </span>{{message.content}}
+  </div>
+  
+  <mat-form-field class="full-width">
+    <input matInput #txtVal (keydown.enter)="onAddNewCollection(txtVal.value)" placeholder="Add a new collection" 
+      name="collecion" [(ngModel)]="collectionValue">
+  </mat-form-field>
+
+  <div *ngFor="let collection of collections">
+    <div *ngIf="editCollectionID != collection.id" class="collection-container">
+      <span><b>{{collection.name}}</b> ({{collection.id}}) ({{collection.numtags}})</span>
+      <span class="hoz-spacer"></span>
+      <button mat-icon-button (click)="onEditClick(collection)">
+        <mat-icon>edit</mat-icon>
+      </button>
+      <button mat-icon-button *ngIf="collection.numtags == 0" (click)="onDeleteClick(collection)">
+        <mat-icon>delete</mat-icon>
+      </button>
+      <button mat-icon-button *ngIf="collection.numtags > 0" disabled>
+        <mat-icon>delete</mat-icon>
+      </button>
+    </div>
+
+    <div *ngIf="editCollectionID == collection.id" class="collection-container">
+      <span><input [(ngModel)]="editStr" class="item-input-str"></span>
+      <span class="hoz-spacer"></span>
+      <button mat-icon-button (click)="onItemEditGo(collection)"><mat-icon class="small-button">check</mat-icon></button>
+      <button mat-icon-button (click)="onItemEditCancel()"><mat-icon class="small-button">close</mat-icon></button>
+    </div>
+
+  </div>
+
+</div>

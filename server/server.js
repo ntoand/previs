@@ -16,7 +16,6 @@ var fs 			  = require('fs');
 var config 		  = require('./src/node-config').config;
 var myadmin 	  = require('./src/node-admin');
 var myupload	  = require('./src/node-upload');
-var preview 	  = require('./src/node-preview');
 var mytardis	  = require('./src/node-mytardis');
 var myutils 	  = require('./src/node-utils');
 
@@ -292,18 +291,22 @@ io.on('connection', function (socket) {
 			res: null
 		};
   		//msg = JSON.parse(msg);	// 2018.07 new client socket service sends JSON directly 
-  		msg.data.db = fbmanager;
+		msg.data.db = fbmanager;
+		msg.data.action = msg.action;
   		if(msg.data.userId === undefined) msg.data.userId = 'none';
   		if(msg.data.userEmail === undefined) msg.data.userEmail = 'none';
-  		if(msg.action === 'processtag') {
-  			preview.processTag(myio, msg.data);
+  		if(msg.action === 'admingettags') {
+  			myadmin.getTagsByUserEmail(myio, msg.data);
   		}
   		else if(msg.action === 'admindeletetags') {
   			myadmin.deleteTags(myio, msg.data);
   		}
   		else if(msg.action === 'adminupdatetag') {
   			myadmin.updateTag(myio, msg.data);
-  		}
+		}
+		else if(msg.action === 'adminupdatetagcollection') {
+			myadmin.updateTagCollection(myio, msg.data.collectionPrev, msg.data);
+		}
   		else if (msg.action === 'processupload') {
   			myupload.processUpload(myio, msg.data);
   		}
@@ -312,7 +315,24 @@ io.on('connection', function (socket) {
   		}
   		else if (msg.action === 'processapikey') {
   			processApiKey(myio, msg.data);
-  		}
+		}
+		// collections
+		else if(msg.action === 'admingetcollections') {
+			myadmin.getCollectionsByUserEmail(myio, msg.data);
+		}
+		else if(msg.action === 'adminaddcollection') {
+			myadmin.addNewCollection(myio, msg.data);
+		}
+		else if(msg.action === 'adminupdatecollection') {
+			myadmin.updateCollection(myio, msg.data);
+		}
+		else if(msg.action === 'admindeletecollection') {
+			myadmin.deleteCollection(myio, msg.data);
+		}
+		// bundle
+		else if(msg.action === 'admingetdatabundle') {
+			myadmin.getDataBundleByUserEmail(myio, msg.data);
+		}
   	});
   	
     // sharevol

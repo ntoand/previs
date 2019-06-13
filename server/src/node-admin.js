@@ -59,15 +59,15 @@ function deleteTag(io, data, item) {
     var userId = item.userId;
     data.db.getTag(tag, function(err, res){
         if (err) {
-            myutils.packAndSend(io, 'admindeletetags', {status: 'error', result: err});
+            myutils.packAndSend(io, data.action, {status: 'error', result: err});
     		return;
     	} 
     	if(res === null) {
-    	    myutils.packAndSend(io, 'admindeletetags', {status: 'error', result: 'tag not found'});
+    	    myutils.packAndSend(io, data.action, {status: 'error', result: 'tag not found'});
     		return;
     	}
     	if(res.userId !== userId) {
-    	    myutils.packAndSend(io, 'admindeletetags', {status: 'error', result: 'userId not match'});
+    	    myutils.packAndSend(io, data.action, {status: 'error', result: 'userId not match'});
     		return;
     	}
     	//delete tag and data
@@ -78,9 +78,9 @@ function deleteTag(io, data, item) {
         //delete tag in database
         data.db.deleteTag(tag, function(err) {
             if(err)
-                myutils.packAndSend(io, 'admindeletetags', {status: 'error', result: data, detail: 'failed to delete tag'});
+                myutils.packAndSend(io, data.action, {status: 'error', result: data, detail: 'failed to delete tag'});
             else
-                myutils.packAndSend(io, 'admindeletetags', {status: 'done', result: data});
+                myutils.packAndSend(io, data.action, {status: 'done', result: data});
         });
     });
 }
@@ -101,12 +101,104 @@ function updateTag(io, data) {
     
     data.db.updateTag(tag, updatedata, function(err) {
         if (err) 
-            myutils.packAndSend(io, 'adminupdatetag', {status: 'error', type: type, result: err});
+            myutils.packAndSend(io, data.action, {status: 'error', type: type, result: err});
     	else 
-    	    myutils.packAndSend(io, 'adminupdatetag', {status: 'done', type: type, result: {tag: tag, data: updatedata}});
+    	    myutils.packAndSend(io, data.action, {status: 'done', type: type, result: {tag: tag, data: updatedata}});
+    });
+}
+
+function updateTagCollection(io, collectionPrev, data) {
+    var tag = data.tag;
+    var type = data.type || '';
+    var updatedata = data.data;
+    
+    winston.info('updateTagCollection %s %s', collectionPrev, updatedata.collection);
+    data.db.updateTagCollection(tag, collectionPrev, updatedata, function(err) {
+        if (err) {
+            myutils.packAndSend(io, data.action, {status: 'error', type: type, result: err});
+        }
+    	else {
+            myutils.packAndSend(io, data.action, {status: 'done', type: type, result: {tag: tag, data: updatedata}});
+        }
+    });
+}
+
+function getTagsByUserEmail(io, data) {
+    
+    winston.info('node-admin getTagsByUserEmail email: %s, collection: %s', data.userEmail, data.collection);
+    data.db.getTagsByUserEmail(data.userEmail, data.collection, function(err, res){
+        if(err) {
+            myutils.packAndSend(io, data.action, {status: 'error', result: err});
+            return;
+        } 
+        myutils.packAndSend(io, data.action, {status: 'done', result: res});
+    });
+}
+
+function getCollectionsByUserEmail(io, data) {
+    
+    winston.info('node-admin getCollectionsByUserEmail email: %s', data.userEmail);
+    data.db.getCollectionsByUserEmail(data.userEmail, function(err, res){
+        if(err) {
+            myutils.packAndSend(io, data.action, {status: 'error', result: err});
+            return;
+        } 
+        myutils.packAndSend(io, data.action, {status: 'done', result: res});
+    });
+}
+
+function addNewCollection(io, data) {
+    winston.info('node-admin addNewCollection');
+    data.db.addNewCollection(data.data, function(err, res){
+        if(err) {
+            myutils.packAndSend(io, data.action, {status: 'error', result: err});
+            return;
+        } 
+        myutils.packAndSend(io, data.action, {status: 'done', result: res});
+    });
+}
+
+function updateCollection(io, data) {
+    winston.info('node-admin updateCollection');
+    data.db.updateCollection(data.data.id, data.data, function(err, res){
+        if(err) {
+            myutils.packAndSend(io, data.action, {status: 'error', result: err});
+            return;
+        } 
+        myutils.packAndSend(io, data.action, {status: 'done', result: res});
+    });
+}
+
+function deleteCollection(io, data) {
+    winston.info('node-admin deleteCollection');
+    data.db.deleteCollection(data.data, function(err, res){
+        if(err) {
+            myutils.packAndSend(io, data.action, {status: 'error', result: err});
+            return;
+        } 
+        myutils.packAndSend(io, data.action, {status: 'done', result: res});
+    });
+}
+
+// bundle
+function getDataBundleByUserEmail(io, data) {
+    winston.info('node-admin getDataBundleByUserEmail email: %s, collection: %s', data.userEmail, data.collection);
+    data.db.getDataBundleByUserEmail(data.userEmail, data.collection, function(err, res){
+        if(err) {
+            myutils.packAndSend(io, data.action, {status: 'error', result: err});
+            return;
+        } 
+        myutils.packAndSend(io, data.action, {status: 'done', result: res});
     });
 }
 
 module.exports.getTags = getTags;
 module.exports.deleteTags = deleteTags;
 module.exports.updateTag = updateTag;
+module.exports.updateTagCollection = updateTagCollection;
+module.exports.getTagsByUserEmail = getTagsByUserEmail;
+module.exports.getCollectionsByUserEmail = getCollectionsByUserEmail;
+module.exports.addNewCollection = addNewCollection;
+module.exports.updateCollection = updateCollection;
+module.exports.deleteCollection = deleteCollection;
+module.exports.getDataBundleByUserEmail = getDataBundleByUserEmail;
