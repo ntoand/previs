@@ -193,7 +193,7 @@ function processUploadFile_Volumes(io, data) {
 	var out_dir = data.tagdir + '/volume_result';
 	var cmd = 'cd ' + config.scripts_dir + ' && python processvolume.py -i ' + inputfile + ' -o ' + out_dir + ' -c ' + settings.channel + ' -t ' + settings.time;
 	console.log(cmd);
-	myutils.packAndSend(io, 'processupload', {status: 'working', result: 'Converting image stack to xrw...'})
+	myutils.packAndSend(io, 'processupload', {status: 'working', result: 'Converting image stack to xrw and mosaic png...'})
 	exec(cmd, function(err, stdout, stderr) 
     {
     	console.log(stdout);

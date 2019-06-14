@@ -115,7 +115,7 @@
       },
       "slices": {
         "properties": {
-          "show": true,
+          "show": false,
           "X": 93,
           "Y": 111,
           "Z": 144,
