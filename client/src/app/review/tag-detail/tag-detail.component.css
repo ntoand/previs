@@ -31,3 +31,11 @@
 .action-button {
     margin-right: 3px;
 }
+
+.share-chip-list {
+    width: 100%;
+}
+
+.send-email {
+    padding-top: 5px;
+}

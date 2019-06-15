@@ -192,6 +192,39 @@ function getDataBundleByUserEmail(io, data) {
     });
 }
 
+// sharing
+function updateShareEmail(io, data) {
+    let d = data.data;
+    winston.info('node-admin updateShareEmail for: %s id: %s', d.for, d.id);
+    //d{for: , id: , action:, email: , notify: }
+    var updatedata =  {share: {}};
+    updatedata.share[d.email] = d.action === 'add' ? 1 : 0;
+    if(d.for === 'tag') {
+        data.db.updateTag(d.id, updatedata, function(err) {
+            if (err) {
+                winston.error(err);
+                myutils.packAndSend(io, data.action, {status: 'error', result: err});
+            }   
+            else {
+                myutils.packAndSend(io, data.action, {status: 'done', result: d});
+                myutils.sendShareNotifyEmail(d);
+            }
+        });
+    }
+    else { // collection
+        data.db.updateCollection(d.id, updatedata, function(err) {
+            if (err) {
+                winston.error(err);
+                myutils.packAndSend(io, data.action, {status: 'error', result: err});
+            }   
+            else {
+                myutils.packAndSend(io, data.action, {status: 'done', result: d});
+                myutils.sendShareNotifyEmail(d);
+            }
+        });
+    }
+}
+
 module.exports.getTags = getTags;
 module.exports.deleteTags = deleteTags;
 module.exports.updateTag = updateTag;
@@ -202,3 +235,4 @@ module.exports.addNewCollection = addNewCollection;
 module.exports.updateCollection = updateCollection;
 module.exports.deleteCollection = deleteCollection;
 module.exports.getDataBundleByUserEmail = getDataBundleByUserEmail;
+module.exports.updateShareEmail = updateShareEmail;

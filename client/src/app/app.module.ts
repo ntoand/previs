@@ -18,7 +18,7 @@ import { ProfileComponent } from './profile/profile.component';
 import { MatToolbarModule, MatButtonModule, MatIconModule, MatInputModule, 
          MatCardModule, MatRadioModule, MatProgressBarModule, MatProgressSpinnerModule, MatSelectModule,
          MatDialogModule, MatTooltipModule, MatCheckboxModule, MatMenuModule, 
-         MatTableModule, MatSortModule } from '@angular/material';
+         MatTableModule, MatSortModule, MatChipsModule } from '@angular/material';
 
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 import { AppService } from './core/app.service';
@@ -79,6 +79,7 @@ import { CollectionComponent } from './review/collection/collection.component';
     MatMenuModule,
     MatTableModule,
     MatSortModule,
+    MatChipsModule,
     AngularFireModule.initializeApp(environment.firebase),
     AngularFirestoreModule, // imports firebase/firestore, only needed for database features
     AngularFireAuthModule // imports firebase/auth, only needed for auth features,

@@ -86,7 +86,8 @@ FirebaseManager.prototype.getTagsByUserEmail = function(email, collection = 'my'
         query = tagsRef.where('userEmail', '==', email);
     }
     else if(collection === 'shared') {
-        query = tagsRef.where('share.' + email, '==', true);
+        var path = new fbadmin.firestore.FieldPath('share', email);
+        query = tagsRef.where(path, '>', 0);
     }
     else {
         query = tagsRef.where('collection', '==', collection);
@@ -150,7 +151,7 @@ FirebaseManager.prototype.deleteTag = function(tag, callback) {
 
 FirebaseManager.prototype.updateTag = function(tag, data, callback) {
     var tagRef = this.db.collection('tags').doc(tag);
-    tagRef.update(data)
+    tagRef.set(data, {merge: true})
     .then(doc => {
         callback(null);
     })
@@ -268,7 +269,7 @@ FirebaseManager.prototype.addNewCollection = function(data, callback) {
 
 FirebaseManager.prototype.updateCollection = function(id, data, callback) {
     var tagRef = this.db.collection('collections').doc(id);
-    tagRef.update(data)
+    tagRef.set(data, {merge: true})
     .then(doc => {
         callback(null, data);
     })
@@ -290,37 +291,43 @@ FirebaseManager.prototype.deleteCollection = function(data, callback) {
 
 FirebaseManager.prototype.getCollectionsByUserEmail = function(email, callback) {
     
-    var tagsRef = this.db.collection('collections');
-    var query = tagsRef.where('userEmail', '==', email).get()
-        .then(snapshot => {
-            var data = [];
-            snapshot.forEach(doc => {
-                data.push({id: doc.id, data: doc.data()});
-            });
-            callback(null, data);
-        })
-        .catch(err => {
-           callback(err);
+    var myQuery = this.db.collection('collections').where('userEmail', '==', email).get();
+    var path = new fbadmin.firestore.FieldPath('share', email);
+    var shareQuery = this.db.collection('collections').where(path, '>', 0).get();
+    Promise.all([myQuery, shareQuery]).then(snapshot => {
+        var data = [];
+        snapshot[0].forEach(doc => {
+            data.push({id: doc.id, data: doc.data()});
         });
+        snapshot[1].forEach(doc => {
+            data.push({id: doc.id, data: doc.data()});
+        });
+        callback(null, data);
+    })
+    .catch(err => {
+        callback(err);
+    });
 }
 
 // ==== bundle for client ====
 FirebaseManager.prototype.getDataBundleByUserEmail = function(email, collection='my', callback) {
     // get collections, tags, users
     var query;
+    var path = new fbadmin.firestore.FieldPath('share', email);
     if(!collection || collection === 'my') {
         query = this.db.collection('tags').where('userEmail', '==', email);
     }
     else if(collection === 'shared') {
-        query = this.db.collection('tags').where('share.' + email, '==', true);
+        query = this.db.collection('tags').where(path, '>', 0);
     }
     else {
         query = this.db.collection('tags').where('collection', '==', collection);
     }
     var tagQuery = query.get();
+
     var collectionQuery = this.db.collection('collections').where('userEmail', '==', email).get();
-    var userQuery = this.db.collection('users').get();
-    Promise.all([tagQuery, collectionQuery, userQuery]).then(snapshot => {
+    var collectionQuery2 = this.db.collection('collections').where(path, '>', 0).get();
+    Promise.all([tagQuery, collectionQuery, collectionQuery2]).then(snapshot => {
         var tags = [];
         snapshot[0].forEach(doc => {
             tags.push({id: doc.id, data: doc.data()});
@@ -329,11 +336,16 @@ FirebaseManager.prototype.getDataBundleByUserEmail = function(email, collection=
         snapshot[1].forEach(doc => {
             collections.push({id: doc.id, data: doc.data()});
         });
-        var users = [];
         snapshot[2].forEach(doc => {
-            users.push({id: doc.id, data: doc.data()});
+            collections.push({id: doc.id, data: doc.data()});
         });
-        callback(null, {tags: tags, collections: collections, users: users});
+        // sort by date
+        tags.sort(function(a, b){
+            if(a.data.date >  b.data.date) return -1;
+            if(a.data.date <  b.data.date) return 1;
+            return 0;
+        });
+        callback(null, {tags: tags, collections: collections});
     })
     .catch(err => {
         callback(err);

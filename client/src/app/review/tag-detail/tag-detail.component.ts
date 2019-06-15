@@ -1,6 +1,7 @@
 import { Component, EventEmitter, Inject } from '@angular/core';
-import { MatDialogRef, MAT_DIALOG_DATA} from '@angular/material/dialog';
-import { log } from 'util';
+import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { COMMA, ENTER } from '@angular/cdk/keycodes';
+import { AuthService } from '../../core/auth.service';
 
 @Component({
   selector: 'app-tag-detail',
@@ -8,6 +9,8 @@ import { log } from 'util';
   styleUrls: ['./tag-detail.component.css']
 })
 export class TagDetailComponent {
+
+  message = { type: "", content: "" };
 
   // note
   editMode = false;
@@ -23,21 +26,39 @@ export class TagDetailComponent {
   collectionId = '';
   collectionIdPrev = '';
   collectionName = '';
-
+  //sharing
+  shareEmails = [];
+  notifyPeople = false;
+  addOnBlur = true;
+  selectable = true;
+  removable = true;
+  readonly separatorKeysCodes: number[] = [ENTER, COMMA];
+  owner = false;
+  
   dataset = null;
-  collections = null;
+  collections = [];
+  myCollections = [];
 
   onUpdateTag = new EventEmitter();
   needReloadCollections = new EventEmitter();
+  updateShareEmail = new EventEmitter();
 
-  constructor(public dialogRef: MatDialogRef<TagDetailComponent>,
+  constructor(public authService: AuthService, 
+    public dialogRef: MatDialogRef<TagDetailComponent>,
     @Inject(MAT_DIALOG_DATA) public data: any) {
 
       this.dataset = data.dataset;
+      this.shareEmails = this.getShareEmails(this.dataset.share);
       this.collections = data.collections;
+      this.owner = this.dataset.owner === 'yes';
+      for(var i=0; i < this.collections.length; i++) {
+        if(this.collections[i].owner === 'yes') {
+          this.myCollections.push(this.collections[i]);
+        }
+      }
       if(this.dataset.collection) {
         this.collectionId = this.dataset.collection;
-        this.collectionName = this.findCollectionName(this.collectionId);
+        this.collectionName = this.findCollectionName(this.collectionId, this.collections);
         this.collectionIdPrev = this.collectionId;
       }
 
@@ -47,12 +68,29 @@ export class TagDetailComponent {
       this.passwordStrPrev = this.passwordStr;
   }
 
-  findCollectionName(id) {
-    for(var i=0; i < this.collections.length; i++) {
-      if(this.collections[i].id === id)
-        return this.collections[i].name;
+  findCollectionName(id, collections = null) {
+    console.log('findCollectionName', id, collections);
+    if(!collections) collections = this.collections;
+    for(var i=0; i < collections.length; i++) {
+      if(collections[i].id === id)
+        return collections[i].name;
     }
     return '';
+  }
+
+  getShareEmails(share) {
+    var shareEmails = [];
+    console.log('getSharedEmails', share);
+    if(share) {
+      var keys = Object.keys(share);
+      console.log(keys);
+      for(var i=0; i<keys.length; i++) {
+        if(share[keys[i]] > 0) {
+          shareEmails.push(keys[i]);
+        }
+      }
+    }
+    return shareEmails;
   }
    
   ngOnChanges(changes) {
@@ -159,6 +197,52 @@ export class TagDetailComponent {
   onCollectionEditCancel($event) {
     $event.preventDefault();
     this.collectionEditMode = false;
+  }
+
+  onAddShareEmail(event) {
+    console.log('onAddShareEmail', this.shareEmails);
+    var scope = this;
+    const input = event.input;
+    const value = event.value;
+
+    if ((value || '').trim()) {
+      scope.message.type = '';
+      scope.message.content = '';
+
+      if(value.includes('@') && (value.includes('monash.edu') || value.includes('gmail.com'))) {
+        // update share email
+        var cn = confirm('Do you want to share to ' + value + '?');
+        if(cn) {
+          scope.updateShareEmail.emit({for: 'tag', action: 'add', id: scope.dataset.tag, 
+                                  email: value.trim(), notify: scope.notifyPeople, 
+                                  author: this.authService.userDetails.displayName});
+          scope.shareEmails.push(value.trim());
+        }
+      }
+      else {
+        scope.message.type = 'error';
+        scope.message.content = 'support only monash/gmail';
+      }
+    }
+
+    // Reset the input value
+    if (input) {
+      input.value = '';
+    }
+  }
+
+  onRemoveShareEmail(email) {
+    console.log('onRemoveShareEmail');
+    var cn = confirm('Do you want to remove ' + email + ' from sharing?');
+    if(cn){
+      this.updateShareEmail.emit({for: 'tag', action: 'remove', id: this.dataset.tag, 
+                              email: email, notify: false, 
+                              author: this.authService.userDetails.displayName});
+      const index = this.shareEmails.indexOf(email);
+      if (index >= 0) {
+        this.shareEmails.splice(index, 1);
+      }
+    }
   }
 
 }

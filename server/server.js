@@ -333,6 +333,10 @@ io.on('connection', function (socket) {
 		else if(msg.action === 'admingetdatabundle') {
 			myadmin.getDataBundleByUserEmail(myio, msg.data);
 		}
+		// sharing
+		else if(msg.action === 'adminupdateshareemail') {
+			myadmin.updateShareEmail(myio, msg.data);
+		}
   	});
   	
     // sharevol

@@ -12,17 +12,39 @@
     <span>{{message.type}}: </span>{{message.content}}
   </div>
 
-  <mat-card *ngIf="showOptions" class="tag-option">
-    <span class="collection-label">Collection</span>
-    <span>
-      <select [(ngModel)]="collectionId" (change)="onCollectionChange()" class="select-collection">
-        <option [value]="c.id" *ngFor="let c of collections">{{c.name}} {{c.id.length === 8 ? '('+c.numtags+')' : ''}}</option>
-      </select>
-    </span>
-    <button mat-icon-button><mat-icon class="collection-edit-icon" (click)="onCollectionEdit()">edit</mat-icon></button>
-    <span class="hoz-spacer"></span>
-    <button mat-icon-button *ngIf="listView == true"><mat-icon (click)="toogleViewType()">view_module</mat-icon></button>
-    <button mat-icon-button *ngIf="listView == false"><mat-icon (click)="toogleViewType()">view_list</mat-icon></button>
+  <mat-card *ngIf="showOptions" class="collection-container">
+    <div class="tag-option">
+      <span class="collection-label">Collection</span>
+      <span>
+        <select [(ngModel)]="collectionId" (change)="onCollectionChange()" class="select-collection">
+          <option [value]="c.id" *ngFor="let c of collections" [class.sharecollection]="c.owner === 'no'">{{c.name}} {{c.id.length === 8 ? '('+c.numtags+')' : ''}}</option>
+        </select>
+      </span>
+      <button mat-icon-button><mat-icon class="collection-edit-icon" (click)="onCollectionEdit()">edit</mat-icon></button>
+      <button mat-icon-button *ngIf="canShareCollection"><mat-icon (click)="toogleCollectionSharing()">share</mat-icon></button>
+      <span class="hoz-spacer"></span>
+      <button mat-icon-button *ngIf="listView == true"><mat-icon (click)="toogleViewType()">view_module</mat-icon></button>
+      <button mat-icon-button *ngIf="listView == false"><mat-icon (click)="toogleViewType()">view_list</mat-icon></button>
+    </div>
+    <div *ngIf="showSharing">Share to other monash/gmail accounts:
+      <div class='send-email'>
+        <input type="checkbox" [(ngModel)]="notifyPeople" [ngModelOptions]="{standalone: true}"/> Notify people
+      </div>
+      <mat-form-field class="share-chip-list">
+        <mat-chip-list #chipList aria-label="sharing emails">
+          <mat-chip *ngFor="let email of shareEmails" [selectable]="selectable"
+                    [removable]="removable" (removed)="onRemoveShareEmail(email)">
+            {{email}}
+            <mat-icon matChipRemove *ngIf="removable">cancel</mat-icon>
+          </mat-chip>
+          <input  placeholder="Add email..."
+                  [matChipInputFor]="chipList"
+                  [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
+                  [matChipInputAddOnBlur]="addOnBlur"
+                  (matChipInputTokenEnd)="onAddShareEmail($event)">
+        </mat-chip-list>
+      </mat-form-field> 
+    </div>
   </mat-card>
   
   <div *ngIf="datasets.length > 0">

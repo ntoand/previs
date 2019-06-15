@@ -19,7 +19,7 @@ export class AuthService {
         (user) => {
           if (user) {
             scope.userDetails = user;
-            console.log(scope.userDetails);
+            //console.log(scope.userDetails);
           }
           else {
             scope.userDetails = null;

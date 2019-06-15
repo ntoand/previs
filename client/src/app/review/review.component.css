@@ -16,9 +16,13 @@ th.mat-sort-header-sorted {
   color: black;
 }
 
+.collection-container {
+  margin-bottom: 10px;
+}
+
 .tag-option {
   display: flex;
-  margin-bottom: 10px;
+  margin-bottom: 5px;
   align-items: center;
 }
 
@@ -47,4 +51,16 @@ th.mat-sort-header-sorted {
   padding: 2px 2px;
   margin-right: 5px;
   max-width: 200px;
+}
+
+.send-email {
+  padding-top: 5px;
+}
+
+.share-chip-list {
+  width: 100%;
+}
+
+.sharecollection {
+  font-style: italic;
 }

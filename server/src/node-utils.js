@@ -237,6 +237,49 @@ function sendEmail(type, data, detail) {
 
 }
 
+function sendShareNotifyEmail(data) {
+    if(!data || data.notify !== true) return;
+    var nodemailer = require('nodemailer');
+    var gmail = require('../private/gmail.json');
+   
+    var transporter = nodemailer.createTransport({
+     service: 'gmail',
+     auth: {
+            user: gmail.user,
+            pass: gmail.pass
+        }
+    });
+
+    const config	= require('./node-config').config; 
+    var hosturl = '';
+    if (process.env.NODE_ENV === "production")  {
+        hosturl = config.hosturl;
+    }
+    else {
+        hosturl = config.hosturl_dev;
+    }
+    
+    var mail_subject = '[previs] ' + data.author + ' shared you a ' + data.for + ' ' + data.id;
+    var mail_body = '<p>Hi there,</p>';
+    mail_body += '<p>You can login and view your shared items in preview tab on previs ' + hosturl + '</p>';
+    mail_body += '<p>Kind regards,</p></p><p>MIVP previs team</p>';
+    var mailOptions = {
+        from: '"MIVP Previs" <mivp.gacc@gmail.com>',
+        to: data.email,
+        cc: 'mivp.gacc@gmail.com',
+        subject: mail_subject,
+        html: mail_body
+    };
+      
+    transporter.sendMail(mailOptions, function(error, info){
+        if (error) {
+            console.log(error);
+        } else {
+            console.log('Email sent: ' + info.response);
+        }
+    });
+}
+
 function getTimeString() {
     const d = new Date();
     const monthstr = (d.getMonth()+1) < 9 ? '0'+ (d.getMonth()+1).toString() : (d.getMonth()+1).toString();
@@ -256,3 +299,4 @@ module.exports.downloadFileHttps = downloadFileHttps;
 module.exports.zipDirectory = zipDirectory;
 module.exports.sendEmail = sendEmail;
 module.exports.getTimeString = getTimeString;
+module.exports.sendShareNotifyEmail = sendShareNotifyEmail;

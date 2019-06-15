@@ -88,7 +88,6 @@ export class CollectionComponent {
   onAddNewCollection(data) {
     if(this.collectionValue === '') return;
     console.log(data);
-    this.editCollectionID = '';
     const collection = {
       name: this.collectionValue,
       numtags: 0,
@@ -97,6 +96,8 @@ export class CollectionComponent {
     }
     this.appService.sendMsg({action: 'adminaddcollection', data: {data: collection}});
     this.needReloadCollections.emit({});
+    this.collectionValue = '';
+    this.editCollectionID = '';
   }
 
   onEditClick(data) {

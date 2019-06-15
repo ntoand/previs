@@ -1,6 +1,7 @@
 import { environment } from '../../environments/environment';
 
 export class Dataset {
+  owner: string;
   tag: string;
   dir: string;
   type: string;
@@ -13,12 +14,14 @@ export class Dataset {
   password: string;
   hasPassword: string;
   collection: string;
+  share: any;
   
   constructor() { 
     this.clear();
   }
   
   clear() {
+    this.owner = '';
     this.tag = '';
     this.dir = '';
     this.type = '';
@@ -31,27 +34,18 @@ export class Dataset {
     this.password = '';
     this.hasPassword = 'no';
     this.collection = '';
-  }
-
-  parseResult(data) {
-    //console.log('parseResult');
-    //console.log(data);
-    var result = data.result;
-    if(data.status === 'done' && result) {
-      this.parseResultData(result);
-    }
-    else {
-      this.clear();
-    }
+    this.share = {};
   }
   
-  parseResultData(result) {
+  parseResultData(result, userEmail) {
     //console.log('parseResultData');
     //console.log(result);
    
+    this.owner = result.userEmail === userEmail ? 'yes' : 'no';
     this.tag = result.tag;
     this.dir = result.dir || result.tag;
     this.type = result.type;
+    this.share = result.share;
     this.size = result.volumes[0].res.toString();
     if(result.collection) this.collection = result.collection;
     

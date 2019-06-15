@@ -41,19 +41,20 @@ export class UploadComponent implements OnInit {
   ngOnInit() {
     this.appService.setMenuIdx(1);
     
+    var scope = this;
     this.connection = this.appService.onMessage().subscribe(msg => {
       if(msg.action === 'processupload') {
         //console.log(msg.data);
         const data = msg.data;
         if(data.status !== 'done') {
-          this.message.type = data.status;
-          this.message.content = data.result;
+          scope.message.type = data.status;
+          scope.message.content = data.result;
         }
         else {
-          const result = data.result;
-          this.message.type = 'success';
-          this.message.content = 'Please write down this tag ' + result.tag + ' for later use';
-          this.dataset.parseResult(data);
+          let result = data.result;
+          scope.message.type = 'success';
+          scope.message.content = 'Please write down this tag ' + result.tag + ' for later use';
+          scope.dataset.parseResultData(data.result, scope.authService.userDetails.email);
           //this.appService.setLock(false);
         }
       }

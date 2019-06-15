@@ -12,7 +12,7 @@ import { MatDialog } from '@angular/material';
 
 import {MatSort} from '@angular/material/sort';
 import {MatTableDataSource} from '@angular/material/table';
-import { addListener } from 'cluste, eventNamesr';
+import { COMMA, ENTER } from '@angular/cdk/keycodes';
 
 @Component({
   selector: 'app-review',
@@ -34,9 +34,19 @@ export class ReviewComponent implements OnInit {
   showOptions = false;
   needReloadCollections = false;
 
-  listView = true;
+  listView = false;
   displayedColumns: string[] = ['tag', 'type', 'dateStr', 'size', 'collection', 'hasPassword', 'note'];
   dataSource = new MatTableDataSource(this.datasets);
+
+  //sharing
+  canShareCollection = false;
+  showSharing = false;
+  shareEmails = [];
+  notifyPeople = false;
+  addOnBlur = true;
+  selectable = true;
+  removable = true;
+  readonly separatorKeysCodes: number[] = [ENTER, COMMA];
 
   private sort: MatSort;
   
@@ -68,7 +78,8 @@ export class ReviewComponent implements OnInit {
 
   isComponentMessage(action) {
     if(action === 'admingetdatabundle' || action === 'admingettags' || action === 'admingetcollections' 
-    || action === 'admindeletetags' || action === 'adminupdatetag' || action === 'adminupdatetagcollection')
+    || action === 'admindeletetags' || action === 'adminupdatetag' || action === 'adminupdatetagcollection'
+    || action === 'adminupdateshareemail')
       return true;
     return false;
   }
@@ -79,6 +90,7 @@ export class ReviewComponent implements OnInit {
     if(action === 'admingetcollections') return 'failed to get collections';
     if(action === 'admindeletetags') return 'failed to delete tag(s)';
     if(action === 'adminupdatetag' || action === 'adminupdatetagcollection') return 'failed to update tag';
+    if(action === 'adminupdateshareemail') return 'failed to update share email';
     return '';
   }
   
@@ -93,7 +105,7 @@ export class ReviewComponent implements OnInit {
 
       if(!scope.isComponentMessage(msg.action)) return;
 
-      console.log(msg.data);
+      console.log(msg);
       scope.message.type = '';
       scope.message.content = '';
       if(msg.data.status === 'error') {
@@ -116,7 +128,7 @@ export class ReviewComponent implements OnInit {
         scope.datasets = [];
         for(var i=0; i < tags.length; i++) {
           var d = new Dataset();
-          d.parseResultData(tags[i].data);
+          d.parseResultData(tags[i].data, scope.authService.userDetails.email);
           scope.datasets.push(d);
         }
         scope.dataSource.data = scope.datasets;
@@ -126,7 +138,7 @@ export class ReviewComponent implements OnInit {
         scope.resetCollections();
         for(var i=0; i < collections.length; i++) {
           var c = new Collection();
-          c.parseResultData(collections[i].data);
+          c.parseResultData(collections[i].data, scope.authService.userDetails.email);
           scope.collections.push(c);
         }
       }
@@ -145,7 +157,7 @@ export class ReviewComponent implements OnInit {
         scope.datasets = [];
         for(var i=0; i < tags.length; i++) {
           var d = new Dataset();
-          d.parseResultData(tags[i].data);
+          d.parseResultData(tags[i].data, scope.authService.userDetails.email);
           scope.datasets.push(d);
         }
         scope.dataSource.data = scope.datasets;
@@ -157,7 +169,7 @@ export class ReviewComponent implements OnInit {
         scope.resetCollections();
         for(var i=0; i < collections.length; i++) {
           var c = new Collection();
-          c.parseResultData(collections[i].data);
+          c.parseResultData(collections[i].data, scope.authService.userDetails.email);
           scope.collections.push(c);
         }
         scope.message.type = 'success';
@@ -177,6 +189,30 @@ export class ReviewComponent implements OnInit {
         scope.message.content = 'Updated tag ' + tag;
         scope.updateTagNote(tag, msg.data.type, note, password, collection);
       }
+
+      else if(msg.action === 'adminupdateshareemail') {
+        scope.message.type = 'success';
+        scope.message.content = 'Updated share email';
+        let d = msg.data.result;
+        if(d.for === 'tag') {
+          for(var i=0; i < scope.datasets.length; i++) {
+            if(scope.datasets[i].tag === d.id) {
+              if(!scope.datasets[i].share) scope.datasets[i].share = {};
+              scope.datasets[i].share[d.email] = d.action === 'add' ? 1 : 0;
+              break;
+            }
+          }
+        }
+        else {
+          for(var i=0; i < scope.collections.length; i++) {
+            if(scope.collections[i].id === d.id) {
+              if(!scope.collections[i].share) scope.collections[i].share = {};
+              scope.collections[i].share[d.email] = d.action === 'add' ? 1 : 0;
+              break;
+            }
+          }
+        } // else
+      } // if
       
     });
   }
@@ -234,18 +270,30 @@ export class ReviewComponent implements OnInit {
     this.collections.push(new Collection('my', '-- my tags --'));
     this.collections.push(new Collection('shared', '-- shared tags --'));
     this.collectionId = 'my';
+    this.showSharing = false;
+    this.canShareCollection = false;
   }
 
   toogleViewType() {
     this.listView = !this.listView;
   }
 
+  getMyCollections() {
+    var scope = this;
+    var myCollections = [];
+    for(var i=0; i < scope.collections.length; i++) {
+      if(scope.collections[i].owner === 'yes') {
+        myCollections.push(scope.collections[i]);
+      }
+    }
+    return myCollections;
+  }
+
   onCollectionEdit() {
     var scope = this;
-    var clone = this.collections.slice(0); clone.splice(0, 2);
     const dialogRef = this.dialog.open(CollectionComponent, {
       width: '600px',
-      data: clone
+      data: scope.getMyCollections()
     });
 
     dialogRef.componentInstance.needReloadCollections.subscribe((data) => {
@@ -263,7 +311,7 @@ export class ReviewComponent implements OnInit {
 
   onDatasetClick(dataset) {
     var scope = this;
-    var clone = this.collections.slice(0); clone.splice(0, 2);
+    var clone = this.collections.slice(0); clone.slice(0, 2);
     const dialogRef = this.dialog.open(TagDetailComponent, {
       width: '800px',
       data: {dataset: dataset, collections: clone}
@@ -276,8 +324,11 @@ export class ReviewComponent implements OnInit {
     });
 
     dialogRef.componentInstance.needReloadCollections.subscribe((data) => {
-      console.log('needReloadCollections.subscribe');
       scope.needReloadCollections = true;
+    });
+
+    dialogRef.componentInstance.updateShareEmail.subscribe((data) => {
+      scope.appService.sendMsg({action: 'adminupdateshareemail', data: {data: data}});
     });
     
     dialogRef.afterClosed().subscribe(result => {
@@ -292,9 +343,92 @@ export class ReviewComponent implements OnInit {
     });
   }
 
+  getShareEmails(share) {
+    console.log('getSharedEmails', share);
+    var shareEmails = [];
+    if(share) {
+      var keys = Object.keys(share);
+      console.log(keys);
+      for(var i=0; i<keys.length; i++) {
+        if(share[keys[i]] > 0) {
+          shareEmails.push(keys[i]);
+        }
+      }
+    }
+    return shareEmails;
+  }
+
   onCollectionChange() {
-    //console.log('onCollectionChange', this.collectionId);
-    this.appService.sendMsg({action: 'admingettags', data: {userEmail: this.authService.userDetails.email, collection: this.collectionId}});
+    console.log('onCollectionChange', this.collectionId);
+    var scope = this;
+    for(var i=0; i < scope.collections.length; i++) {
+      if(scope.collections[i].id === scope.collectionId) {
+        if(scope.collections[i].owner === 'yes') {
+          scope.canShareCollection = true;
+          scope.shareEmails = scope.getShareEmails(scope.collections[i].share);
+        }
+        else {
+          scope.canShareCollection = false;
+          scope.showSharing = false;
+          scope.shareEmails = [];
+        }
+        break;
+      }
+    }
+    // get tags
+    scope.appService.sendMsg({action: 'admingettags', data: {userEmail: scope.authService.userDetails.email, collection: scope.collectionId}});
+  }
+
+  toogleCollectionSharing() {
+    this.showSharing = !this.showSharing;
+  }
+
+  onRemoveShareEmail(email) {
+    console.log('onRemoveShareEmail');
+    var cn = confirm('Do you want to remove ' + email + ' from sharing?');
+    var scope = this;
+    if(cn){
+      let data = {for: 'collection', action: 'remove', id: scope.collectionId, 
+                  email: email, notify: false, 
+                  author: scope.authService.userDetails.displayName};
+      scope.appService.sendMsg({action: 'adminupdateshareemail', data: {data: data}});
+      const index = scope.shareEmails.indexOf(email);
+      if (index >= 0) {
+        scope.shareEmails.splice(index, 1);
+      }
+    }
+  }
+
+  onAddShareEmail(event) {
+    console.log('onAddShareEmail', this.shareEmails);
+    var scope = this;
+    const input = event.input;
+    const value = event.value;
+
+    if ((value || '').trim()) {
+      scope.message.type = '';
+      scope.message.content = '';
+
+      if(value.includes('@') && (value.includes('monash.edu') || value.includes('gmail.com'))) {
+        // update share email
+        var cn = confirm('Do you want this collection with ' + value + '?');
+        if(cn) {
+          let data = {for: 'collection', action: 'add', id: scope.collectionId, 
+                      email: value.trim(), notify: scope.notifyPeople, 
+                      author: this.authService.userDetails.displayName};
+          scope.appService.sendMsg({action: 'adminupdateshareemail', data: {data: data}});
+          scope.shareEmails.push(value.trim());
+        }
+      }
+      else {
+        scope.message.type = 'error';
+        scope.message.content = 'support only monash/gmail';
+      }
+    }
+    // Reset the input value
+    if (input) {
+      input.value = '';
+    }
   }
 
 }

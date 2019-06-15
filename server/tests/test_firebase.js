@@ -138,7 +138,7 @@ else if (test ===5) {
 }
 
 else if (test ===6) {
-    object.getDataBundleByUserEmail('ntoand@gmail.com', function(err, data) {
+    object.getDataBundleByUserEmail('toan.nguyen@monash.edu', 'my', function(err, data) {
         if(err) {
             console.log(err);
             return;
