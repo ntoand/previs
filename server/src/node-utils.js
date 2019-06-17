@@ -195,7 +195,7 @@ function sendEmail(type, data, detail) {
         var url = hosturl;
        
         if(mail.datatype === 'volume') {
-            url = url + '/sharevol/index.html?data=data/tags/' + mail.tag + '/volume_result/vol_web.json&reset';
+            url = url + '/sharevol/?tag=' + mail.tag;
         }
         else if (mail.datatype === 'mesh') {
             url = url + '/meshviewer/?tag=' + mail.tag;

@@ -69,7 +69,6 @@ export class TagDetailComponent {
   }
 
   findCollectionName(id, collections = null) {
-    console.log('findCollectionName', id, collections);
     if(!collections) collections = this.collections;
     for(var i=0; i < collections.length; i++) {
       if(collections[i].id === id)

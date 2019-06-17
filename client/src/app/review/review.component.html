@@ -17,7 +17,7 @@
       <span class="collection-label">Collection</span>
       <span>
         <select [(ngModel)]="collectionId" (change)="onCollectionChange()" class="select-collection">
-          <option [value]="c.id" *ngFor="let c of collections" [class.sharecollection]="c.owner === 'no'">{{c.name}} {{c.id.length === 8 ? '('+c.numtags+')' : ''}}</option>
+          <option [value]="c.id" *ngFor="let c of collections" [ngClass]="{'sharecollection': c.owner==='no'}">{{c.owner==='no'?'[shared]':''}} {{c.name}} {{c.id.length === 8 ? '('+c.numtags+')' : ''}}</option>
         </select>
       </span>
       <button mat-icon-button><mat-icon class="collection-edit-icon" (click)="onCollectionEdit()">edit</mat-icon></button>
