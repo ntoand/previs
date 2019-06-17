@@ -194,7 +194,7 @@ function processUploadFile_Volumes(io, data) {
 	var out_dir = data.tagdir + '/volume_result';
 	var cmd = 'cd ' + config.scripts_dir + ' && python processvolume.py -i ' + inputfile + ' -o ' + out_dir + ' -c ' + settings.channel + ' -t ' + settings.time;
 	winston.info(cmd);
-	myutils.packAndSend(io, 'processupload', {status: 'working', result: 'Converting image stack to xrw...'})
+	myutils.packAndSend(io, 'processupload', {status: 'working', result: 'Converting image stack to xrw and mosaic png...'})
 	exec(cmd, function(err, stdout, stderr) 
     {
     	winston.info(stdout);
@@ -205,8 +205,20 @@ function processUploadFile_Volumes(io, data) {
 			myutils.sendEmail('fail', data, {status: 'error', result: 'cannot convert image stack to xrw', detail: stderr});
 			return;
 		}
-		myutils.packAndSend(io, 'processupload', {status: 'working', result: 'Converting xrw to png...'});
-		convertXRWToPNG(io, data);
+		// parse output to get size
+		var info = JSON.parse(stdout.trim());
+
+		data.vol_res_full = info.size;
+    	data.vol_res_web = info.newsize;
+    	//calculate scale
+    	var settings = data.settings;
+    	var xref_full = data.vol_res_full[0]*settings.voxelSizeX;
+    	data.vol_scale_full = [1, data.vol_res_full[1]*settings.voxelSizeY/xref_full, data.vol_res_full[2]*settings.voxelSizeZ/xref_full];
+    	var xref_web = data.vol_res_web[0]*settings.voxelSizeX;
+    	data.vol_scale_web = [1, data.vol_res_web[1]*settings.voxelSizeY/xref_web, data.vol_res_web[2]*settings.voxelSizeZ/xref_web];
+    	
+		myutils.packAndSend(io, 'processupload', {status: 'working', result: 'Preparing json file...'});
+		sendViewDataToClient(io, data);
     });
 }
 
@@ -356,76 +368,6 @@ function processUploadFile_Images(io, data) {
     });
 }
 
-
-function convertXRWToPNG(io, data) {
-	
-	var result_dir = data.tagdir + '/volume_result';
-	var xrwfile = result_dir + '/vol.xrw';
-	
-	var cmd = 'xrwinfo ' + xrwfile + ' | grep dimensions';
-	winston.info(cmd);
-	
-	exec(cmd, function(err, stdout, stderr) {
-		if (err) {
-			myutils.packAndSend(io, 'processupload', {status: 'error', result: 'cannot_run_xrwinfo'});
-			myutils.sendEmail('fail', data, {status: 'error', result: 'cannot_run_xrwinfo'});
-			return;
-		} 
-    	
-    	stdout = myutils.trim(stdout).trim();
-    	var res = stdout.split(" ");
-    	var vol_res = [parseInt(res[2]), parseInt(res[3]), parseInt(res[4])];
-    	/*
-    	var max_val = Math.max.apply(Math, vol_res);
-    	var resize_factor = 1;
-    	if(max_val > 4069)
-    		resize_factor = 8;
-    	else if(max_val > 2048)
-    		resize_factor = 4;
-    	else if (max_val > 1024)
-    		resize_factor = 2;
-    	*/
-    	var resize_factor = 1;
-    	var total_res = parseInt(res[2]) * parseInt(res[3]) * parseInt(res[4]);
-    	winston.info('total res: ', total_res);
-    	if(total_res > 4069*4096*4096)
-    		resize_factor = 9;
-    	else if(total_res > 2048*2048*2048)
-    		resize_factor = 5;
-    	else if(total_res > 1024*1024*1024)
-    		resize_factor = 3;
-    	else if(total_res > 512*512*512)
-    		resize_factor = 2;
-    	
-    	data.resize_factor = resize_factor;
-    	data.vol_res_full = vol_res;
-    	data.vol_res_web = [ Math.floor(vol_res[0]/resize_factor), Math.floor(vol_res[1]/resize_factor), Math.floor(vol_res[2]/resize_factor)];
-    	//calculate scale
-    	var settings = data.settings;
-    	var xref_full = data.vol_res_full[0]*settings.voxelSizeX;
-    	data.vol_scale_full = [1, data.vol_res_full[1]*settings.voxelSizeY/xref_full, data.vol_res_full[2]*settings.voxelSizeZ/xref_full];
-    	var xref_web = data.vol_res_web[0]*settings.voxelSizeX;
-    	data.vol_scale_web = [1, data.vol_res_web[1]*settings.voxelSizeY/xref_web, data.vol_res_web[2]*settings.voxelSizeZ/xref_web];
-    	
-    	var cmd = 'cd ' + config.scripts_dir + ' && xrw2pngmos -f ' + result_dir + '/vol.xrw -o ' + result_dir + '/vol_web.png -s ' 
-    		 	+ resize_factor + ' ' + resize_factor + ' ' + resize_factor  
-			  	+ ' && convert ' + result_dir + '/vol_web.png -thumbnail 256 ' + result_dir + '/vol_web_thumb.png';
-		winston.info(cmd);
-	
-		exec(cmd, function(err, stdout, stderr) {
-	    	winston.info(stdout);
-	    	winston.info(stderr);
-	    	if(err)
-			{
-				myutils.packAndSend(io, 'processupload', {status: 'error', result: 'cannot_convert_to_png', detail: stderr});
-				myutils.sendEmail('fail', data, {status: 'error', result: 'cannot_convert_to_png', detail: stderr});
-				return;
-			}
-			myutils.packAndSend(io, 'processupload', {status: 'working', result: 'Preparing json file...'});
-			sendViewDataToClient(io, data);
-	    });
-	});
-}
 
 function sendViewDataToClient(io, data) {
 	

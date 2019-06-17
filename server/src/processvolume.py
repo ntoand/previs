@@ -10,9 +10,15 @@ import numpy as np
 import imageio
 import gzip
 import shutil
+from math import sqrt
+from scipy import ndimage, misc
+
+import warnings
+warnings.filterwarnings("ignore")
 
 # Author: Toan Nguyen
 # Date: May 2018
+# Modified: June 2019
 # TODO: support nii and dcm files
 
 
@@ -58,10 +64,20 @@ def is16bit(mode):
 
 
 def convertImage16To8(img16):
-    data = np.array(img16) / 256
+    data = np.array(img16).astype(np.float32)
+    data = data / 256.0
+    if (data.max() > 0):
+        data *= 255.0 / data.max()
+
     data = np.array(data, dtype=np.uint8)
     img8 = Image.fromarray(data)
     return img8
+
+
+def calculateMosaicSize(H, W, D):
+    mos_ncols = round(sqrt(H * D / W))
+    mos_nrows = round((D - 1) / mos_ncols) + 1
+    return [mos_ncols, mos_nrows]
 
 
 def processZipStack(infile, outdir, verbose = False):
@@ -110,7 +126,23 @@ def processZipStack(infile, outdir, verbose = False):
         lut.append(i)
     lutarr = bytearray(lut)
 
-    # convert to xrw
+    # calculate number of cols in mosaic image
+    img_W = volinfo["size"][0]
+    img_H = volinfo["size"][1]
+    [mos_ncols, mos_nrows] = calculateMosaicSize(img_H, img_W, volinfo["numslices"])
+
+    # convert to xrw and mosaic png
+    max_size = 10000.0
+    factor = ((max_size*max_size) / (img_W*img_H*volinfo["numslices"]))**(1./3.)
+    need_resize = False
+    if factor < 1.0 and factor > 0.0:
+        need_resize = True
+        data3D = np.zeros( (img_H, img_W, volinfo["numslices"]), np.uint8)
+    else:
+        mos_data = np.zeros((int(mos_nrows * img_H), int(mos_ncols * img_W)), dtype=np.uint8)
+        mos_col = 0
+        mos_row = 0
+
     xrw_filename = os.path.join(outdir, "vol.xrw")
     with open(xrw_filename, "wb") as xrwfile:
         # nx, ny, nz
@@ -124,6 +156,7 @@ def processZipStack(infile, outdir, verbose = False):
         xrwfile.write(struct.pack('f', volinfo["voxelsizes"][2]))
 
         # write slices
+        slice_ind = 0
         for cmpinfo in zinfolist:
             fname = cmpinfo.filename
             if not validFilename(fname):
@@ -140,20 +173,64 @@ def processZipStack(infile, outdir, verbose = False):
                     if is16bit(volinfo["mode"]):
                         img = convertImage16To8(img)
 
-                    channel = img.getchannel(0)
-                    data = bytearray(channel.getdata())
-                    xrwfile.write(data)
+                    if(len(img.getbands()) > 1):
+                        channel = img.getchannel(0)
+                        data = channel.getdata()
+                    else:
+                        data = img.getdata()
+
+                    xrwfile.write(bytearray(data))
+
+                    if need_resize:
+                        data3D[:, :, slice_ind] = np.asarray(data).reshape((img_H, img_W))
+                    else:
+                        mos_data[int(mos_row * img_H):int((mos_row + 1) * img_H),
+                        int(mos_col * img_W):int((mos_col + 1) * img_W)] = np.asarray(data).reshape((img_H, img_W))
+                        mos_col += 1
+                        if (mos_col >= mos_ncols):
+                            mos_col = 0
+                            mos_row = mos_row + 1
+
+                    slice_ind = slice_ind + 1
 
         # lut r, g, b
         xrwfile.write(lutarr)
         xrwfile.write(lutarr)
         xrwfile.write(lutarr)
 
+    # save mosaic png
+    if need_resize:
+        resized_data = ndimage.zoom(data3D, factor)
+        newImgH = resized_data.shape[0]
+        newImgW = resized_data.shape[1]
+        newImgD = resized_data.shape[2]
+        [mos_ncols, mos_nrows] = calculateMosaicSize(newImgH, newImgW, newImgD)
+        mos_data = np.zeros((int(mos_nrows * newImgH), int(mos_ncols * newImgW)), dtype=np.uint8)
+        mos_col = 0
+        mos_row = 0
+        for d in range(newImgD):
+            mos_data[int(mos_row * newImgH):int((mos_row + 1) * newImgH),
+            int(mos_col * newImgW):int((mos_col + 1) * newImgW)] = resized_data[:, :, d]
+            mos_col += 1
+            if (mos_col >= mos_ncols):
+                mos_col = 0
+                mos_row = mos_row + 1
+
+    # save image and thumbnail
+    impng = Image.fromarray(mos_data)
+    impng.save(os.path.join(outdir, "vol_web.png"))
+    impng.thumbnail((512, 512))
+    impng.save(os.path.join(outdir, "vol_web_thumb.png"))
+
     zfile.close()
 
     retjson = {}
     retjson["status"] = "done"
     retjson["size"] = [volinfo["size"][0], volinfo["size"][1], volinfo["numslices"]]
+    if need_resize:
+        retjson["newsize"] = [resized_data.shape[1], resized_data.shape[0], resized_data.shape[2]]
+    else:
+        retjson["newsize"] = retjson["size"]
     print (json.dumps(retjson))
 
 
