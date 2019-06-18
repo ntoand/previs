@@ -40,6 +40,7 @@ export class TagDetailComponent {
   myCollections = [];
 
   onUpdateTag = new EventEmitter();
+  onRemoveTagCollection = new EventEmitter();
   needReloadCollections = new EventEmitter();
   updateShareEmail = new EventEmitter();
 
@@ -97,12 +98,12 @@ export class TagDetailComponent {
     this.passwordStr = changes.data.currentValue.password;
   }
   
-  onDeleteTag(tag, dir) {
+  onDeleteTag(dataset) {
     //this.deleteTagEvent.emit({tag: tag, dir: dir});
-    var cn = confirm('Do you want to delete tag: ' + tag + '?');
+    var cn = confirm('Do you want to delete tag: ' + dataset.tag + '?');
     if(cn){
       console.log('delete and close');
-      this.dialogRef.close({type: 'delete', tag: tag, dir: dir});
+      this.dialogRef.close({type: 'delete', tag: dataset.tag, dir: dataset.dir, collection: dataset.collection});
     }
   }
   
@@ -176,7 +177,7 @@ export class TagDetailComponent {
   onCollectionRemove($event) {
     $event.preventDefault();
     console.log('onCollectionRemove', this.collectionIdPrev);
-    this.onUpdateTag.emit({tag: this.dataset.tag, type: 'collection', collection: '', collectionPrev: this.collectionIdPrev });
+    this.onRemoveTagCollection.emit({tag: this.dataset.tag, type: 'collection', collection: '', collectionPrev: this.collectionIdPrev });
     this.collectionIdPrev = '';
     this.collectionName = '';
   }

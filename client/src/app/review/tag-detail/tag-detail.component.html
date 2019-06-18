@@ -67,5 +67,5 @@
 <div mat-dialog-actions>
   <a href={{dataset.viewUrl}} target="_blank"><button mat-button color='primary'>VIEW WEB</button></a>
   <a href={{dataset.qrUrl}} target="_blank"><button mat-button color='primary'>QR</button></a>
-  <button mat-button color='warn' *ngIf="owner" (click)="onDeleteTag(dataset.tag, dataset.dir)">DELETE</button>
+  <button mat-button color='warn' *ngIf="owner" (click)="onDeleteTag(dataset)">DELETE</button>
 </div>

@@ -12,7 +12,7 @@ def isImageFile(file):
     """
     filename, ext = os.path.splitext(file)
     ext = ext.lower()
-    if ext == ".tif" or ext == ".tiff" or ext == ".jpg" or ext == ".jpeg" or ext == ".png":
+    if ext == ".tif" or ext == ".tiff" or ext == ".jpg" or ext == ".jpeg" or ext == ".png" or ext == ".dcm":
         return True
     return False
     
@@ -47,7 +47,6 @@ def isPhotogrammetryFile(file):
     return False
 
 
-
 def main():
     zname = ""
     type = ""
@@ -64,6 +63,7 @@ def main():
     zinfolist = zfile.infolist()
 
     #print "Files:"
+    hasVolumeSlice = False
     hasImage = False
     hasMesh = False
     hasPoint = False

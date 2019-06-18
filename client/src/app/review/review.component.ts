@@ -230,9 +230,10 @@ export class ReviewComponent implements OnInit {
   deleteTag($event) {
     const tag = $event.tag;
     const dir = $event.dir;
+    const collection = $event.collection;
     
     console.log('delete ' + tag);
-    this.appService.sendMsg({action: 'admindeletetags', data: {tags: [{tag:tag, dir: dir, userId: this.authService.userDetails.uid}]}});
+    this.appService.sendMsg({action: 'admindeletetags', data: {tags: [{tag:tag, dir: dir, collection: collection, userId: this.authService.userDetails.uid}]}});
   }
   
   updateTag($event) {
@@ -318,9 +319,14 @@ export class ReviewComponent implements OnInit {
     });
 
     dialogRef.componentInstance.onUpdateTag.subscribe((data) => {
-      // do something
       console.log('Update tag', data);
       scope.updateTag(data);
+    });
+    
+    dialogRef.componentInstance.onRemoveTagCollection.subscribe((data) => {
+      console.log('Update tag collection', data);
+      scope.appService.sendMsg({action: 'adminupdatetagcollection', data: {tag: data.tag, type: 'collection', collectionPrev: data.collectionPrev, data: {collection: ''}}});
+      scope.needReloadCollections = true;
     });
 
     dialogRef.componentInstance.needReloadCollections.subscribe((data) => {

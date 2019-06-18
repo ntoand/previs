@@ -21,14 +21,14 @@
       <div *ngIf="dataType === 'volume'" class="collapse-able">
         <details>
           <summary>
-            Upload a TIFF Image Stack (.zip file of an indexed TIFF image stack), a multi-dimensional (stacked) TIFF file, or a compressed XRW file
+            Upload a volume: .zip file of an indexed image stack, a multi-dimensional (stacked) TIFF file, Nifti (.nii, .nii.gz) or a compressed XRW file
           </summary>
-          <p>Note: 16-bit data will be converted to 8-bit</p>
+          <p>Note: 16-bit data will be converted to 8-bit and rescaled</p>
           <p>Example data <a href="data/example/tiffstack-foot.zip">tiffstack-foot.zip</a> (image stack) and <a href="data/example/foot-3d.tif">foot-3d.tif</a> (multi-dim tiff)</p>
           <p><b>How to prepare stack zip file data:</b></p>
           <li>Create a directory to store slices</li>
           <li>Convert slices to tiff format if needed using image editors (e.g. ImageMagick)</li>
-          <li>Slices (tiff images) are named in order (e.g. 0001.tif, 0002.tif, ...)</li>
+          <li>Slices (images) are named in order (e.g. 0001.tif, 0002.tif, ...)</li>
           <li>Compress the directory into a zip file</li>
           <p>Your zip should look something like this:</p>
           <ul class="example-code">
@@ -125,6 +125,7 @@
           <p>Voxel size x <input type="number" step="0.01" [(ngModel)]="settings.voxelSizeX" class="option-input" > 
                         y <input type="number" step="0.01" [(ngModel)]="settings.voxelSizeY" class="option-input" > 
                         z <input type="number" step="0.01" [(ngModel)]="settings.voxelSizeZ" class="option-input" > 
+             (will be used when no voxelsize information is available in uploaded file)
           </p>
           <p>Channel index <input type="number"  [(ngModel)]="settings.channel" class="option-input" > 
              Timestep <input type="number"  [(ngModel)]="settings.time" class="option-input" > 
