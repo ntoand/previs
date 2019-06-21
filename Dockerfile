@@ -1,8 +1,8 @@
-#=== run previs in docker ===
+#=== run previs with Docker ===
 # docker build . -t ubuntu/previs
 # docker run -v /path/to/data:/data -p 9000:9000 -p 3001:3001 -it ubuntu/previs
 # Run previs: ./GO.sh
-# the /path/to/data should contains example and tags folders
+# the /path/to/data should contain example and tags folders
 # run web client: http://localhost:9000
 
 FROM    ubuntu:16.04
@@ -23,12 +23,6 @@ COPY . /previs
 
 #patch
 RUN cp /previs/docker-support/node-config.js /previs/server/src/node-config.js
-
-#s2plot
-RUN cd /previs/docker-support && tar xvzf s2plot.tar.gz
-RUN cd /previs/docker-support && tar xvzf s2volsurf.tar.gz
-ENV PATH=/previs/docker-support/s2plot/linux-gnu-x86_64:/previs/docker-support/s2volsurf:${PATH}
-ENV LD_LIBRARY_PATH=/previs/docker-support/s2plot/linux-gnu-x86_64:/previs/docker-support/s2volsurf:${LD_LIBRARY_PATH}
 
 #PotreeConverter
 RUN mkdir -p /previs/server/potree/PotreeConverter/build

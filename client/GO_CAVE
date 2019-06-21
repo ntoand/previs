@@ -1,4 +1,0 @@
-#!/bin/tcsh
-
-setenv PATH /cave/dev/node/node-v6.9.5-linux-x64/bin:$PATH
-npm start
