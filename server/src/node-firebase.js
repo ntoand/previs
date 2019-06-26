@@ -138,11 +138,31 @@ FirebaseManager.prototype.getAllTags = function(callback) {
         });
 }
 
-FirebaseManager.prototype.deleteTag = function(tag, callback) {
+FirebaseManager.prototype.deleteTag = function(tag, collection, callback) {
     var tagRef = this.db.collection('tags').doc(tag);
+    var scope = this;
     tagRef.delete()
     .then(doc => {
-        callback(null);
+        if(collection && collection.length > 0) {
+            var ref = scope.db.collection('collections').doc(collection);
+            scope.db.runTransaction(t => {
+                return t.get(ref)
+                .then(doc => {
+                    let newNumTags = doc.data().numtags - 1;
+                    if(newNumTags < 0) newNumTags = 0;
+                    t.update(ref, {numtags: newNumTags});
+                });
+            }).then(result => {
+                console.log('transaction decrease numtags for old collection success!');
+                callback(null);
+            }).catch(err => {
+                console.log('transaction decrease numtags for old collection failure:', err);
+                callback(err);
+            });
+        }
+        else {
+            callback(null);
+        }
     })
     .catch(err => {
         callback(err);

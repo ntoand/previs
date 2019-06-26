@@ -12,6 +12,8 @@ import gzip
 import shutil
 from math import sqrt
 from scipy import ndimage, misc
+import nibabel as nib
+import pydicom
 
 import warnings
 warnings.filterwarnings("ignore")
@@ -19,8 +21,6 @@ warnings.filterwarnings("ignore")
 # Author: Toan Nguyen
 # Date: May 2018
 # Modified: June 2019
-# TODO: support nii and dcm files
-
 
 def getImageType(fname):
     """
@@ -31,7 +31,7 @@ def getImageType(fname):
     ext = os.path.splitext(fname)[1].lower()
     if ext == ".tif" or ext == ".tiff" or ext == ".jpg" or ext == ".jpeg" or ext == ".png":
         return 1
-    elif ext == ".nii":
+    elif ext == ".dcm":
         return 2
     return 0
 
@@ -59,34 +59,131 @@ def splitFilename(filename, hascontainer = False):
     return parts
 
 
-def is16bit(mode):
-    return mode in ["uint16", "I;16", "I;16B", "I;16S"]
-
-
-def convertImage16To8(img16):
-    data = np.array(img16).astype(np.float32)
-    data = data / 256.0
-    if (data.max() > 0):
-        data *= 255.0 / data.max()
-
-    data = np.array(data, dtype=np.uint8)
-    img8 = Image.fromarray(data)
-    return img8
+def getNumpyType(mode):
+    # ["uint16", "I;16", "I;16B", "I;16S"]
+    if mode == "L" or mode == "P" or mode == "uint8":
+        return np.dtype(np.uint8)
+    elif mode == "uint16":
+        return np.dtype(np.uint16)
+    return np.dtype(np.int16)
 
 
 def calculateMosaicSize(H, W, D):
     mos_ncols = round(sqrt(H * D / W))
-    mos_nrows = round((D - 1) / mos_ncols) + 1
+    mos_nrows = int((D - 1) / mos_ncols) + 1
     return [mos_ncols, mos_nrows]
+
+
+def normalize16bitData(voldata, verbose = False):
+    # normalize 16 bit data
+    if verbose: print('normalize16bitData')
+    voldata = voldata.astype(np.float32)
+    voldata = voldata / 256.0
+    if (voldata.max() > 0):
+        voldata *= 255.0 / voldata.max()
+    return voldata.astype(np.uint8)
+
+
+def saveVolume(voldata, volinfo, outdir, verbose = False, savexrw = True):
+    """
+    Volume which are read from input files (zip, tiff, xrw, nifti or DICOM)
+    is resized (if needed), saved to xrw, mosaic png and thumbnail
+    :param data: 3d numpy array
+    :param volinfo: information of the 3D volume
+    :param outdir: output directory
+    :param verbose:
+    :return:
+    """
+
+    if verbose: print('saveVolume to', outdir)
+
+    #1. write 3d data to xrw file
+    if savexrw == True:
+        xrw_filename = os.path.join(outdir, "vol.xrw")
+        with open(xrw_filename, "wb") as xrwfile:
+            # nx, ny, nz
+            xrwfile.write(struct.pack('i', volinfo["size"][0]))
+            xrwfile.write(struct.pack('i', volinfo["size"][1]))
+            xrwfile.write(struct.pack('i', volinfo["numslices"]))
+
+            # wdx, wdy, wdz (voxel dimensions)
+            xrwfile.write(struct.pack('f', volinfo["voxelsizes"][0]))
+            xrwfile.write(struct.pack('f', volinfo["voxelsizes"][1]))
+            xrwfile.write(struct.pack('f', volinfo["voxelsizes"][2]))
+
+            for slice in range(volinfo["numslices"]):
+                xrwfile.write(voldata[:, :, slice].tobytes())
+
+            # lut r, g, b
+            lut = []
+            for i in range(256):
+                lut.append(i)
+            lutarr = bytearray(lut)
+            xrwfile.write(lutarr)
+            xrwfile.write(lutarr)
+            xrwfile.write(lutarr)
+
+    #2. check if we need to resize the volume for web viwewer
+    max_size = 10000.0 # texture width/height
+    fullW = volinfo["size"][0]
+    fullH = volinfo["size"][1]
+    [mos_ncols, mos_nrows] = calculateMosaicSize(fullH, fullW, volinfo["numslices"])
+    factor = ((max_size * max_size) / (fullW * fullH * volinfo["numslices"])) ** (1. / 3.)
+
+    mos_col = 0
+    mos_row = 0
+    newsize = [volinfo["size"][0], volinfo["size"][1], volinfo["numslices"]]
+    if factor < 1.0 and factor > 0.0: # need to resize
+        if verbose: print('resize volume')
+        resized_data = ndimage.zoom(voldata, factor)
+        newImgH = resized_data.shape[0]
+        newImgW = resized_data.shape[1]
+        newImgD = resized_data.shape[2]
+        [mos_ncols, mos_nrows] = calculateMosaicSize(newImgH, newImgW, newImgD)
+        mos_data = np.zeros((int(mos_nrows * newImgH), int(mos_ncols * newImgW)), dtype=np.uint8)
+        for d in range(newImgD):
+            mos_data[int(mos_row * newImgH):int((mos_row + 1) * newImgH),
+            int(mos_col * newImgW):int((mos_col + 1) * newImgW)] = resized_data[:, :, d]
+            mos_col += 1
+            if (mos_col >= mos_ncols):
+                mos_col = 0
+                mos_row = mos_row + 1
+        newsize = [resized_data.shape[1], resized_data.shape[0], resized_data.shape[2]]
+
+    else:
+        mos_data = np.zeros((int(mos_nrows * fullH), int(mos_ncols * fullW)), dtype=np.uint8)
+        for slice in range(volinfo["numslices"]):
+            data = voldata[:, :, slice]
+            mos_data[int(mos_row * fullH):int((mos_row + 1) * fullH),
+                     int(mos_col * fullW):int((mos_col + 1) * fullW)] = data
+            mos_col += 1
+            if (mos_col >= mos_ncols):
+                mos_col = 0
+                mos_row = mos_row + 1
+
+    # save image and thumbnail
+    impng = Image.fromarray(mos_data)
+    impng.save(os.path.join(outdir, "vol_web.png"))
+    impng.thumbnail((512, 512))
+    impng.save(os.path.join(outdir, "vol_web_thumb.png"))
+    # print output
+    retjson = {}
+    retjson["status"] = "done"
+    retjson["size"] = [volinfo["size"][0], volinfo["size"][1], volinfo["numslices"]]
+    retjson["newsize"] = newsize
+    if ("writevoxelsizes" in volinfo) and (volinfo["writevoxelsizes"] == True):
+        retjson["voxelsizes"] = volinfo["voxelsizes"]
+    print(json.dumps(retjson))
 
 
 def processZipStack(infile, outdir, verbose = False):
     """
-    Travel the zip file and generate meta data
+    Read volume data & info from images in a zip file
     :param infile: 
     :param outdir: 
     :return: 
     """
+    if(verbose): print('processZipStack')
     zfile = zipfile.ZipFile(infile, 'r')
     zinfolist = zfile.infolist()
 
@@ -106,132 +203,81 @@ def processZipStack(infile, outdir, verbose = False):
         if hadsize:
             continue
 
-        if imgtype == 1: # normal image
-            # read image data
-            with zfile.open(cmpinfo) as imgfile:
+        # read image data
+        volinfo["imgtype"] = imgtype
+        volinfo["16bit"] = False
+        with zfile.open(cmpinfo) as imgfile:
+            if imgtype == 1:  # normal image
                 img = Image.open(imgfile)
-                if verbose:
-                    print(fname, img.size, img.mode, len(img.getdata()), is16bit(img.mode))
+                if verbose: print(fname, img.size, img.mode, len(img.getdata()))
+                if (img.mode == "RGB"):
+                    img = img.convert('L')
                 volinfo["size"] = img.size
-                volinfo["mode"] = img.mode
-                #if img.mode != "L" and not is16bit(img.mode):
-                #    raise NameError("not_8_or_16_bit_data")
-                hadsize = True
+                volinfo["voxelsizes"] = [1, 1, 1]
+                volinfo["dtype"] = getNumpyType(img.mode)
+
+            elif imgtype == 2: # dicom
+                if verbose: print(imgfile.name)
+                with open(os.path.join(outdir, "tmp.dcm"), 'w') as f_tmp:
+                    f_tmp.write(imgfile.read())
+                RefDs = pydicom.read_file(os.path.join(outdir, "tmp.dcm"))
+                volinfo["size"] = [RefDs.Columns, RefDs.Rows]
+                volinfo["voxelsizes"] = [float(RefDs.PixelSpacing[0]), float(RefDs.PixelSpacing[1]), float(RefDs.SliceThickness)]
+                volinfo["writevoxelsizes"] = True
+                volinfo["dtype"] = RefDs.pixel_array.dtype
+
+            else:
+                NameError('Invalid image type')
+
+            hadsize = True
 
     volinfo["numslices"] = numslices
-    volinfo["voxelsizes"] = [1, 1, 1]
 
-    lut = []
-    for i in range(256):
-        lut.append(i)
-    lutarr = bytearray(lut)
+    # read volume data to 3D numpy array
+    fullW = volinfo["size"][0]
+    fullH = volinfo["size"][1]
+    voldata = np.zeros( (fullH, fullW, volinfo["numslices"]), dtype=volinfo["dtype"])
 
-    # calculate number of cols in mosaic image
-    img_W = volinfo["size"][0]
-    img_H = volinfo["size"][1]
-    [mos_ncols, mos_nrows] = calculateMosaicSize(img_H, img_W, volinfo["numslices"])
+    # read slices
+    slice_ind = 0
+    for cmpinfo in zinfolist:
+        fname = cmpinfo.filename
+        if not validFilename(fname):
+            continue
 
-    # convert to xrw and mosaic png
-    max_size = 10000.0
-    factor = ((max_size*max_size) / (img_W*img_H*volinfo["numslices"]))**(1./3.)
-    need_resize = False
-    if factor < 1.0 and factor > 0.0:
-        need_resize = True
-        data3D = np.zeros( (img_H, img_W, volinfo["numslices"]), np.uint8)
-    else:
-        mos_data = np.zeros((int(mos_nrows * img_H), int(mos_ncols * img_W)), dtype=np.uint8)
-        mos_col = 0
-        mos_row = 0
+        imgtype = getImageType(fname)
+        if imgtype == 0:
+            continue
 
-    xrw_filename = os.path.join(outdir, "vol.xrw")
-    with open(xrw_filename, "wb") as xrwfile:
-        # nx, ny, nz
-        xrwfile.write(struct.pack('i', volinfo["size"][0]))
-        xrwfile.write(struct.pack('i', volinfo["size"][1]))
-        xrwfile.write(struct.pack('i', volinfo["numslices"]))
-
-        # wdx, wdy, wdz (voxel dimensions)
-        xrwfile.write(struct.pack('f', volinfo["voxelsizes"][0]))
-        xrwfile.write(struct.pack('f', volinfo["voxelsizes"][1]))
-        xrwfile.write(struct.pack('f', volinfo["voxelsizes"][2]))
-
-        # write slices
-        slice_ind = 0
-        for cmpinfo in zinfolist:
-            fname = cmpinfo.filename
-            if not validFilename(fname):
-                continue
-
-            imgtype = getImageType(fname)
-            if imgtype == 0:
-                continue
-
+        with zfile.open(cmpinfo) as imgfile:
             if imgtype == 1:  # normal image
-                with zfile.open(cmpinfo) as imgfile:
-                    img = Image.open(imgfile)
-
-                    if is16bit(volinfo["mode"]):
-                        img = convertImage16To8(img)
-
-                    if(len(img.getbands()) > 1):
+                img = Image.open(imgfile)
+                if (img.mode == "RGB"):
+                    img = img.convert('L')
+                if imgtype == 1:
+                    if (len(img.getbands()) > 1):
                         channel = img.getchannel(0)
                         data = channel.getdata()
                     else:
                         data = img.getdata()
+                voldata[:, :, slice_ind] = np.asarray(data).reshape((fullH, fullW))
 
-                    xrwfile.write(bytearray(data))
+            elif imgtype == 2: # dicom
+                with open(os.path.join(outdir, "tmp.dcm"), 'w') as f_tmp:
+                    f_tmp.write(imgfile.read())
+                RefDs = pydicom.read_file(os.path.join(outdir, "tmp.dcm"))
+                data = RefDs.pixel_array
+                voldata[:, :, slice_ind] = data.reshape((fullH, fullW))
 
-                    if need_resize:
-                        data3D[:, :, slice_ind] = np.asarray(data).reshape((img_H, img_W))
-                    else:
-                        mos_data[int(mos_row * img_H):int((mos_row + 1) * img_H),
-                        int(mos_col * img_W):int((mos_col + 1) * img_W)] = np.asarray(data).reshape((img_H, img_W))
-                        mos_col += 1
-                        if (mos_col >= mos_ncols):
-                            mos_col = 0
-                            mos_row = mos_row + 1
-
-                    slice_ind = slice_ind + 1
-
-        # lut r, g, b
-        xrwfile.write(lutarr)
-        xrwfile.write(lutarr)
-        xrwfile.write(lutarr)
-
-    # save mosaic png
-    if need_resize:
-        resized_data = ndimage.zoom(data3D, factor)
-        newImgH = resized_data.shape[0]
-        newImgW = resized_data.shape[1]
-        newImgD = resized_data.shape[2]
-        [mos_ncols, mos_nrows] = calculateMosaicSize(newImgH, newImgW, newImgD)
-        mos_data = np.zeros((int(mos_nrows * newImgH), int(mos_ncols * newImgW)), dtype=np.uint8)
-        mos_col = 0
-        mos_row = 0
-        for d in range(newImgD):
-            mos_data[int(mos_row * newImgH):int((mos_row + 1) * newImgH),
-            int(mos_col * newImgW):int((mos_col + 1) * newImgW)] = resized_data[:, :, d]
-            mos_col += 1
-            if (mos_col >= mos_ncols):
-                mos_col = 0
-                mos_row = mos_row + 1
-
-    # save image and thumbnail
-    impng = Image.fromarray(mos_data)
-    impng.save(os.path.join(outdir, "vol_web.png"))
-    impng.thumbnail((512, 512))
-    impng.save(os.path.join(outdir, "vol_web_thumb.png"))
+            slice_ind = slice_ind + 1
 
     zfile.close()
 
-    retjson = {}
-    retjson["status"] = "done"
-    retjson["size"] = [volinfo["size"][0], volinfo["size"][1], volinfo["numslices"]]
-    if need_resize:
-        retjson["newsize"] = [resized_data.shape[1], resized_data.shape[0], resized_data.shape[2]]
-    else:
-        retjson["newsize"] = retjson["size"]
-    print (json.dumps(retjson))
+    # normalize 16 bit data
+    if volinfo["dtype"] == np.dtype(np.uint16) or volinfo["dtype"] == np.dtype(np.int16):
+        voldata = normalize16bitData(voldata, verbose)
+
+    saveVolume(voldata, volinfo, outdir, verbose)
 
 
 def parseVolInfo(shape):
@@ -301,10 +347,7 @@ def getFrameData(img, volinfo, i, channel, timestep):
     elif dim == 5:
         data = img[timestep,i,channel,:,:]
 
-    if is16bit(volinfo["mode"]):
-        data = data / 256
-        data = np.array(data, dtype=np.uint8)
-    return data.tobytes()
+    return data
 
 
 def processTiffStack(infile, outdir, channel, timestep, verbose):
@@ -315,47 +358,31 @@ def processTiffStack(infile, outdir, channel, timestep, verbose):
     :param verbose: 
     :return: 
     """
+    if verbose: print('processTiffStack')
     #img = Image.open(infile)
     img = imageio.volread(infile)
     volinfo = parseVolInfo(img.shape)
-    volinfo["mode"] = img.dtype.name
     volinfo["shape"] = img.shape
+    #volinfo["dtype"] = getNumpyType(img.dtype.name)
+    volinfo["dtype"] = getFrameData(img, volinfo, 0, 0, 0).dtype
     if verbose:
         print(volinfo)
 
     if volinfo["numslices"] < 5:
         raise NameError("Tiff has less than 5 frames")
 
-    lut = []
-    for i in range(256):
-        lut.append(i)
-    lutarr = bytearray(lut)
+    fullW = volinfo["size"][0]
+    fullH = volinfo["size"][1]
+    voldata = np.zeros((fullH, fullW, volinfo["numslices"]), volinfo["dtype"])
 
-    xrw_filename = os.path.join(outdir, "vol.xrw")
-    with open(xrw_filename, "wb") as xrwfile:
-        # nx, ny, nz
-        xrwfile.write(struct.pack('i', volinfo["size"][0]))
-        xrwfile.write(struct.pack('i', volinfo["size"][1]))
-        xrwfile.write(struct.pack('i', volinfo["numslices"]))
+    for i in range(volinfo["numslices"]):
+        voldata[:, :, i] = getFrameData(img, volinfo, i, channel, timestep)
 
-        # wdx, wdy, wdz (voxel dimensions)
-        xrwfile.write(struct.pack('f', volinfo["voxelsizes"][0]))
-        xrwfile.write(struct.pack('f', volinfo["voxelsizes"][1]))
-        xrwfile.write(struct.pack('f', volinfo["voxelsizes"][2]))
+    # normalize 16 bit data
+    if volinfo["dtype"] == np.dtype(np.uint16) or volinfo["dtype"] == np.dtype(np.int16):
+        voldata = normalize16bitData(voldata, verbose)
 
-        for i in range(volinfo["numslices"]):
-            data = getFrameData(img, volinfo, i, channel, timestep)
-            xrwfile.write(data)
-
-        # lut r, g, b
-        xrwfile.write(lutarr)
-        xrwfile.write(lutarr)
-        xrwfile.write(lutarr)
-
-    retjson = {}
-    retjson["status"] = "done"
-    retjson["size"] = [volinfo["size"][0], volinfo["size"][1], volinfo["numslices"]]
-    print(json.dumps(retjson))
+    saveVolume(voldata, volinfo, outdir, verbose)
 
 
 def processXRWFile(infile, outdir, verbose):
@@ -366,24 +393,81 @@ def processXRWFile(infile, outdir, verbose):
     :param verbose:
     :return:
     """
+    #make sure input file name is not vol.xrw
+    tmp_infile = os.path.join(outdir, "input.xrw")
+    shutil.move(infile, tmp_infile)
     xrw_filename = os.path.join(outdir, "vol.xrw")
-    with gzip.open(infile, 'rb') as f_in:
-        with open(xrw_filename, 'wb') as f_out:
-            shutil.copyfileobj(f_in, f_out)
+
+    is_gzip = True
+    with gzip.open(tmp_infile, 'rb') as f_in:
+        try:
+            f_in.read(4)
+        except IOError as e:
+            is_gzip = False
+
+    if is_gzip:
+        with gzip.open(tmp_infile, 'rb') as f_in:
+            with open(xrw_filename, 'wb') as f_out:
+                shutil.copyfileobj(f_in, f_out)
+    else:
+        shutil.move(tmp_infile, xrw_filename)
 
     # read some info from file
+    volinfo = {}
     size_x = 0
     size_y = 0
     numslides = 0
-    with gzip.open(infile, 'rb') as f_in:
-        size_x = struct.unpack('i', f_in.read(4))
-        size_y = struct.unpack('i', f_in.read(4))
-        numslides = struct.unpack('i', f_in.read(4))
+    voldata = []
+    with open(xrw_filename, 'rb') as f_in:
+        size_x = struct.unpack('i', f_in.read(4))[0]
+        size_y = struct.unpack('i', f_in.read(4))[0]
+        numslides = struct.unpack('i', f_in.read(4))[0]
 
-    retjson = {}
-    retjson["status"] = "done"
-    retjson["size"] = [size_x, size_y, numslides]
-    print(json.dumps(retjson))
+        voldata = np.zeros((size_y, size_x, numslides), dtype=np.uint8)
+        for slice in range(numslides):
+            data = f_in.read(int(size_x * size_y))
+            voldata[:, :, slice] = np.frombuffer(data, dtype=np.uint8).reshape( (size_y, size_x))
+
+    volinfo["size"] = [size_x, size_y]
+    volinfo["numslices"] = numslides
+    volinfo["voxelsizes"] = [1, 1, 1]
+
+    saveVolume(voldata, volinfo, outdir, verbose, False)
+
+
+def processNiftiFile(infile, outdir, timestep, verbose):
+    """
+    Process nifti file
+    :param infile:
+    :param outdir:
+    :param timestep: (4D data)
+    :param verbose:
+    :return:
+    """
+    if verbose: print('processNiftiFile')
+
+    img = nib.load(infile)
+    if verbose: print(img.shape, img.get_data_dtype(), img.header.get_zooms())
+
+    volinfo = {}
+    volinfo["size"] = [img.shape[1], img.shape[0]]
+    volinfo["numslices"] = img.shape[2]
+    volinfo["voxelsizes"] = []
+    for i in range(3):
+        volinfo["voxelsizes"].append(round(float(img.header.get_zooms()[i]), 2))
+    volinfo["writevoxelsizes"] = True
+
+    voldata = np.array(img.dataobj)
+    if len(img.shape) > 3:
+        if timestep >= img.shape[3]:
+            timestep = img.shape[3]-1
+        voldata = voldata[:, :, :, timestep]
+
+    # normalize 16 bit data
+    if img.get_data_dtype() == np.dtype(np.int16) or img.get_data_dtype() == np.dtype(np.uint16):
+        voldata = normalize16bitData(voldata, verbose)
+
+    saveVolume(voldata, volinfo, outdir, verbose)
 
 
 def main(argv):
@@ -421,6 +505,8 @@ def main(argv):
 
     # now process zip file
     filename, ext = os.path.splitext(infile)
+    if verbose:
+        print(filename, ext)
     ext = ext.lower()
     if ext == ".zip":
         processZipStack(infile, outdir, verbose)
@@ -428,6 +514,11 @@ def main(argv):
         processTiffStack(infile, outdir, channel, timestep, verbose)
     elif ext == ".xrw":
         processXRWFile(infile, outdir, verbose)
+    elif ext == ".nii" or ext == ".gz" or ".nii.gz" in infile:
+        if ext == ".gz" and ".nii.gz" not in infile:
+            shutil.move(infile, os.path.join(outdir, filename + '.nii.gz'))
+            infile = os.path.join(outdir, filename + '.nii.gz')
+        processNiftiFile(infile, outdir, timestep, verbose)
     else:
         raise NameError("wrong_input_file_ext")
 

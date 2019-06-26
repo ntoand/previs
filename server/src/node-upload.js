@@ -195,23 +195,25 @@ function processUploadFile_Volumes(io, data) {
 	var cmd = 'cd ' + config.scripts_dir + ' && python processvolume.py -i ' + inputfile + ' -o ' + out_dir + ' -c ' + settings.channel + ' -t ' + settings.time;
 	winston.info(cmd);
 	myutils.packAndSend(io, 'processupload', {status: 'working', result: 'Converting image stack to xrw and mosaic png...'})
-	exec(cmd, function(err, stdout, stderr) 
-    {
+	exec(cmd, function(err, stdout, stderr) {
     	winston.info(stdout);
     	winston.info(stderr);
-    	if(err)
-		{
+    	if(err) {
 			myutils.packAndSend(io, 'processupload', {status: 'error', result: 'cannot convert image stack to xrw', detail: stderr});
 			myutils.sendEmail('fail', data, {status: 'error', result: 'cannot convert image stack to xrw', detail: stderr});
 			return;
 		}
 		// parse output to get size
 		var info = JSON.parse(stdout.trim());
-
+		var settings = data.settings;
+		if("voxelsizes" in info) {
+			settings.voxelSizeX = info.voxelsizes[0];
+			settings.voxelSizeY = info.voxelsizes[1];
+			settings.voxelSizeZ = info.voxelsizes[2];
+		}
 		data.vol_res_full = info.size;
     	data.vol_res_web = info.newsize;
     	//calculate scale
-    	var settings = data.settings;
     	var xref_full = data.vol_res_full[0]*settings.voxelSizeX;
     	data.vol_scale_full = [1, data.vol_res_full[1]*settings.voxelSizeY/xref_full, data.vol_res_full[2]*settings.voxelSizeZ/xref_full];
     	var xref_web = data.vol_res_web[0]*settings.voxelSizeX;

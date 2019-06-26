@@ -145,11 +145,11 @@ export class TagDetailComponent {
     this.passwordStr = changes.data.currentValue.password;
   }
   
-  onDeleteTag(tag, dir) {
+  onDeleteTag(tag) {
     //this.deleteTagEvent.emit({tag: tag, dir: dir});
-    var cn = confirm('Do you want to delete tag: ' + tag + '?');
+    var cn = confirm('Do you want to delete tag: ' + tag.tag + '?');
     if(cn){
-      this.dialogRef.close({type: 'delete', tag: tag, dir: dir});
+      this.dialogRef.close({type: 'delete', tag: tag.tag, dir: tag.dir, collection: tag.collection});
     }
   }
   

@@ -154,8 +154,8 @@ export class ReviewComponent implements OnInit {
   deleteTag($event) {
     const tag = $event.tag;
     const dir = $event.dir;
-    console.log('delete ' + tag);
-    this.store.dispatch(new DeleteTags({tags: [{tag:tag, dir: dir, userId: this.authService.userDetails.uid}]}));
+    const collection = $event.collection;
+    this.store.dispatch(new DeleteTags({tags: [{tag:tag, dir: dir, collection: collection, userId: this.authService.userDetails.uid}]}));
   }
   
   toogleViewType() {

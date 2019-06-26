@@ -56,6 +56,7 @@ var deleteFolderRecursive = function(dir) {
 function deleteTag(io, data, item) {
     var tag = item.tag;
     var dir = item.dir || tag;
+    var collection = item.collection;
     var userId = item.userId;
     data.db.getTag(tag, function(err, res){
         if (err) {
@@ -76,11 +77,13 @@ function deleteTag(io, data, item) {
         deleteFolderRecursive(tag_dir);
         
         //delete tag in database
-        data.db.deleteTag(tag, function(err) {
-            if(err)
+        data.db.deleteTag(tag, collection, function(err) {
+            if(err) {
                 myutils.packAndSend(io, data.action, {status: 'error', result: data, detail: 'failed to delete tag'});
-            else
+            }
+            else {
                 myutils.packAndSend(io, data.action, {status: 'done', result: data});
+            }
         });
     });
 }
