@@ -107,9 +107,10 @@ function updateTag(io, data) {
     });
 }
 
-function updateTagCollection(io, collectionPrev, data) {
+function updateTagCollection(io, data) {
     var tag = data.tag;
     var type = data.type || '';
+    var collectionPrev = data.collectionPrev;
     var updatedata = data.data;
     
     winston.info('updateTagCollection %s %s', collectionPrev, updatedata.collection);

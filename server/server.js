@@ -276,92 +276,103 @@ app.get('*', function(req, res) {
     res.redirect('/');
 });
 
+// helper func
+function createMsgData(action, msg) {
+	let msgdata = msg;
+	msgdata.action = action;
+	msgdata.db = fbmanager;
+	if(msgdata.userId === undefined) msgdata.userId = 'none';
+	if(msgdata.userEmail === undefined) msgdata.userEmail = 'none';
+	return msgdata;  
+}
+
 // ===== SOCKET IO ===========
 io.on('connection', function (socket) {
 	winston.info('A client connected');
 	
 	socket.on('disconnect', function(){
     	winston.info('user disconnected');
-  	});
+	});
+	  
+	// ==== client app messages ====
+	// tag
+	socket.on('admingettags', function(msg) {
+		myadmin.getTagsByUserEmail({socket:socket, res:null}, createMsgData('admingettags', msg));
+	});
+
+	socket.on('adminupdatetag', function(msg) {
+		myadmin.updateTag({socket:socket, res:null}, createMsgData('adminupdatetag', msg));
+	});
+
+	socket.on('adminupdatetagcollection', function(msg) {
+		myadmin.updateTagCollection({socket:socket, res:null}, createMsgData('adminupdatetagcollection', msg));
+	});
+
+	socket.on('admindeletetags', function(msg) {
+		myadmin.deleteTags({socket:socket, res:null}, createMsgData('admindeletetags', msg));
+	});
+
+	// collection
+	socket.on('admingetcollections', function(msg) {
+		myadmin.getCollectionsByUserEmail({socket:socket, res:null}, createMsgData('admingetcollections', msg));
+	});
+
+	socket.on('adminaddcollection', function(msg) {
+		myadmin.addNewCollection({socket:socket, res:null}, createMsgData('adminaddcollection', msg));
+	});
+
+	socket.on('adminupdatecollection', function(msg) {
+		myadmin.updateCollection({socket:socket, res:null}, createMsgData('adminupdatecollection', msg));
+	});
+
+	socket.on('admindeletecollection', function(msg) {
+		myadmin.deleteCollection({socket:socket, res:null}, createMsgData('admindeletecollection', msg));
+	});
+
+	// sharing
+	socket.on('adminupdateshareemail', function(msg) {
+		myadmin.updateShareEmail({socket:socket, res:null}, createMsgData('adminupdateshareemail', msg));
+	});
+
+	// upload
+	socket.on('processupload', function(msg) {
+		myupload.processUpload({socket:socket, res:null}, createMsgData('processupload', msg));
+	});
+
+	socket.on('processmytardis', function(msg) {
+		mytardis.processMytardis({socket:socket, res:null}, createMsgData('processmytardis', msg));
+	});
+
+	// profile
+	socket.on('processapikey', function(msg) {
+		processApiKey({socket:socket, res:null}, createMsgData('processapikey', msg));
+	});
+
   	
-  	socket.on('message', function(msg) {
-		winston.info(msg);
-  		const myio = {
-			socket: socket,
-			res: null
-		};
-  		//msg = JSON.parse(msg);	// 2018.07 new client socket service sends JSON directly 
-		msg.data.db = fbmanager;
-		msg.data.action = msg.action;
-  		if(msg.data.userId === undefined) msg.data.userId = 'none';
-  		if(msg.data.userEmail === undefined) msg.data.userEmail = 'none';
-  		if(msg.action === 'admingettags') {
-  			myadmin.getTagsByUserEmail(myio, msg.data);
-  		}
-  		else if(msg.action === 'admindeletetags') {
-  			myadmin.deleteTags(myio, msg.data);
-  		}
-  		else if(msg.action === 'adminupdatetag') {
-  			myadmin.updateTag(myio, msg.data);
-		}
-		else if(msg.action === 'adminupdatetagcollection') {
-			myadmin.updateTagCollection(myio, msg.data.collectionPrev, msg.data);
-		}
-  		else if (msg.action === 'processupload') {
-  			myupload.processUpload(myio, msg.data);
-  		}
-  		else if (msg.action === 'processmytardis') {
-  			mytardis.processMytardis(myio, msg.data);
-  		}
-  		else if (msg.action === 'processapikey') {
-  			processApiKey(myio, msg.data);
-		}
-		// collections
-		else if(msg.action === 'admingetcollections') {
-			myadmin.getCollectionsByUserEmail(myio, msg.data);
-		}
-		else if(msg.action === 'adminaddcollection') {
-			myadmin.addNewCollection(myio, msg.data);
-		}
-		else if(msg.action === 'adminupdatecollection') {
-			myadmin.updateCollection(myio, msg.data);
-		}
-		else if(msg.action === 'admindeletecollection') {
-			myadmin.deleteCollection(myio, msg.data);
-		}
-		// bundle
-		else if(msg.action === 'admingetdatabundle') {
-			myadmin.getDataBundleByUserEmail(myio, msg.data);
-		}
-		// sharing
-		else if(msg.action === 'adminupdateshareemail') {
-			myadmin.updateShareEmail(myio, msg.data);
-		}
-  	});
-  	
-    // sharevol
+    // ==== sharevol ====
 	socket.on('savedatajson', function(data) {
 		winston.info(data);
 		saveDataJson(socket, data);
 	});
 
-	// meshviewer
+	// ==== meshviewer ====
 	socket.on('savemeshjson', function(data) {
 		winston.info(data);
 		saveMeshParams(socket, data);
 	});
 	
-	// potree viewer
+	// ==== potree viewer ====
 	socket.on('savepotreesettings', function(data) {
 		winston.info(data);
 		myupload.savePotreeSettings(socket, data);
 	});
+
 	socket.on('loadpotreesettings', function(data) {
 		winston.info(data);
 		myupload.loadPotreeSettings(socket, data);
 	});
 	
-	// get save list
+	// ==== get save list ====
 	socket.on('getsavelist', function(data) {
 		winston.info(data);
 		getSaveList(socket, data);

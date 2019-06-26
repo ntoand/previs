@@ -3,6 +3,18 @@ import { NgModule } from '@angular/core';
 import { FormsModule } from '@angular/forms'; 
 import { HttpClientModule } from '@angular/common/http';
 
+import { StoreModule } from "@ngrx/store";
+import { StoreDevtoolsModule } from "@ngrx/store-devtools";
+import { EffectsModule } from "@ngrx/effects";
+import { StoreRouterConnectingModule } from "@ngrx/router-store";
+import {
+  appReducers,
+  metaReducers
+} from "@app/core/store/reducers/app.reducers";
+import { TagEffects } from "@app/core/store/effects/tag.effects";
+import { CollectionEffects } from "@app/core/store/effects/collection.effects";
+import { SocketIoModule } from "ngx-socket-io";
+
 import { AppComponent } from './app.component';
 import { AppRoutingModule } from './app-routing.module';
 import { HomeComponent } from './home/home.component';
@@ -10,8 +22,8 @@ import { UploadComponent } from './upload/upload.component';
 import { UploadfileComponent } from './upload/uploadfile/uploadfile.component';
 import { UploadlinkComponent } from './upload/uploadlink/uploadlink.component';
 import { ReviewComponent } from './review/review.component';
-import { HeaderComponent } from './core/header/header.component';
-import { FooterComponent } from './core/footer/footer.component';
+import { HeaderComponent } from './shared/header/header.component';
+import { FooterComponent } from './shared/footer/footer.component';
 import { FlexLayoutModule } from "@angular/flex-layout";
 import { ProfileComponent } from './profile/profile.component';
 
@@ -21,7 +33,7 @@ import { MatToolbarModule, MatButtonModule, MatIconModule, MatInputModule,
          MatTableModule, MatSortModule, MatChipsModule } from '@angular/material';
 
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
-import { AppService } from './core/app.service';
+import { AppService } from '@app/core/services/app.service';
 import { MytardisComponent } from './upload/mytardis/mytardis.component';
 import { ExperimentListComponent } from './upload/mytardis/experiment-list/experiment-list.component';
 import { ExperimentDetailComponent } from './upload/mytardis/experiment-detail/experiment-detail.component';
@@ -32,8 +44,7 @@ import { AngularFirestoreModule } from 'angularfire2/firestore';
 import { AngularFireAuthModule } from 'angularfire2/auth';
 import { environment } from '../environments/environment';
 import { LoginComponent } from './login/login.component';
-import { AuthService } from './core/auth.service';
-import { ConfirmdialogComponent } from './core/confirmdialog/confirmdialog.component';
+import { AuthService } from '@app/core/services/auth.service';
 import { TagDetailComponent } from './review/tag-detail/tag-detail.component';
 import { CollectionComponent } from './review/collection/collection.component';
 
@@ -52,12 +63,16 @@ import { CollectionComponent } from './review/collection/collection.component';
     ExperimentDetailComponent,
     DatasetDetailComponent,
     LoginComponent,
-    ConfirmdialogComponent,
     TagDetailComponent,
     ProfileComponent,
     CollectionComponent
   ],
   imports: [
+    StoreModule.forRoot(appReducers, { metaReducers }),
+    EffectsModule.forRoot([TagEffects, CollectionEffects]),
+    StoreRouterConnectingModule.forRoot({ stateKey: "router" }),
+    !environment.production ? StoreDevtoolsModule.instrument() : [],
+    SocketIoModule,
     BrowserModule,
     AppRoutingModule,
     FormsModule,
@@ -86,6 +101,6 @@ import { CollectionComponent } from './review/collection/collection.component';
   ],
   providers: [AppService, AuthService],
   bootstrap: [AppComponent],
-  entryComponents: [ConfirmdialogComponent, TagDetailComponent, CollectionComponent]
+  entryComponents: [TagDetailComponent, CollectionComponent]
 })
 export class AppModule { }

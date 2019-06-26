@@ -2,8 +2,9 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from "@angular/router";
 import { Location } from '@angular/common';
 
-import { AppService } from '../../../core/app.service';
+import { AppService } from '@app/core/services/app.service';
 import { Experiment, Dataset } from "../mytardis.model";
+import { SocketioService } from '../../../core/services/socketio.service';
 
 @Component({
   selector: 'app-experiment-detail',
@@ -12,7 +13,6 @@ import { Experiment, Dataset } from "../mytardis.model";
 })
 export class ExperimentDetailComponent implements OnInit {
 
-  connection;
   experiment: Experiment;
   datasets: Dataset[];
   errMsg = '';
@@ -23,74 +23,67 @@ export class ExperimentDetailComponent implements OnInit {
   pageIdx = 1;
   numPages = 1;
 
-  constructor(private appService: AppService, private activeRoute: ActivatedRoute, private location: Location) { }
+  constructor(private socket: SocketioService, private appService: AppService, 
+              private activeRoute: ActivatedRoute, private location: Location) { }
 
   ngOnInit() {
     
     //this.appService.setMenuIdx(3);
-    
-    this.connection = this.appService.onMessage().subscribe(msg => {
-      if(msg.action === 'processmytardis' && msg.data.task === 'get_json' && msg.data.datatype === 'dataset') {
-        console.log(msg.data);
-        if(msg.data.status === 'error') {
-          this.errMsg = 'Cannot get dataset';
+    var scope = this;
+    scope.socket.processMytardisReceived$.subscribe((data: any)=>{
+      if(data.datatype === 'dataset' && data.task === 'get_json') {
+        //console.log('ExperimentDetailComponent processMytardisReceived$', data);
+        if(data.status === 'error') {
+          scope.errMsg = 'Cannot get dataset';
           return;
         }
+
+        scope.prevStr = data.result.meta.previous;
+        scope.nextStr = data.result.meta.next;
+        scope.totalItems = data.result.meta.total_count;
+        scope.numPages = Math.floor((this.totalItems -1) / data.result.meta.limit) + 1;
         
-        this.prevStr = msg.data.result.meta.previous;
-        this.nextStr = msg.data.result.meta.next;
-        this.totalItems = msg.data.result.meta.total_count;
-        this.numPages = Math.floor((this.totalItems -1) / msg.data.result.meta.limit) + 1;
-        
-        const objects = msg.data.result.objects;
+        const objects = data.result.objects;
         if(objects) {
-          this.datasets = new Array();
+          scope.datasets = new Array();
           objects.forEach((entry) => {
             let dataset = new Dataset();
             dataset.id = entry.id;
             dataset.description = entry.description;
-            this.datasets.push(dataset);
+            scope.datasets.push(dataset);
           });
         }
+
       }
-      else if (msg.action === 'processmytardis' && msg.data.task === 'get_json' && msg.data.datatype === 'experiment_detail') {
-        console.log(msg.data);
-        if(msg.data.status === 'error') {
-          this.errMsg = 'Cannot get experiment detail';
+      else if (data.datatype === 'experiment_detail' && data.task === 'get_json') {
+        //console.log('ExperimentDetailComponent processMytardisReceived$', data);
+        if(data.status === 'error') {
+          scope.errMsg = 'Cannot get experiment_detail';
           return;
         }
-        let result = msg.data.result;
-        this.experiment = new Experiment();
-        this.experiment.id = result.id;
-        this.experiment.title = result.title;
-        this.experiment.description = result.description;
-        this.experiment.created_time = result.created_time;
+
+        let result = data.result;
+        scope.experiment = new Experiment();
+        scope.experiment.id = result.id;
+        scope.experiment.title = result.title;
+        scope.experiment.description = result.description;
+        scope.experiment.created_time = result.created_time;
       }
     });
     
-    const mytardis = localStorage.getItem('currentMytardis');
+    const mytardis = this.appService.mytardis;
     if(mytardis) {
-      let info = JSON.parse(mytardis);
-      console.log(info);
       const id = this.activeRoute.snapshot.params["id"];
       //get experiment detail
-      let msg = {action: 'processmytardis', 
-                data: { task: 'get_json', datatype: 'experiment_detail', 
-                        host: info.host, path: '/api/v1/experiment/' + id + '/?format=json', apikey: info.apiKey} };
-      console.log(msg);
-      this.appService.sendMsg(msg);
+      let msg = { task: 'get_json', datatype: 'experiment_detail', 
+                        host: mytardis.host, path: '/api/v1/experiment/' + id + '/?format=json', apikey: mytardis.apiKey};
+      this.socket.sendMessage('processmytardis', msg);
       
       //get datasets
-      msg = {action: 'processmytardis', 
-                data: { task: 'get_json', datatype: 'dataset', 
-                        host: info.host, path: '/api/v1/dataset/?experiments__id=' + id + '&format=json', apikey: info.apiKey} };
-      console.log(msg);
-      this.appService.sendMsg(msg);
+      msg = { task: 'get_json', datatype: 'dataset', 
+                        host: mytardis.host, path: '/api/v1/dataset/?experiments__id=' + id + '&format=json', apikey: mytardis.apiKey};
+      this.socket.sendMessage('processmytardis', msg);
     }
-  }
-  
-  ngOnDestroy() {
-    this.connection.unsubscribe();
   }
   
   onBackClick($event) {
@@ -100,23 +93,19 @@ export class ExperimentDetailComponent implements OnInit {
   
   onPrevClick($event) {
     $event.preventDefault();
-    const mytardis = localStorage.getItem('currentMytardis');
-    let info = JSON.parse(mytardis);
-    let msg = {action: 'processmytardis', 
-                data: { task: 'get_json', datatype: 'dataset', 
-                        host: info.host, path: this.prevStr, apikey: info.apiKey} };
-    this.appService.sendMsg(msg);
+    const mytardis = this.appService.mytardis;
+    let msg = { task: 'get_json', datatype: 'dataset', 
+                        host: mytardis.host, path: this.prevStr, apikey: mytardis.apiKey};
+    this.socket.sendMessage('processmytardis', msg);
     this.pageIdx = this.pageIdx - 1;
   }
   
   onNextClick($event) {
     $event.preventDefault();
-    const mytardis = localStorage.getItem('currentMytardis');
-    let info = JSON.parse(mytardis);
-    let msg = {action: 'processmytardis', 
-                data: { task: 'get_json', datatype: 'dataset', 
-                        host: info.host, path: this.nextStr, apikey: info.apiKey} };
-    this.appService.sendMsg(msg);
+    const mytardis = this.appService.mytardis;
+    let msg = { task: 'get_json', datatype: 'dataset', 
+                        host: mytardis.host, path: this.nextStr, apikey: mytardis.apiKey};
+    this.socket.sendMessage('processmytardis', msg);
     this.pageIdx = this.pageIdx + 1;
   }
 

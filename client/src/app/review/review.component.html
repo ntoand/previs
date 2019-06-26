@@ -6,18 +6,18 @@
 
 <div *ngIf="authService.isLoggedIn()" class="with-min-height">
   
-  <p><button mat-raised-button color='primary' (click)="onLoadTags($event)">Load my tags</button></p>
+  <p><button mat-raised-button color='primary' (click)="onLoadTags($event)">Load tags</button></p>
   
-  <div class="alert-box {{message.type}}" *ngIf="message.content !== ''">
-    <span>{{message.type}}: </span>{{message.content}}
+  <div class="alert-box {{notification.type}}" *ngIf="notification.content !== '' && notification.for === 'review'">
+    <span>{{notification.type}}: </span>{{notification.content}}
   </div>
 
-  <mat-card *ngIf="showOptions" class="collection-container">
+  <mat-card *ngIf="appService.showOptions" class="collection-container">
     <div class="tag-option">
       <span class="collection-label">Collection</span>
       <span>
-        <select [(ngModel)]="collectionId" (change)="onCollectionChange()" class="select-collection">
-          <option [value]="c.id" *ngFor="let c of collections" [ngClass]="{'sharecollection': c.owner==='no'}">{{c.owner==='no'?'[shared]':''}} {{c.name}} {{c.id.length === 8 ? '('+c.numtags+')' : ''}}</option>
+        <select [(ngModel)]="appService.collectionId" (change)="onCollectionChange()" class="select-collection">
+          <option [value]="c.id" *ngFor="let c of optionCollections" [ngClass]="{'sharecollection': c.owner==='no'}">{{c.owner==='no'?'[shared]':''}} {{c.name}} {{c.id.length === 8 ? '('+c.numtags+')' : ''}}</option>
         </select>
       </span>
       <button mat-icon-button><mat-icon class="collection-edit-icon" (click)="onCollectionEdit()">edit</mat-icon></button>
@@ -47,7 +47,7 @@
     </div>
   </mat-card>
   
-  <div *ngIf="datasets.length > 0">
+  <div *ngIf="tags.length > 0">
 
     <!-- list/table view -->
     <table *ngIf="listView == true" mat-table [dataSource]="dataSource" matSort class="mat-elevation-z8">
@@ -89,7 +89,7 @@
 
       <ng-container matColumnDef="summary">
           <td mat-footer-cell *matFooterCellDef colspan="6">
-            Number of datasets: {{datasets.length}}
+            Number of tags: {{tags.length}}
           </td>
       </ng-container>
 
@@ -97,27 +97,27 @@
       <tr mat-row *matRowDef="let row; columns: displayedColumns;" class="mouse-hover"
         (click)="onDatasetClick(row)">
       </tr>
-      <tr mat-footer-row *matFooterRowDef="['summary']" class="dataset-table-footer"></tr>
+      <tr mat-footer-row *matFooterRowDef="['summary']" class="tag-table-footer"></tr>
     </table>
       
     <!-- grid view -->
     <div *ngIf="listView == false" fxLayout="row wrap" fxLayoutAlign="start center" fxLayoutGap="10px">
-      <div class = "tag-detail" *ngFor="let dataset of datasets">
+      <div class = "tag-detail" *ngFor="let tag of tags">
         
-        <mat-card (click)="onDatasetClick(dataset)" class="mouse-hover">
+        <mat-card (click)="onDatasetClick(tag)" class="mouse-hover">
           <mat-card-header>
-            <mat-card-title><b>{{dataset.tag}} ({{dataset.type | lowercase}})</b></mat-card-title>
+            <mat-card-title><b>{{tag.tag}} ({{tag.type | lowercase}})</b></mat-card-title>
             <mat-card-subtitle >
               <div>
-                <div>Date: {{dataset.dateStr}}</div>
-                <div>Size: {{dataset.size}}</div>
-                <div>Collection: {{findCollectionName(dataset.collection)}}</div>
-                <div>Note: {{(dataset.note.length>40)? (dataset.note | slice:0:40)+'..':(dataset.note)}}</div> 
-                <div>Password protection: {{dataset.hasPassword}}</div>
+                <div>Date: {{tag.dateStr}}</div>
+                <div>Size: {{tag.size}}</div>
+                <div>Collection: {{findCollectionName(tag.collection)}}</div>
+                <div>Note: {{(tag.note.length>40)? (tag.note | slice:0:40)+'..':(tag.note)}}</div> 
+                <div>Password protection: {{tag.hasPassword}}</div>
               </div>
             </mat-card-subtitle>
           </mat-card-header>
-          <img mat-card-image src={{dataset.imgUrl}} height="200" alt={{dataset.tag}}>
+          <img mat-card-image src={{tag.imgUrl}} height="200" alt={{tag.tag}}>
         </mat-card>
 
       </div>

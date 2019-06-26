@@ -8,7 +8,7 @@
 <div *ngIf="authService.isLoggedIn()">
   <mat-card>
     <div class="block">
-        <mat-radio-group class="type-radio-group" [(ngModel)]="dataType" (change)="onChange($event)">
+        <mat-radio-group class="type-radio-group" [(ngModel)]="appService.dataType">
           <mat-radio-button class="type-radio-button" value="volume">Volume</mat-radio-button>
           <mat-radio-button class="type-radio-button" value="mesh">Mesh</mat-radio-button>
           <mat-radio-button class="type-radio-button" value="point">Pointcloud</mat-radio-button>
@@ -18,7 +18,7 @@
     </div>
     
     <div class="help-block">
-      <div *ngIf="dataType === 'volume'" class="collapse-able">
+      <div *ngIf="appService.dataType === 'volume'" class="collapse-able">
         <details>
           <summary>
             Upload a TIFF Image Stack (.zip file of an indexed TIFF image stack), a multi-dimensional (stacked) TIFF file, or a compressed XRW file
@@ -41,7 +41,7 @@
         </details>
       </div>
       
-      <div *ngIf="dataType === 'mesh'">
+      <div *ngIf="appService.dataType === 'mesh'">
         <details>
           <summary>
             Upload a Wavefront OBJ zip tree
@@ -75,7 +75,7 @@
         </details>
       </div>
       
-      <div *ngIf="dataType === 'point'">
+      <div *ngIf="appService.dataType === 'point'">
         <details>
           <summary>
             Upload one pointcloud file. Support .las, .laz, .ptx, .ply, .xyz, .txt
@@ -89,7 +89,7 @@
         </details>
       </div>
       
-      <div *ngIf="dataType === 'image'" class="collapse-able">
+      <div *ngIf="appService.dataType === 'image'" class="collapse-able">
         <details>
           <summary>
             Upload high resolution image(s). Support image type: .tif, .jpg, .png
@@ -104,7 +104,7 @@
         </details>
       </div>
       
-      <div *ngIf="dataType === 'photogrammetry'">
+      <div *ngIf="appService.dataType === 'photogrammetry'">
         <details>
           <summary>
             Upload a zip with photogrammetry images
@@ -117,24 +117,24 @@
         </details>
       </div>
       
-      <div *ngIf="dataType === 'volume'" class="collapse-able">
+      <div *ngIf="appService.dataType === 'volume'" class="collapse-able">
         <details>
           <summary>
             <b>Volume settings</b>
           </summary>
-          <p>Voxel size x <input type="number" step="0.01" [(ngModel)]="settings.voxelSizeX" class="option-input" > 
-                        y <input type="number" step="0.01" [(ngModel)]="settings.voxelSizeY" class="option-input" > 
-                        z <input type="number" step="0.01" [(ngModel)]="settings.voxelSizeZ" class="option-input" > 
+          <p>Voxel size x <input type="number" step="0.01" [(ngModel)]="appService.settings.voxelSizeX" class="option-input" > 
+                        y <input type="number" step="0.01" [(ngModel)]="appService.settings.voxelSizeY" class="option-input" > 
+                        z <input type="number" step="0.01" [(ngModel)]="appService.settings.voxelSizeZ" class="option-input" > 
           </p>
-          <p>Channel index <input type="number"  [(ngModel)]="settings.channel" class="option-input" > 
-             Timestep <input type="number"  [(ngModel)]="settings.time" class="option-input" > 
+          <p>Channel index <input type="number"  [(ngModel)]="appService.settings.channel" class="option-input" > 
+             Timestep <input type="number"  [(ngModel)]="appService.settings.time" class="option-input" > 
              (in case your stacked tiff has more than 1 channel or 1 timestep. Index starts from 0)
           </p>
         </details>
       </div>
       
       <div>
-        <p><mat-checkbox [(ngModel)]="settings.sendEmail">Notify me via email when data processing is complete</mat-checkbox></p>
+        <p><mat-checkbox [(ngModel)]="appService.settings.sendEmail">Notify me via email when data processing is complete</mat-checkbox></p>
       </div>
       
     </div>
@@ -144,23 +144,23 @@
   
   <mat-card>
     <div class="block">
-     <mat-radio-group class="upload-radio-group" [(ngModel)]="uploadType">
+     <mat-radio-group class="upload-radio-group" [(ngModel)]="appService.uploadType">
         <mat-radio-button class="type-radio-button" value="local">Local upload</mat-radio-button>
         <mat-radio-button class="type-radio-button" value="link">Shared link</mat-radio-button>
         <mat-radio-button class="type-radio-button" value="mytardis">Mytardis</mat-radio-button>
       </mat-radio-group> 
     </div>
     
-    <div class="block" *ngIf="uploadType === 'local'">
-      <app-uploadfile [dataType]="dataType" [settings]="settings"></app-uploadfile>
+    <div class="block" *ngIf="appService.uploadType === 'local'">
+      <app-uploadfile></app-uploadfile>
     </div>
     
-    <div class="block" *ngIf="uploadType === 'link'">
-      <app-uploadlink [dataType]="dataType" [settings]="settings"></app-uploadlink>
+    <div class="block" *ngIf="appService.uploadType === 'link'">
+      <app-uploadlink></app-uploadlink>
     </div>
     
-    <div class="block" *ngIf="uploadType === 'mytardis'">
-      <app-mytardis [settings]="settings"></app-mytardis>
+    <div class="block" *ngIf="appService.uploadType === 'mytardis'">
+      <app-mytardis></app-mytardis>
     </div>
     
   </mat-card>
@@ -169,7 +169,7 @@
   <mat-card>
     <div class="block" id="processing_anchor">
       <mat-card-header>
-          <mat-card-title>Selected data type: <b>{{dataType}}</b>, upload type: <b>{{uploadType}}</b></mat-card-title>
+          <mat-card-title>Selected data type: <b>{{appService.dataType}}</b>, upload type: <b>{{appService.uploadType}}</b></mat-card-title>
       </mat-card-header>
       
       <div class="progress" *ngIf="message.type === 'working'">
@@ -179,12 +179,12 @@
       <div class="alert-box {{message.type}}" *ngIf="message.content !== ''">
         <span>{{message.type}}: </span>{{message.content}}
       </div>
-      <div class="result" *ngIf="dataset.tag !== ''">
-        <p>{{dataset.tag}} ({{dataset.type | lowercase}})</p>
-        <p>Date: {{dataset.dateStr}}</p>
-        <p>Size: {{dataset.size}}</p>
-        <a href={{dataset.viewUrl}} target="_blank"><button mat-button color='primary'>VIEW ON WEB</button></a>
-        <a href={{dataset.qrUrl}} target="_blank"><button mat-button color='primary'>QR CODE</button></a>
+      <div class="result" *ngIf="tag">
+        <p>{{tag.id}} ({{tag.type | lowercase}})</p>
+        <p>Date: {{tag.dateStr}}</p>
+        <p>Size: {{tag.size}}</p>
+        <a href={{tag.viewUrl}} target="_blank"><button mat-button color='primary'>VIEW ON WEB</button></a>
+        <a href={{tag.qrUrl}} target="_blank"><button mat-button color='primary'>QR CODE</button></a>
       </div>
     </div>
   </mat-card>

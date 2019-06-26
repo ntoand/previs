@@ -1,8 +1,9 @@
 import { Component, OnInit, Input, ElementRef, Renderer2 } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpResponse, HttpRequest, HttpEvent, HttpEventType } from '@angular/common/http';
-import { environment } from '../../../environments/environment';
-import { AppService } from '../../core/app.service';
-import { AuthService } from '../../core/auth.service';
+import { environment } from '@env/environment';
+import { AppService } from '@app/core/services/app.service';
+import { AuthService } from '@app/core/services/auth.service';
+import { SocketioService } from '@app/core/services/socketio.service';
 
 @Component({
   selector: 'app-uploadfile',
@@ -11,15 +12,13 @@ import { AuthService } from '../../core/auth.service';
 })
 export class UploadfileComponent implements OnInit {
 
-  constructor(private http: HttpClient, private renderer: Renderer2, 
+  constructor(private socket: SocketioService,
+              private http: HttpClient, private renderer: Renderer2, 
               private appService: AppService, public authService: AuthService ) { }
   
   uploadPercent = 0;
   selectedFile = '';
   errMsg = '';
-  
-  @Input() dataType: string;
-  @Input() settings;
   
   ngOnInit() {
   }
@@ -68,35 +67,35 @@ export class UploadfileComponent implements OnInit {
     let fileext = file.name.split('.').pop().toLowerCase();
     
     this.errMsg = "";
-    if(this.dataType === 'volume') {
+    if(this.appService.dataType === 'volume') {
       if (fileext !== 'zip' && fileext !== 'tif' && fileext !== 'tiff' && fileext !== 'xrw') {
         this.errMsg = "Volume requires zip, tiff or xrw file!";
         this.renderer.selectRootElement('.uploadfile').value = '';
         return;
       }
     }
-    else if (this.dataType === 'mesh') {
+    else if (this.appService.dataType === 'mesh') {
       if (fileext !== 'zip') {
         this.errMsg = "Mesh requires zip file!";
         this.renderer.selectRootElement('.uploadfile').value = '';
         return;
       }
     }
-    else if (this.dataType == "point") {
+    else if (this.appService.dataType == "point") {
       if (fileext !== 'las' && fileext !== 'laz' && fileext !== 'ptx' && fileext !== 'ply' && fileext !== 'xyz' && fileext !== 'txt' && fileext !== 'zip' ) {
         this.errMsg = "Pointcloud requies las/laz, ptx, ply, xyz/txt, or zip file";
         this.renderer.selectRootElement('.uploadfile').value = '';
         return;
       }
     }
-    else if (this.dataType == "image") {
+    else if (this.appService.dataType == "image") {
       if (fileext !== 'tif' && fileext !== 'tiff' && fileext !== 'jpg' && fileext !== 'png' && fileext !== 'zip') {
         this.errMsg = "Image(s) requies .tif, .png, .jpg, or .zip file";
         this.renderer.selectRootElement('.uploadfile').value = '';
         return;
       }
     }
-     else if (this.dataType == "photogrammetry") {
+     else if (this.appService.dataType == "photogrammetry") {
       if (fileext !== 'zip') {
         this.errMsg = "Photogrammetry requires a .zip file";
         this.renderer.selectRootElement('.uploadfile').value = '';
@@ -135,8 +134,8 @@ export class UploadfileComponent implements OnInit {
             email: this.authService.userDetails.email,
             displayName: this.authService.userDetails.displayName
           };
-          this.appService.sendMsg({action: 'processupload', data: {task: "process", file: result.file, datatype: this.dataType, uploadtype: 'local',
-                                                                    userDetails: userDetails, settings: this.settings } });
+          this.socket.sendMessage('processupload', {task: "process", file: result.file, datatype: this.appService.dataType, uploadtype: 'local',
+                                    userDetails: userDetails, settings: this.appService.settings } );
           
           let x = document.querySelector("#processing_anchor");
           if (x){

@@ -1,7 +1,20 @@
 import { Component, EventEmitter, Inject } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { COMMA, ENTER } from '@angular/cdk/keycodes';
-import { AuthService } from '../../core/auth.service';
+import { AuthService } from '@app/core/services/auth.service';
+
+import { SocketioService } from '@app/core/services/socketio.service';
+import { Store, select } from '@ngrx/store';
+import { map, first } from 'rxjs/operators';
+import { IAppState } from '@app/core/store/state/app.state';
+import { Observable } from 'rxjs';
+import { ITag } from '../../core/models/tag.model';
+import { selectCurrentTag } from '@app/core/store/selectors/tag.selector';
+import { UpdateTag, UpdateTagDone, UpdateTagCollection, UpdateTagCollectionDone,
+         UpdateTagShareEmail, UpdateTagShareEmailDone } from "@app/core/store/actions/tag.actions";
+import { INotification } from '@app/core/models/notification.model';
+import { selectNotification } from '@app/core/store/selectors/notification.selector';
+import { SetNotification } from '@app/core/store/actions/notification.actions';
 
 @Component({
   selector: 'app-tag-detail',
@@ -12,20 +25,24 @@ export class TagDetailComponent {
 
   message = { type: "", content: "" };
 
+  // store
+  appstate$: Observable<IAppState>;
+  tag: ITag;
+  // notificaiton
+  notification: INotification;
+
   // note
   editMode = false;
   noteStr = '';
-  noteStrPrev = '';
   // password
   passwordShowMode = false;
   passwordEditMode = false;
   passwordStr = '';
-  passwordStrPrev = '';
   // collection
   collectionEditMode = false;
   collectionId = '';
-  collectionIdPrev = '';
   collectionName = '';
+  collectionIdPrev = '';
   //sharing
   shareEmails = [];
   notifyPeople = false;
@@ -35,37 +52,69 @@ export class TagDetailComponent {
   readonly separatorKeysCodes: number[] = [ENTER, COMMA];
   owner = false;
   
-  dataset = null;
   collections = [];
   myCollections = [];
 
-  onUpdateTag = new EventEmitter();
   needReloadCollections = new EventEmitter();
-  updateShareEmail = new EventEmitter();
 
-  constructor(public authService: AuthService, 
-    public dialogRef: MatDialogRef<TagDetailComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: any) {
+  constructor(private store: Store<IAppState>, private socket: SocketioService,
+              public authService: AuthService, public dialogRef: MatDialogRef<TagDetailComponent>,
+  @Inject(MAT_DIALOG_DATA) public data: any) {
 
-      this.dataset = data.dataset;
-      this.shareEmails = this.getShareEmails(this.dataset.share);
-      this.collections = data.collections;
-      this.owner = this.dataset.owner === 'yes';
-      for(var i=0; i < this.collections.length; i++) {
-        if(this.collections[i].owner === 'yes') {
-          this.myCollections.push(this.collections[i]);
+    this.collections = data.collections;
+    for(var i=0; i < this.collections.length; i++) {
+      if(this.collections[i].owner === 'yes') {
+        this.myCollections.push(this.collections[i]);
+      }
+    }
+  }
+
+  ngOnInit() {
+    var scope = this;
+    scope.appstate$ = this.store;
+    // notification
+    scope.appstate$.pipe(
+      select(selectNotification),
+      map(notification => notification.item)
+    ).subscribe(item =>{
+      scope.notification = item;
+    });
+    // tag
+    scope.appstate$.pipe(
+      select(selectCurrentTag),
+      map(item => item)
+    ).subscribe(item =>{
+      //console.log('selectCurrentTag', item);
+      if(item) {
+        scope.tag = item;
+        scope.shareEmails = scope.getShareEmails(scope.tag.share);
+        scope.owner = scope.tag.owner === 'yes';
+        if(scope.tag.collection) {
+          scope.collectionId = scope.tag.collection;
+          scope.collectionIdPrev = scope.collectionId;
+          scope.collectionName = scope.findCollectionName(scope.collectionId, scope.collections);
         }
+        scope.noteStr = scope.tag.note;
+        scope.passwordStr = scope.tag.password;
       }
-      if(this.dataset.collection) {
-        this.collectionId = this.dataset.collection;
-        this.collectionName = this.findCollectionName(this.collectionId, this.collections);
-        this.collectionIdPrev = this.collectionId;
-      }
+    });
 
-      this.noteStr = this.dataset.note;
-      this.noteStrPrev = this.noteStr;
-      this.passwordStr = this.dataset.password;
-      this.passwordStrPrev = this.passwordStr;
+    // update
+    scope.socket.updateTagReceived$.subscribe((m: any)=>{
+      //console.log("updateTagReceived$", m);
+      this.store.dispatch(new UpdateTagDone(m));
+    });
+    scope.socket.updateTagCollectionReceived$.subscribe((m: any)=>{
+      //console.log("updateTagCollectionReceived$", m);
+      this.store.dispatch(new UpdateTagCollectionDone(m));
+    });
+
+    this.socket.updateShareEmailReceived$.subscribe((m: any)=>{
+      if(m.result.for === 'tag') {
+        this.store.dispatch(new UpdateTagShareEmailDone(m));
+      }
+    });
+
   }
 
   findCollectionName(id, collections = null) {
@@ -79,10 +128,9 @@ export class TagDetailComponent {
 
   getShareEmails(share) {
     var shareEmails = [];
-    console.log('getSharedEmails', share);
+    //console.log('getSharedEmails', share);
     if(share) {
       var keys = Object.keys(share);
-      console.log(keys);
       for(var i=0; i<keys.length; i++) {
         if(share[keys[i]] > 0) {
           shareEmails.push(keys[i]);
@@ -101,7 +149,6 @@ export class TagDetailComponent {
     //this.deleteTagEvent.emit({tag: tag, dir: dir});
     var cn = confirm('Do you want to delete tag: ' + tag + '?');
     if(cn){
-      console.log('delete and close');
       this.dialogRef.close({type: 'delete', tag: tag, dir: dir});
     }
   }
@@ -115,15 +162,14 @@ export class TagDetailComponent {
   onNoteEditCancel($event) {
     $event.preventDefault();
     this.editMode = false;
-    this.noteStr = this.noteStrPrev;
+    this.noteStr = this.tag.note;
   }
   
   onNoteEditGo($event) {
     $event.preventDefault();
     this.editMode = false;
-    if(this.noteStr !== this.dataset.note) {
-      this.onUpdateTag.emit({tag: this.dataset.tag, type: 'note', noteStr: this.noteStr, noteStrPrev: this.dataset.note});
-      this.noteStrPrev = this.noteStr;
+    if(this.noteStr !== this.tag.note) {
+      this.store.dispatch(new UpdateTag({tag: this.tag.id, type: 'note', data: {note: this.noteStr}}));
     }
   }
 
@@ -141,15 +187,14 @@ export class TagDetailComponent {
   onPasswordEditCancel($event) {
     $event.preventDefault();
     this.passwordEditMode = false;
-    this.passwordStr = this.passwordStrPrev;
+    this.passwordStr = this.tag.password;
   }
 
   onPasswordEditGo($event) {
     $event.preventDefault();
     this.passwordEditMode = false;
-    if(this.passwordStr !== this.dataset.password) {
-      this.onUpdateTag.emit({tag: this.dataset.tag, type: 'password', passwordStr: this.passwordStr, passwordStrPrev: this.dataset.password});
-      this.passwordStrPrev = this.passwordStr;
+    if(this.passwordStr !== this.tag.password) {
+      this.store.dispatch(new UpdateTag({tag: this.tag.id, type: 'password', data: {password: this.passwordStr}}));
     }
   }
 
@@ -168,27 +213,26 @@ export class TagDetailComponent {
   }
 
   onCollectionEnableEdit($event) {
-    console.log('onCollectionEnableEdit');
+    //console.log('onCollectionEnableEdit');
     $event.preventDefault();
     this.collectionEditMode = true;
   }
 
   onCollectionRemove($event) {
     $event.preventDefault();
-    console.log('onCollectionRemove', this.collectionIdPrev);
-    this.onUpdateTag.emit({tag: this.dataset.tag, type: 'collection', collection: '', collectionPrev: this.collectionIdPrev });
-    this.collectionIdPrev = '';
+    this.store.dispatch(new UpdateTagCollection({tag: this.tag.id, type: 'collection', collectionPrev: this.collectionIdPrev, data: {collection: ''}}));
     this.collectionName = '';
+    this.collectionIdPrev = '';
+    this.needReloadCollections.emit({});
   }
 
   onCollectionEditGo($event) {
     $event.preventDefault();
-    console.log('onCollectionEditGo', this.collectionId, this.collectionIdPrev);
     this.collectionEditMode = false;
-    if(this.collectionId  && this.collectionId !== this.dataset.collection) {
-      this.onUpdateTag.emit({tag: this.dataset.tag, type: 'collection', collection: this.collectionId, collectionPrev: this.collectionIdPrev });
-      this.collectionIdPrev = this.collectionId;
+    if(this.collectionId  && this.collectionId !== this.tag.collection) {
+      this.store.dispatch(new UpdateTagCollection({tag: this.tag.id, type: 'collection', collectionPrev: this.collectionIdPrev, data: {collection: this.collectionId}}));
       this.collectionName = this.findCollectionName(this.collectionId);
+      this.collectionIdPrev = this.collectionId;
       this.needReloadCollections.emit({});
     }
   }
@@ -199,7 +243,7 @@ export class TagDetailComponent {
   }
 
   onAddShareEmail(event) {
-    console.log('onAddShareEmail', this.shareEmails);
+    //console.log('onAddShareEmail', this.shareEmails);
     var scope = this;
     const input = event.input;
     const value = event.value;
@@ -212,18 +256,17 @@ export class TagDetailComponent {
         // update share email
         var cn = confirm('Do you want to share to ' + value + '?');
         if(cn) {
-          scope.updateShareEmail.emit({for: 'tag', action: 'add', id: scope.dataset.tag, 
-                                  email: value.trim(), notify: scope.notifyPeople, 
-                                  author: this.authService.userDetails.displayName});
+          const data = {for: 'tag', action: 'add', id: scope.tag.id, 
+          email: value.trim(), notify: scope.notifyPeople, 
+          author: this.authService.userDetails.displayName};
+          this.store.dispatch(new UpdateTagShareEmail({data: data}));
           scope.shareEmails.push(value.trim());
         }
       }
       else {
-        scope.message.type = 'error';
-        scope.message.content = 'support only monash/gmail';
+        this.store.dispatch(new SetNotification({type: 'error', content: 'support only monash/gmain', for: 'tagdetail'}));
       }
     }
-
     // Reset the input value
     if (input) {
       input.value = '';
@@ -231,12 +274,13 @@ export class TagDetailComponent {
   }
 
   onRemoveShareEmail(email) {
-    console.log('onRemoveShareEmail');
+    //console.log('onRemoveShareEmail');
     var cn = confirm('Do you want to remove ' + email + ' from sharing?');
     if(cn){
-      this.updateShareEmail.emit({for: 'tag', action: 'remove', id: this.dataset.tag, 
-                              email: email, notify: false, 
-                              author: this.authService.userDetails.displayName});
+      const data = {for: 'tag', action: 'remove', id: this.tag.id, 
+      email: email, notify: false, 
+      author: this.authService.userDetails.displayName};
+      this.store.dispatch(new UpdateTagShareEmail({data: data}));
       const index = this.shareEmails.indexOf(email);
       if (index >= 0) {
         this.shareEmails.splice(index, 1);

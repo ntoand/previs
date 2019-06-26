@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
-import { AppService } from '../core/app.service';
-import { AuthService } from '../core/auth.service';
-
+import { AppService } from '@app/core/services/app.service';
+import { AuthService } from '@app/core/services/auth.service';
+import { SocketioService } from '@app/core/services/socketio.service';
 
 @Component({
   selector: 'app-profile',
@@ -10,44 +10,37 @@ import { AuthService } from '../core/auth.service';
 })
 export class ProfileComponent implements OnInit {
   
-  connection; 
   message = { type: "", content: "" };
   apikey = {
     key: '',
     date: ''
   };
 
-  constructor(private appService: AppService, public authService: AuthService) { }
+  constructor(private socket: SocketioService, private appService: AppService, public authService: AuthService) { }
 
   ngOnInit() {
-    this.connection = this.appService.onMessage().subscribe(msg => {
-      if(msg.action === 'processapikey') {
-        console.log(msg.data);
-        
-        this.message.type = '';
-        this.message.content = '';
-        if(msg.data.status === 'error') {
-          this.message.type = 'error';
-          this.message.content = 'failed to get api key';
-          return;
-        }
-        
-        let result = msg.data.result;
-        this.apikey.key = result.key;
-        this.apikey.date = '';
-        if(result.date !== '') {
-          var d = new Date(result.date);
-          this.apikey.date = d.toLocaleDateString() + ' ' + d.toLocaleTimeString();
-        }
-       
+    var scope = this;
+    scope.socket.apiKeyReceived$.subscribe((data: any)=>{
+      this.message.type = '';
+      this.message.content = '';
+      if(data.status === 'error') {
+        this.message.type = 'error';
+        this.message.content = 'failed to get api key';
+        return;
       }
       
+      let result = data.result;
+      this.apikey.key = result.key;
+      this.apikey.date = '';
+      if(result.date !== '') {
+        var d = new Date(result.date);
+        this.apikey.date = d.toLocaleDateString() + ' ' + d.toLocaleTimeString();
+      }
     });
   }
   
   onLoadKey($event) {
     $event.preventDefault();
-    console.log('load key clicked');
     this.message.type = 'working';
     this.message.content = 'Loading key...';
     const userDetails = {
@@ -55,12 +48,11 @@ export class ProfileComponent implements OnInit {
       email: this.authService.userDetails.email,
       displayName: this.authService.userDetails.displayName
     };
-    this.appService.sendMsg({action: 'processapikey', data: {type: 'load', userDetails: userDetails}});
+    this.socket.sendMessage('processapikey', {type: 'load', userDetails: userDetails});
   }
   
   onGenerateKey($event) {
     $event.preventDefault();
-    console.log('generate key clicked');
     this.message.type = 'working';
     this.message.content = 'Generating new key...';
     const userDetails = {
@@ -68,7 +60,7 @@ export class ProfileComponent implements OnInit {
       email: this.authService.userDetails.email,
       displayName: this.authService.userDetails.displayName
     };
-    this.appService.sendMsg({action: 'processapikey', data: {type: 'generate', userDetails: userDetails}});
+    this.socket.sendMessage('processapikey', {type: 'generate', userDetails: userDetails});
   }
 
   onCopyToClipboard($event) {

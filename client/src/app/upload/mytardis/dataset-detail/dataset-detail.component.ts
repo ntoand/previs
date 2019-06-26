@@ -2,9 +2,10 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from "@angular/router";
 import { Location } from '@angular/common';
 
-import { AppService } from '../../../core/app.service';
+import { AppService } from '@app/core/services/app.service';
 import { Dataset, Datafile } from "../mytardis.model";
-import { AuthService } from '../../../core/auth.service';
+import { AuthService } from '@app/core/services/auth.service';
+import { SocketioService } from '../../../core/services/socketio.service';
 
 @Component({
   selector: 'app-dataset-detail',
@@ -13,7 +14,6 @@ import { AuthService } from '../../../core/auth.service';
 })
 export class DatasetDetailComponent implements OnInit {
   
-  connection;
   dataset: Dataset;
   datafiles: Datafile[];
   errMsg = '';
@@ -26,26 +26,27 @@ export class DatasetDetailComponent implements OnInit {
   pageIdx = 1;
   numPages = 1;
 
-  constructor(private appService: AppService, private activeRoute: ActivatedRoute, 
+  constructor(private socket: SocketioService, private appService: AppService, private activeRoute: ActivatedRoute, 
               private location: Location, public authService: AuthService) { }
 
   ngOnInit() {
     //this.appService.setMenuIdx(3);
-    
-    this.connection = this.appService.onMessage().subscribe(msg => {
-      if(msg.action === 'processmytardis' && msg.data.task === 'get_json' && msg.data.datatype === 'datafile') {
-        console.log(msg.data);
-        if(msg.data.status === 'error') {
-          this.errMsg = 'Cannot get datafile';
+
+    var scope = this;
+    scope.socket.processMytardisReceived$.subscribe((data: any)=>{
+      if(data.datatype === 'datafile' && data.task === 'get_json') {
+        //console.log('DatasetDetailComponent processMytardisReceived$', data);
+        if(data.status === 'error') {
+          scope.errMsg = 'Cannot get datafile';
           return;
         }
+
+        this.prevStr = data.result.meta.previous;
+        this.nextStr = data.result.meta.next;
+        this.totalItems = data.result.meta.total_count;
+        this.numPages = Math.floor((this.totalItems -1) / data.result.meta.limit) + 1;
         
-        this.prevStr = msg.data.result.meta.previous;
-        this.nextStr = msg.data.result.meta.next;
-        this.totalItems = msg.data.result.meta.total_count;
-        this.numPages = Math.floor((this.totalItems -1) / msg.data.result.meta.limit) + 1;
-        
-        const objects = msg.data.result.objects;
+        const objects = data.result.objects;
         if(objects) {
           this.datafiles = new Array();
           objects.forEach((entry) => {
@@ -57,51 +58,40 @@ export class DatasetDetailComponent implements OnInit {
           });
         }
       }
-      else if (msg.action === 'processmytardis' && msg.data.task === 'get_json' && msg.data.datatype === 'dataset_detail') {
-        console.log(msg.data);
-        if(msg.data.status === 'error') {
+      else if(data.datatype === 'dataset_detail' && data.task === 'get_json') {
+        if(data.status === 'error') {
           this.errMsg = 'Cannot get dataset detail';
           return;
         }
-        let result = msg.data.result;
+        let result = data.result;
         this.dataset = new Dataset();
         this.dataset.id = result.id;
         this.dataset.description = result.description;
       }
-      else if (msg.action === 'processmytardis' && msg.data.task === 'get_json' && msg.data.datatype === 'datafile_detail') {
-        console.log(msg.data);
-        if(msg.data.status === 'error') {
+      else if(data.datatype === 'datafile_detail' && data.task === 'get_json') {
+        if(data.status === 'error') {
           this.errMsg = 'Cannot get dataset detail';
           return;
         }
-        let result = msg.data.result;
+        let result = data.result;
         this.detailStr = '[size: ' + result.size + 'B, mimetype: ' + result.mimetype + ']';
       }
+
     });
     
-    const mytardis = localStorage.getItem('currentMytardis');
+    const mytardis = this.appService.mytardis;
     if(mytardis) {
-      let info = JSON.parse(mytardis);
-      console.log(info);
       const id = this.activeRoute.snapshot.params["id"];
       //get experiment detail
-      let msg = {action: 'processmytardis', 
-                data: { task: 'get_json', datatype: 'dataset_detail', 
-                        host: info.host, path: '/api/v1/dataset/' + id + '/?format=json', apikey: info.apiKey} };
-      console.log(msg);
-      this.appService.sendMsg(msg);
+      let msg = { task: 'get_json', datatype: 'dataset_detail', 
+                        host: mytardis.host, path: '/api/v1/dataset/' + id + '/?format=json', apikey: mytardis.apiKey};
+      this.socket.sendMessage('processmytardis', msg);
       
       //get datasets
-      msg = {action: 'processmytardis', 
-                data: { task: 'get_json', datatype: 'datafile', 
-                        host: info.host, path: '/api/v1/dataset_file/?dataset__id=' + id + '&format=json', apikey: info.apiKey} };
-      console.log(msg);
-      this.appService.sendMsg(msg);
+      msg = { task: 'get_json', datatype: 'datafile', 
+                        host: mytardis.host, path: '/api/v1/dataset_file/?dataset__id=' + id + '&format=json', apikey: mytardis.apiKey};
+      this.socket.sendMessage('processmytardis', msg);
     }
-  }
-  
-  ngOnDestroy() {
-    this.connection.unsubscribe();
   }
   
   onBackClick($event) {
@@ -111,32 +101,28 @@ export class DatasetDetailComponent implements OnInit {
   
   onDetailClick($event, id) {
     $event.preventDefault();
-    console.log(id);
     this.errMsg = '';
     this.detailId = id;
     this.detailStr = "Loading..."
   
-    const mytardis = localStorage.getItem('currentMytardis');
-    let info = JSON.parse(mytardis);
-    let msg = {action: 'processmytardis', 
-                data: { task: 'get_json', datatype: 'datafile_detail', 
-                        host: info.host, path: '/api/v1/dataset_file/' + id + '/?format=json', apikey: info.apiKey} };
-    console.log(msg);
-    this.appService.sendMsg(msg);
+    const mytardis = this.appService.mytardis;
+    let msg = { task: 'get_json', datatype: 'datafile_detail', 
+                        host: mytardis.host, path: '/api/v1/dataset_file/' + id + '/?format=json', apikey: mytardis.apiKey};
+    this.socket.sendMessage('processmytardis', msg);
   }
   
   onRunClick($event, id, filename) {
     $event.preventDefault();
     
     this.errMsg = '';
-    let dataType = localStorage.getItem('currentDatatype');
-    let settings = JSON.parse(localStorage.getItem('settings'));
+    let dataType = this.appService.dataType;
+    let settings = this.appService.settings;
     
     //check filename
     let fileext = filename.split('.').pop().toLowerCase();
     if(dataType === 'volume') {
-      if (fileext !== 'zip' && fileext !== 'tif' && fileext !== 'tiff') {
-        this.errMsg = "Volume requires zip or tiff file!";
+      if (fileext !== 'zip' && fileext !== 'tif' && fileext !== 'tiff' && fileext !== 'xrw') {
+        this.errMsg = "Volume requires zip, tiff or xrw file!";
         return;
       }
     }
@@ -163,17 +149,14 @@ export class DatasetDetailComponent implements OnInit {
       return;
     }
     
-    console.log(id);
-    const mytardis = localStorage.getItem('currentMytardis');
-    let info = JSON.parse(mytardis);
-    console.log(dataType);
+    const mytardis = this.appService.mytardis;
     const userDetails = {
       uid: this.authService.userDetails.uid,
       email: this.authService.userDetails.email,
       displayName: this.authService.userDetails.displayName
     };
-    this.appService.sendMsg({action: 'processupload', data: {task: "process", datatype: dataType, uploadtype: 'mytardis', 
-                             fileid: id, filename: filename, auth: info, userDetails: userDetails, settings: settings } });
+    this.socket.sendMessage('processupload', {task: "process", datatype: dataType, uploadtype: 'mytardis', 
+                             fileid: id, filename: filename, auth: mytardis, userDetails: userDetails, settings: settings });
                              
     let x = document.querySelector("#processing_anchor");
     if (x){
@@ -183,23 +166,19 @@ export class DatasetDetailComponent implements OnInit {
   
   onPrevClick($event) {
     $event.preventDefault();
-    const mytardis = localStorage.getItem('currentMytardis');
-    let info = JSON.parse(mytardis);
-    let msg = {action: 'processmytardis', 
-                data: { task: 'get_json', datatype: 'datafile', 
-                        host: info.host, path: this.prevStr, apikey: info.apiKey} };
-    this.appService.sendMsg(msg);
+    const mytardis = this.appService.mytardis;
+    let msg = { task: 'get_json', datatype: 'datafile', 
+                        host: mytardis.host, path: this.prevStr, apikey: mytardis.apiKey};
+    this.socket.sendMessage('processmytardis', msg);
     this.pageIdx = this.pageIdx - 1;
   }
   
   onNextClick($event) {
     $event.preventDefault();
-    const mytardis = localStorage.getItem('currentMytardis');
-    let info = JSON.parse(mytardis);
-    let msg = {action: 'processmytardis', 
-                data: { task: 'get_json', datatype: 'datafile', 
-                        host: info.host, path: this.nextStr, apikey: info.apiKey} };
-    this.appService.sendMsg(msg);
+    const mytardis = this.appService.mytardis;
+    let msg = { task: 'get_json', datatype: 'datafile', 
+                        host: mytardis.host, path: this.nextStr, apikey: mytardis.apiKey};
+    this.socket.sendMessage('processmytardis', msg);
     this.pageIdx = this.pageIdx + 1;
   }
   

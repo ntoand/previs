@@ -21,7 +21,8 @@ function trim(str) {
 
 function packAndSend(io, action, data) {
     if(io.socket) {
-        io.socket.emit('message', {action: action, data: data});
+        //io.socket.emit('message', {action: action, data: data});
+        io.socket.emit(action, data);
     }
     else {
         if(io.res && data.status !== 'working') {

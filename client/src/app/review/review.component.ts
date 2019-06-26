@@ -1,9 +1,7 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
-import { AppService } from '../core/app.service';
-import { Dataset } from '../shared/dataset.model';
-import { Collection } from '../shared/collection.model';
+import { AppService } from '@app/core/services/app.service';
 
-import { AuthService } from '../core/auth.service';
+import { AuthService } from '@app/core/services/auth.service';
 import { LoginComponent } from '../login/login.component';
 import { TagDetailComponent } from './tag-detail/tag-detail.component';
 import { CollectionComponent } from './collection/collection.component';
@@ -14,6 +12,22 @@ import {MatSort} from '@angular/material/sort';
 import {MatTableDataSource} from '@angular/material/table';
 import { COMMA, ENTER } from '@angular/cdk/keycodes';
 
+// store
+import { SocketioService } from '@app/core/services/socketio.service';
+import { Store, select } from '@ngrx/store';
+import { map, first } from 'rxjs/operators';
+import { IAppState } from '@app/core/store/state/app.state';
+import { Observable } from 'rxjs';
+import { ITag } from '../core/models/tag.model';
+import { selectTags } from '@app/core/store/selectors/tag.selector';
+import { GetTags, ReceiveTags, SetCurrentTagID, DeleteTags, DeleteTagsDone } from "@app/core/store/actions/tag.actions";
+import { ICollection } from '../core/models/collection.model';
+import { GetCollections, ReceiveCollections, UpdateCollectionShareEmail, UpdateCollectionShareEmailDone } from "@app/core/store/actions/collection.actions";
+import { selectCollections } from '@app/core/store/selectors/collection.selector';
+import { INotification } from '../core/models/notification.model';
+import { selectNotification } from '@app/core/store/selectors/notification.selector';
+import { SetNotification } from '@app/core/store/actions/notification.actions';
+
 @Component({
   selector: 'app-review',
   templateUrl: './review.component.html',
@@ -21,23 +35,25 @@ import { COMMA, ENTER } from '@angular/cdk/keycodes';
 })
 export class ReviewComponent implements OnInit {
 
-  constructor(private appService: AppService, public authService: AuthService, 
+  constructor(private store: Store<IAppState>, private socket: SocketioService,
+              private appService: AppService, public authService: AuthService, 
               private dialog: MatDialog) { }
-  
-  connection; 
-  message = { type: "", content: "" };
-  navPath = "review";
-  
-  datasets: Dataset[] = [];
-  collections: Collection[] = [];
-  collectionId = 'my';
-  showOptions = false;
-  needReloadCollections = false;
 
+  navPath = "review";
+  // store
+  appstate$: Observable<IAppState>;
+  // notificaiton
+  notification: INotification;
+  // tags
+  tags: ITag[] = [];
+  // collections
+  collections: ICollection[] = [];
+  optionCollections: ICollection[] = [];
+  needReloadCollections = false;
+  // table/list view
   listView = false;
   displayedColumns: string[] = ['tag', 'type', 'dateStr', 'size', 'collection', 'hasPassword', 'note'];
-  dataSource = new MatTableDataSource(this.datasets);
-
+  dataSource = new MatTableDataSource(this.tags);
   //sharing
   canShareCollection = false;
   showSharing = false;
@@ -58,12 +74,65 @@ export class ReviewComponent implements OnInit {
   setDataSourceAttributes() {
     this.dataSource.sort = this.sort;
   }
+  
+  ngOnInit() {
+    this.appService.setMenuIdx(2);
+
+    // store
+    var scope = this;
+    scope.appstate$ = this.store;
+    // notification
+    scope.appstate$.pipe(
+      select(selectNotification),
+      map(notification => notification.item)
+    ).subscribe(item =>{
+      scope.notification = item;
+    });
+    // tags
+    scope.appstate$.pipe(
+      select(selectTags),
+      map(tag => tag.items)
+    ).subscribe(items =>{
+      scope.tags = items;
+      scope.dataSource.data = scope.tags;
+    });
+    // collections
+    scope.appstate$.pipe(
+      select(selectCollections),
+      map(collection => collection)
+    ).subscribe(collection =>{
+      scope.collections = collection.items;
+      scope.optionCollections = collection.optionItems;
+    });
+
+    this.socket.tagsReceived$.subscribe((m: any)=>{
+      m.loginEmail = scope.authService.userDetails.email;
+      this.store.dispatch(new ReceiveTags(m));
+    });
+
+    this.socket.collectionsReceived$.subscribe((m: any)=>{
+      m.loginEmail = scope.authService.userDetails.email;
+      this.store.dispatch(new ReceiveCollections(m));
+    });
+
+    this.socket.updateShareEmailReceived$.subscribe((m: any)=>{
+      if(m.result.for === 'collection') {
+        this.store.dispatch(new UpdateCollectionShareEmailDone(m));
+      }
+    });
+
+    this.socket.deleteTagReceived$.subscribe((m: any)=>{
+      this.store.dispatch(new DeleteTagsDone(m));
+    });
+
+    this.store.dispatch(new SetNotification({type: '', content: '', for: 'review'}));
+    
+  }
 
   loadData() {
-    this.datasets = [];
-    this.message.type = 'working';
-    this.message.content = 'Loading tags...';
-    this.appService.sendMsg({action: 'admingetdatabundle', data: {userEmail: this.authService.userDetails.email, collection: 'my'}});
+    this.store.dispatch(new SetNotification({type: 'working', content: 'loading tags...', for: 'review'}));
+    this.store.dispatch(new GetTags({userEmail: this.authService.userDetails.email, collection: this.appService.collectionId}));
+    this.store.dispatch(new GetCollections({userEmail: this.authService.userDetails.email}));
   }
 
   findCollectionName(id) {
@@ -76,204 +145,19 @@ export class ReviewComponent implements OnInit {
     return '';
   }
 
-  isComponentMessage(action) {
-    if(action === 'admingetdatabundle' || action === 'admingettags' || action === 'admingetcollections' 
-    || action === 'admindeletetags' || action === 'adminupdatetag' || action === 'adminupdatetagcollection'
-    || action === 'adminupdateshareemail')
-      return true;
-    return false;
-  }
-
-  getErrorMessage(action) {
-    if(action === 'admingetdatabundle') return 'failed to get data bundle';
-    if(action === 'admingettags') return 'faied to get tags';
-    if(action === 'admingetcollections') return 'failed to get collections';
-    if(action === 'admindeletetags') return 'failed to delete tag(s)';
-    if(action === 'adminupdatetag' || action === 'adminupdatetagcollection') return 'failed to update tag';
-    if(action === 'adminupdateshareemail') return 'failed to update share email';
-    return '';
-  }
-  
-  ngOnInit() {
-    this.appService.setMenuIdx(2);
-    
-    this.resetCollections();
-
-    var scope = this;
-
-    this.connection = this.appService.onMessage().subscribe(msg => {
-
-      if(!scope.isComponentMessage(msg.action)) return;
-
-      console.log(msg);
-      scope.message.type = '';
-      scope.message.content = '';
-      if(msg.data.status === 'error') {
-        scope.message.type = 'error';
-        scope.message.content = scope.getErrorMessage(msg.action);
-        return;
-      }
-
-      if(msg.action === 'admingetdatabundle') {
-        var tags = msg.data.result.tags;
-        if(tags.length > 0) {
-          scope.message.type = 'success';
-          scope.message.content = 'Found ' + tags.length + ' tag(s)';
-        }
-        else {
-          scope.message.type = 'warning';
-          scope.message.content = 'No tags found!';
-        }
-        
-        scope.datasets = [];
-        for(var i=0; i < tags.length; i++) {
-          var d = new Dataset();
-          d.parseResultData(tags[i].data, scope.authService.userDetails.email);
-          scope.datasets.push(d);
-        }
-        scope.dataSource.data = scope.datasets;
-
-        // tempt collections
-        var collections = msg.data.result.collections;
-        scope.resetCollections();
-        for(var i=0; i < collections.length; i++) {
-          var c = new Collection();
-          c.parseResultData(collections[i].data, scope.authService.userDetails.email);
-          scope.collections.push(c);
-        }
-      }
-
-      else if(msg.action === 'admingettags') {
-        var tags = msg.data.result;
-        if(tags.length > 0) {
-          scope.message.type = 'success';
-          scope.message.content = 'Found ' + tags.length + ' tag(s)';
-        }
-        else {
-          scope.message.type = 'warning';
-          scope.message.content = 'No tags found!';
-        }
-        
-        scope.datasets = [];
-        for(var i=0; i < tags.length; i++) {
-          var d = new Dataset();
-          d.parseResultData(tags[i].data, scope.authService.userDetails.email);
-          scope.datasets.push(d);
-        }
-        scope.dataSource.data = scope.datasets;
-      }
-
-      else if(msg.action === 'admingetcollections') {
-        // tempt collections
-        var collections = msg.data.result;
-        scope.resetCollections();
-        for(var i=0; i < collections.length; i++) {
-          var c = new Collection();
-          c.parseResultData(collections[i].data, scope.authService.userDetails.email);
-          scope.collections.push(c);
-        }
-        scope.message.type = 'success';
-        scope.message.content = 'collections reloaded';
-      }
-      
-      else if(msg.action === 'admindeletetags') {
-        scope.loadData();
-      }
-      
-      else if(msg.action === 'adminupdatetag' || msg.action === 'adminupdatetagcollection') {
-        const tag = msg.data.result.tag;
-        const note = msg.data.result.data.note || '';
-        const password = msg.data.result.data.password || ''; 
-        const collection = msg.data.result.data.collection || ''; 
-        scope.message.type = 'success';
-        scope.message.content = 'Updated tag ' + tag;
-        scope.updateTagNote(tag, msg.data.type, note, password, collection);
-      }
-
-      else if(msg.action === 'adminupdateshareemail') {
-        scope.message.type = 'success';
-        scope.message.content = 'Updated share email';
-        let d = msg.data.result;
-        if(d.for === 'tag') {
-          for(var i=0; i < scope.datasets.length; i++) {
-            if(scope.datasets[i].tag === d.id) {
-              if(!scope.datasets[i].share) scope.datasets[i].share = {};
-              scope.datasets[i].share[d.email] = d.action === 'add' ? 1 : 0;
-              break;
-            }
-          }
-        }
-        else {
-          for(var i=0; i < scope.collections.length; i++) {
-            if(scope.collections[i].id === d.id) {
-              if(!scope.collections[i].share) scope.collections[i].share = {};
-              scope.collections[i].share[d.email] = d.action === 'add' ? 1 : 0;
-              break;
-            }
-          }
-        } // else
-      } // if
-      
-    });
-  }
-  
-  ngOnDestroy() {
-    this.connection.unsubscribe();
-  }
-  
   onLoadTags($event) {
     $event.preventDefault();
     this.loadData();
-    this.showOptions = true;
+    this.appService.showOptions = true;
   }
   
   deleteTag($event) {
     const tag = $event.tag;
     const dir = $event.dir;
-    
     console.log('delete ' + tag);
-    this.appService.sendMsg({action: 'admindeletetags', data: {tags: [{tag:tag, dir: dir, userId: this.authService.userDetails.uid}]}});
+    this.store.dispatch(new DeleteTags({tags: [{tag:tag, dir: dir, userId: this.authService.userDetails.uid}]}));
   }
   
-  updateTag($event) {
-    if($event.type === 'note') {
-      this.appService.sendMsg({action: 'adminupdatetag', data: {tag: $event.tag, type: 'note', data: {note: $event.noteStr}}});
-    }
-    else if($event.type === 'password') {
-      this.appService.sendMsg({action: 'adminupdatetag', data: {tag: $event.tag, type: 'password', data: {password: $event.passwordStr}}});
-    }
-    else if($event.type === 'collection') {
-      this.appService.sendMsg({action: 'adminupdatetagcollection', data: {tag: $event.tag, type: 'collection', collectionPrev: $event.collectionPrev, data: {collection: $event.collection}}});
-    }
-  }
-
-  updateTagNote(tag, type, note, password, collection = '') {
-    for(var i=0; i < this.datasets.length; i++) {
-      if(this.datasets[i].tag === tag) {
-        if(type === 'note') {
-          this.datasets[i].note = note
-        } 
-        else if (type === 'password') {
-          this.datasets[i].password = password;
-          this.datasets[i].hasPassword = password !== '' ? 'yes' : 'no';
-        }
-        else if (type === 'collection') {
-          this.datasets[i].collection = collection;
-        }
-        break;
-      }
-    }
-  }
-  
-  resetCollections() {
-    this.collections = [];
-    this.collections.push(new Collection('my', '-- my tags --'));
-    this.collections.push(new Collection('shared', '-- shared tags --'));
-    this.collectionId = 'my';
-    this.showSharing = false;
-    this.canShareCollection = false;
-  }
-
   toogleViewType() {
     this.listView = !this.listView;
   }
@@ -304,51 +188,44 @@ export class ReviewComponent implements OnInit {
     dialogRef.afterClosed().subscribe( result => {
       if(scope.needReloadCollections) {
         scope.needReloadCollections = false;
-        scope.appService.sendMsg({action: 'admingetcollections', data: {userEmail: scope.authService.userDetails.email}});
+        this.store.dispatch(new GetCollections({userEmail: this.authService.userDetails.email}));
       }
     });
   }
 
   onDatasetClick(dataset) {
     var scope = this;
+
+    this.store.dispatch(new SetNotification({type: '', content: '', for: 'tagreview'}));
+    scope.store.dispatch(new SetCurrentTagID(dataset.tag));
+
     var clone = this.collections.slice(0); clone.slice(0, 2);
     const dialogRef = this.dialog.open(TagDetailComponent, {
       width: '800px',
       data: {dataset: dataset, collections: clone}
     });
 
-    dialogRef.componentInstance.onUpdateTag.subscribe((data) => {
-      // do something
-      console.log('Update tag', data);
-      scope.updateTag(data);
-    });
-
     dialogRef.componentInstance.needReloadCollections.subscribe((data) => {
       scope.needReloadCollections = true;
     });
-
-    dialogRef.componentInstance.updateShareEmail.subscribe((data) => {
-      scope.appService.sendMsg({action: 'adminupdateshareemail', data: {data: data}});
-    });
     
     dialogRef.afterClosed().subscribe(result => {
-      console.log(result);
+      //console.log(result);
       if(result !== undefined && result.type === 'delete') {
         scope.deleteTag(result);
       }
       if(scope.needReloadCollections) {
         scope.needReloadCollections = false;
-        scope.appService.sendMsg({action: 'admingetcollections', data: {userEmail: scope.authService.userDetails.email}});
+        this.store.dispatch(new GetCollections({userEmail: this.authService.userDetails.email}));
       }
     });
   }
 
   getShareEmails(share) {
-    console.log('getSharedEmails', share);
+    //console.log('getSharedEmails', share);
     var shareEmails = [];
     if(share) {
       var keys = Object.keys(share);
-      console.log(keys);
       for(var i=0; i<keys.length; i++) {
         if(share[keys[i]] > 0) {
           shareEmails.push(keys[i]);
@@ -359,13 +236,13 @@ export class ReviewComponent implements OnInit {
   }
 
   onCollectionChange() {
-    console.log('onCollectionChange', this.collectionId);
     var scope = this;
-    for(var i=0; i < scope.collections.length; i++) {
-      if(scope.collections[i].id === scope.collectionId) {
-        if(scope.collections[i].owner === 'yes') {
+    let collections = scope.optionCollections;
+    for(var i=0; i < collections.length; i++) {
+      if(collections[i].id === scope.appService.collectionId) {
+        if(collections[i].owner === 'yes') {
           scope.canShareCollection = true;
-          scope.shareEmails = scope.getShareEmails(scope.collections[i].share);
+          scope.shareEmails = scope.getShareEmails(collections[i].share);
         }
         else {
           scope.canShareCollection = false;
@@ -376,7 +253,7 @@ export class ReviewComponent implements OnInit {
       }
     }
     // get tags
-    scope.appService.sendMsg({action: 'admingettags', data: {userEmail: scope.authService.userDetails.email, collection: scope.collectionId}});
+    this.store.dispatch(new GetTags({userEmail: this.authService.userDetails.email, collection: scope.appService.collectionId}));
   }
 
   toogleCollectionSharing() {
@@ -388,10 +265,10 @@ export class ReviewComponent implements OnInit {
     var cn = confirm('Do you want to remove ' + email + ' from sharing?');
     var scope = this;
     if(cn){
-      let data = {for: 'collection', action: 'remove', id: scope.collectionId, 
+      let data = {for: 'collection', action: 'remove', id: scope.appService.collectionId, 
                   email: email, notify: false, 
                   author: scope.authService.userDetails.displayName};
-      scope.appService.sendMsg({action: 'adminupdateshareemail', data: {data: data}});
+      this.store.dispatch(new UpdateCollectionShareEmail({data: data}));
       const index = scope.shareEmails.indexOf(email);
       if (index >= 0) {
         scope.shareEmails.splice(index, 1);
@@ -406,29 +283,28 @@ export class ReviewComponent implements OnInit {
     const value = event.value;
 
     if ((value || '').trim()) {
-      scope.message.type = '';
-      scope.message.content = '';
-
+      this.store.dispatch(new SetNotification({type: '', content: '', for: 'review'}));
+      
       if(value.includes('@') && (value.includes('monash.edu') || value.includes('gmail.com'))) {
         // update share email
         var cn = confirm('Do you want this collection with ' + value + '?');
         if(cn) {
-          let data = {for: 'collection', action: 'add', id: scope.collectionId, 
+          let data = {for: 'collection', action: 'add', id: scope.appService.collectionId, 
                       email: value.trim(), notify: scope.notifyPeople, 
                       author: this.authService.userDetails.displayName};
-          scope.appService.sendMsg({action: 'adminupdateshareemail', data: {data: data}});
+          this.store.dispatch(new UpdateCollectionShareEmail({data: data}));
           scope.shareEmails.push(value.trim());
         }
       }
       else {
-        scope.message.type = 'error';
-        scope.message.content = 'support only monash/gmail';
+        this.store.dispatch(new SetNotification({type: 'error', content: 'support only monash/gmail', for: 'review'}));
       }
     }
     // Reset the input value
     if (input) {
       input.value = '';
     }
+    
   }
 
 }

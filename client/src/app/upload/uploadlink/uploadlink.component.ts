@@ -1,6 +1,7 @@
 import { Component, OnInit, Input } from '@angular/core';
-import { AppService } from '../../core/app.service';
-import { AuthService } from '../../core/auth.service';
+import { AppService } from '@app/core/services/app.service';
+import { AuthService } from '@app/core/services/auth.service';
+import { SocketioService } from '@app/core/services/socketio.service';
 
 @Component({
   selector: 'app-uploadlink',
@@ -9,15 +10,13 @@ import { AuthService } from '../../core/auth.service';
 })
 export class UploadlinkComponent implements OnInit {
 
-  constructor(private appService: AppService, public authService: AuthService) { }
+  constructor(private socket: SocketioService,
+              private appService: AppService, public authService: AuthService) { }
   
   urlStr = '';
   extStr = 'zip';
   errMsg = '';
   
-  @Input() dataType: string;
-  @Input() settings;
-
   ngOnInit() {
   }
 
@@ -34,8 +33,8 @@ export class UploadlinkComponent implements OnInit {
       email: this.authService.userDetails.email,
       displayName: this.authService.userDetails.displayName
     };
-    this.appService.sendMsg({action: 'processupload', data: {task: "process", url: this.urlStr, ext: this.extStr, datatype: this.dataType, uploadtype: 'link',
-                                                              userDetails: userDetails, settings: this.settings } });
+    this.socket.sendMessage('processupload', {task: "process", url: this.urlStr, ext: this.extStr, datatype: this.appService.dataType, uploadtype: 'link',
+                              userDetails: userDetails, settings: this.appService.settings });
     
     let x = document.querySelector("#processing_anchor");
     if (x){

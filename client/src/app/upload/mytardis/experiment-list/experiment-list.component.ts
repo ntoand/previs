@@ -1,7 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 
-import { AppService } from '../../../core/app.service';
+import { AppService } from '@app/core/services/app.service';
 import { Experiment } from "../mytardis.model";
+import { SocketioService } from '@app/core/services/socketio.service';
 
 @Component({
   selector: 'app-experiment-list',
@@ -10,7 +11,6 @@ import { Experiment } from "../mytardis.model";
 })
 export class ExperimentListComponent implements OnInit {
   
-  connection;
   experiments: Experiment[];
   errMsg = '';
   totalItems = 0;
@@ -21,101 +21,87 @@ export class ExperimentListComponent implements OnInit {
   pageIdx = 1;
   numPages = 1;
 
-  constructor(private appService: AppService) { }
+  constructor(private socket: SocketioService, private appService: AppService) { }
 
   ngOnInit() {
     
     //this.appService.setMenuIdx(3);
-    
-    this.connection = this.appService.onMessage().subscribe(msg => {
-      if(msg.action === 'processmytardis' && msg.data.task === 'get_json' && msg.data.datatype === 'experiment') {
-        console.log(msg.data);
-        
-        if(msg.data.status === 'error') {
-          this.errMsg = 'Cannot get experiment';
+    var scope = this;
+    scope.socket.processMytardisReceived$.subscribe((data: any)=>{
+      if(data.datatype === 'experiment' && data.task === 'get_json') {
+        //console.log('ExperimentListComponent processMytardisReceived$', data);
+        if(data.status === 'error') {
+          scope.errMsg = 'Cannot get experiment';
           return;
         }
-        
-        this.prevStr = msg.data.result.meta.previous;
-        this.nextStr = msg.data.result.meta.next;
-        if(this.accessType == 'public') {
-          this.totalItems = msg.data.result.meta.total_count;
-          this.numPages = Math.floor((this.totalItems -1) / msg.data.result.meta.limit) + 1;
+
+        scope.prevStr = data.result.meta.previous;
+        scope.nextStr = data.result.meta.next;
+        const mytardis = scope.appService.mytardis;
+        if(mytardis.accessType == 'public') {
+          scope.totalItems = data.result.meta.total_count;
+          scope.numPages = Math.floor((scope.totalItems -1) / data.result.meta.limit) + 1;
         }
         else {
-          this.totalItems = 0;
-          this.numPages = 1;
+          scope.totalItems = 0;
+          scope.numPages = 1;
         }
       
-        const objects = msg.data.result.objects;
+        const objects = data.result.objects;
         if(objects) {
-          this.experiments = new Array();
+          scope.experiments = new Array();
           objects.forEach((entry) => {
             let experiment = new Experiment();
             experiment.id = entry.id;
             experiment.title = entry.title;
             experiment.description = entry.description;
             experiment.created_time = entry.created_time;
-            if(this.accessType == 'public') {
-              this.experiments.push(experiment);
+            if(mytardis.accessType == 'public') {
+              scope.experiments.push(experiment);
             }
             else {
-              if(entry.owner_ids.indexOf(this.userId) !== -1 ) {
-                this.experiments.push(experiment);
-                this.totalItems = this.totalItems + 1;
+              if(entry.owner_ids.indexOf(scope.userId) !== -1 ) {
+                scope.experiments.push(experiment);
+                scope.totalItems += 1;
               }
             }
-            
           });
         }
       }
     });
     
-    const mytardis = localStorage.getItem('currentMytardis');
+    const mytardis = this.appService.mytardis;
     if(mytardis) {
-      let info = JSON.parse(mytardis);
-      console.log(info);
       let msg = {};
-      if(info.accessType === 'public') {
-        msg = {action: 'processmytardis', 
-                data: { task: 'get_json', datatype: 'experiment', 
-                        host: info.host, path: '/api/v1/experiment/?format=json', apikey: info.apiKey} };
+      if(mytardis.accessType === 'public') {
+        msg = { task: 'get_json', datatype: 'experiment', 
+                host: mytardis.host, path: '/api/v1/experiment/?format=json', apikey: mytardis.apiKey};
       }
       else {
-        msg = {action: 'processmytardis', 
-                data: { task: 'get_json', datatype: 'experiment', 
-                        host: info.host, path: '/api/v1/experiment/?format=json&limit=0', apikey: info.apiKey} };
-        this.userId = info.userId;
+        msg = { task: 'get_json', datatype: 'experiment', 
+                host: mytardis.host, path: '/api/v1/experiment/?format=json&limit=0', apikey: mytardis.apiKey};
+        this.userId = mytardis.userId;
       }
-      console.log(msg);
-      this.accessType = info.accessType;
-      this.appService.sendMsg(msg);
+      this.accessType = mytardis.accessType;
+      this.socket.sendMessage('processmytardis', msg);
     }
-  }
-  
-  ngOnDestroy() {
-    this.connection.unsubscribe();
   }
   
   onPrevClick($event) {
     $event.preventDefault();
-    const mytardis = localStorage.getItem('currentMytardis');
-    let info = JSON.parse(mytardis);
-    let msg = {action: 'processmytardis', 
-                data: { task: 'get_json', datatype: 'experiment', 
-                        host: info.host, path: this.prevStr, apikey: info.apiKey} };
-    this.appService.sendMsg(msg);
+    const mytardis = this.appService.mytardis;
+    let msg = { task: 'get_json', datatype: 'experiment', 
+                        host: mytardis.host, path: this.prevStr, apikey: mytardis.apiKey};
+    this.socket.sendMessage('processmytardis', msg);
     this.pageIdx = this.pageIdx - 1;
   }
   
   onNextClick($event) {
     $event.preventDefault();
-    const mytardis = localStorage.getItem('currentMytardis');
-    let info = JSON.parse(mytardis);
-    let msg = {action: 'processmytardis', 
-                data: { task: 'get_json', datatype: 'experiment', 
-                        host: info.host, path: this.nextStr, apikey: info.apiKey} };
-    this.appService.sendMsg(msg);
+    const mytardis = this.appService.mytardis;
+    let msg = { task: 'get_json', datatype: 'experiment', 
+                        host: mytardis.host, path: this.nextStr, apikey: mytardis.apiKey};
+    this.socket.sendMessage('processmytardis', msg);
     this.pageIdx = this.pageIdx + 1;
   }
 

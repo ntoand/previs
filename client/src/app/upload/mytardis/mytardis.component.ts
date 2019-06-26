@@ -1,6 +1,7 @@
 import { Component, OnInit, Input } from '@angular/core';
-import { AppService } from '../../core/app.service';
+import { AppService } from '@app/core/services/app.service';
 import { Router, ActivatedRoute } from '@angular/router';
+import { SocketioService } from '@app/core/services/socketio.service';
 
 @Component({
   selector: 'app-mytardis',
@@ -9,90 +10,67 @@ import { Router, ActivatedRoute } from '@angular/router';
 })
 export class MytardisComponent implements OnInit {
 
-  constructor(private appService: AppService, private router: Router, private activeRoute: ActivatedRoute) { }
+  constructor(private socket: SocketioService, private appService: AppService, 
+              private router: Router, private activeRoute: ActivatedRoute) { }
   
-  connection;
-  host = 'store.erc.monash.edu';
-  accessType = 'public';
-  apiKey = '';
   errMsg = '';
   loggedin = false;
   username = '';
   
-  @Input() settings;
-
   ngOnInit() {
     //this.appService.setMenuIdx(3);
-    
-    this.connection = this.appService.onMessage().subscribe(msg => {
-      if(msg.action === 'processmytardis' && msg.data.task === 'get_json' && msg.data.datatype === 'user') {
-        console.log(msg.data);
-        if(msg.data.status === 'error' || msg.data.result.meta.total_count === 0) {
+    var scope = this;
+    scope.socket.processMytardisReceived$.subscribe((data: any)=>{
+      //console.log('MytardisComponent processMytardisReceived$', data);
+      if(data.task === 'get_json' && data.datatype === 'user') {
+        if(data.status === 'error' || data.result.meta.total_count === 0) {
           this.errMsg = 'Cannot find user, please check your api key';
           return;
         }
-      
-        const userId = msg.data.result.objects[0].id;
-        localStorage.setItem('settings', JSON.stringify(this.settings));
-        localStorage.setItem('currentMytardis', 
-                              JSON.stringify({host: this.host, accessType: this.accessType, apiKey: this.apiKey, userId: userId}));
-        //this.router.navigate(['/mytardis/experiment']);
-        this.router.navigate([{ outlets: { "auxMytardis": ["experiment"] }}], { relativeTo: this.activeRoute });
-        this.loggedin = true;
-        let parts = this.apiKey.split(':');
-        this.username = parts[0];
+        const userId = data.result.objects[0].id;
+        const mytardis = this.appService.mytardis;
+        scope.appService.mytardis = {host: mytardis.host, accessType: mytardis.accessType, apiKey: mytardis.apiKey, userId: userId};
+        scope.router.navigate([{ outlets: { "auxMytardis": ["experiment"] }}], { relativeTo: scope.activeRoute });
+        scope.loggedin = true;
+        let parts = mytardis.apiKey.split(':');
+        scope.username = parts[0];
       }
     });
-    
-    const mytardis = localStorage.getItem('currentMytardis');
-    console.log(mytardis);
-    if(mytardis) {
-      let info = JSON.parse(mytardis);
-      this.loggedin = true;
-      this.host = info.host;
-      this.accessType = info.accessType;
-      this.apiKey = info.apiKey;
-      if(this.apiKey !== '') {
-        this.username = this.apiKey.split(":")[0];
-      }
-      else {
-        this.username = 'anonymous';
-      }
+  
+    if(scope.appService.mytardis.apiKey !== '') {
+      this.username = scope.appService.mytardis.apiKey.split(":")[0];
     }
     else {
-      this.loggedin = false;
+      this.username = 'anonymous';
     }
     
-  }
-  
-  ngOnDestroy() {
-    this.connection.unsubscribe();
   }
   
   onGoClick($event) {
     $event.preventDefault();
     this.errMsg = '';
+    var scope = this;
     
-    if(this.accessType == 'mydata') {
-      if(this.apiKey === '') {
-        this.errMsg = 'Please input your apikey in format name:key';
+    const mytardis = this.appService.mytardis;
+    if(mytardis.accessType == 'mydata') {
+      if(mytardis.apiKey === '') {
+        scope.errMsg = 'Please input your apikey in format name:key';
         return;
       }
-      let parts = this.apiKey.split(':');
+      let parts = mytardis.apiKey.split(':');
       if (parts.length !== 2) {
-        this.errMsg = 'Please input your apikey in format name:key';
+        scope.errMsg = 'Please input your apikey in format name:key';
         return;
       }
       let username = parts[0];
       console.log(username);
-      this.appService.sendMsg({action: 'processmytardis', 
-                             data: { task: 'get_json', datatype: 'user', 
-                                     host: this.host, path: '/api/v1/user/?format=json&username=' + username, apikey: this.apiKey} });
+      scope.socket.sendMessage('processmytardis', { task: 'get_json', datatype: 'user', 
+                                host: mytardis.host, path: '/api/v1/user/?format=json&username=' + username, apikey: mytardis.apiKey});
 
     }
     else {
-      localStorage.setItem('currentMytardis', JSON.stringify({host: this.host, accessType: this.accessType, apiKey: ''}));
-      //this.router.navigate(['/mytardis/experiment']);
+      const mytardis = this.appService.mytardis;
+      this.appService.mytardis = {host: mytardis.host, accessType: mytardis.accessType, apiKey: '', userId: ''};
       this.router.navigate([{ outlets: { "auxMytardis": ["experiment"] }}], { relativeTo: this.activeRoute });
       this.loggedin = true;
       this.username = 'anonymous';
@@ -104,7 +82,6 @@ export class MytardisComponent implements OnInit {
     this.errMsg = '';
     this.loggedin = false;
     console.log(this.loggedin);
-    localStorage.removeItem('currentMytardis');
   }
 
 }

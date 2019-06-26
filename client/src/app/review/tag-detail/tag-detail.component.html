@@ -1,9 +1,14 @@
-<h1 mat-dialog-title>{{dataset.tag}} ({{dataset.type | lowercase}})</h1>
+<h1 mat-dialog-title>{{tag.tag}} ({{tag.type | lowercase}})</h1>
 <div mat-dialog-content>
 
-  <div *ngIf="dataset.imgUrl != 'assets/img/no-image-box.png'" [ngStyle]="getImageContainerStyles(dataset.imgUrl)"></div>
-  <div class='info-session'>Date: {{dataset.dateStr}}</div>
-  <div class='info-session'>Size: {{dataset.size}}</div>
+  <div *ngIf="tag.imgUrl != 'assets/img/no-image-box.png'" [ngStyle]="getImageContainerStyles(tag.imgUrl)"></div>
+
+  <div class="alert-box {{notification.type}}" *ngIf="notification.content !== '' && notification.for === 'tagdetail'">
+    <span>{{notification.type}}: </span>{{notification.content}}
+  </div>
+
+  <div class='info-session'>Date: {{tag.dateStr}}</div>
+  <div class='info-session'>Size: {{tag.size}}</div>
 
   <div class='info-session' *ngIf='collectionEditMode === false'>Collection: {{collectionName}}
     <button *ngIf="owner" (click)="onCollectionEnableEdit($event)" class='action-button'>edit</button>
@@ -44,9 +49,6 @@
     <div class='send-email'>
       <input type="checkbox" [(ngModel)]="notifyPeople" [ngModelOptions]="{standalone: true}"/> Notify people
     </div>
-    <div class="alert-box {{message.type}}" *ngIf="message.content !== ''">
-      <span>{{message.type}}: </span>{{message.content}}
-    </div>
     <mat-form-field class="share-chip-list">
       <mat-chip-list #chipList aria-label="sharing emails">
         <mat-chip *ngFor="let email of shareEmails" [selectable]="selectable"
@@ -65,7 +67,7 @@
 
 </div>
 <div mat-dialog-actions>
-  <a href={{dataset.viewUrl}} target="_blank"><button mat-button color='primary'>VIEW WEB</button></a>
-  <a href={{dataset.qrUrl}} target="_blank"><button mat-button color='primary'>QR</button></a>
-  <button mat-button color='warn' *ngIf="owner" (click)="onDeleteTag(dataset.tag, dataset.dir)">DELETE</button>
+  <a href={{tag.viewUrl}} target="_blank"><button mat-button color='primary'>VIEW WEB</button></a>
+  <a href={{tag.qrUrl}} target="_blank"><button mat-button color='primary'>QR</button></a>
+  <button mat-button color='warn' *ngIf="owner" (click)="onDeleteTag(tag.tag, tag.dir)">DELETE</button>
 </div>

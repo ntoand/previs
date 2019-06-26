@@ -1,19 +1,19 @@
 <div *ngIf="!loggedin">
   <mat-form-field class="select-area">
-    <mat-select [(value)]="host">
+    <mat-select [(value)]="appService.mytardis.host">
       <mat-option value="store.erc.monash.edu">store.erc.monash.edu</mat-option>
     </mat-select>
   </mat-form-field>
   
   <div class="block">
-    <mat-radio-group class="type-radio-group" [(ngModel)]="accessType">
+    <mat-radio-group class="type-radio-group" [(ngModel)]="appService.mytardis.accessType">
       <mat-radio-button class="type-radio-button" value="public">Public data</mat-radio-button>
       <mat-radio-button class="type-radio-button" value="mydata">My data</mat-radio-button>
     </mat-radio-group>
   </div>
   
-  <mat-form-field class="full-width" *ngIf="accessType==='mydata'">
-      <input matInput placeholder="Api key e.g. username:4c3f0abc9825e8f44804493e36623476584xxx" [(ngModel)]="apiKey" name="apiKey">
+  <mat-form-field class="full-width" *ngIf="appService.mytardis.accessType==='mydata'">
+      <input matInput placeholder="Api key e.g. username:4c3f0abc9825e8f44804493e36623476584xxx" [(ngModel)]="appService.mytardis.apiKey" name="apiKey">
   </mat-form-field>
   
   <div class="alert-box error" *ngIf="errMsg !== ''">
