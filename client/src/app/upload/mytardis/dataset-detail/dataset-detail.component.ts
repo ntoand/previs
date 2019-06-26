@@ -26,6 +26,8 @@ export class DatasetDetailComponent implements OnInit {
   pageIdx = 1;
   numPages = 1;
 
+  subHandle = null;
+
   constructor(private socket: SocketioService, private appService: AppService, private activeRoute: ActivatedRoute, 
               private location: Location, public authService: AuthService) { }
 
@@ -33,7 +35,7 @@ export class DatasetDetailComponent implements OnInit {
     //this.appService.setMenuIdx(3);
 
     var scope = this;
-    scope.socket.processMytardisReceived$.subscribe((data: any)=>{
+    this.subHandle = scope.socket.processMytardisReceived$.subscribe((data: any)=>{
       if(data.datatype === 'datafile' && data.task === 'get_json') {
         //console.log('DatasetDetailComponent processMytardisReceived$', data);
         if(data.status === 'error') {
@@ -92,6 +94,10 @@ export class DatasetDetailComponent implements OnInit {
                         host: mytardis.host, path: '/api/v1/dataset_file/?dataset__id=' + id + '&format=json', apikey: mytardis.apiKey};
       this.socket.sendMessage('processmytardis', msg);
     }
+  }
+
+  ngOnDestroy() {
+    this.subHandle.unsubscribe()
   }
   
   onBackClick($event) {

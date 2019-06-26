@@ -23,6 +23,8 @@ export class ExperimentDetailComponent implements OnInit {
   pageIdx = 1;
   numPages = 1;
 
+  subHandle = null;
+
   constructor(private socket: SocketioService, private appService: AppService, 
               private activeRoute: ActivatedRoute, private location: Location) { }
 
@@ -30,7 +32,7 @@ export class ExperimentDetailComponent implements OnInit {
     
     //this.appService.setMenuIdx(3);
     var scope = this;
-    scope.socket.processMytardisReceived$.subscribe((data: any)=>{
+    this.subHandle = scope.socket.processMytardisReceived$.subscribe((data: any)=>{
       if(data.datatype === 'dataset' && data.task === 'get_json') {
         //console.log('ExperimentDetailComponent processMytardisReceived$', data);
         if(data.status === 'error') {
@@ -84,6 +86,10 @@ export class ExperimentDetailComponent implements OnInit {
                         host: mytardis.host, path: '/api/v1/dataset/?experiments__id=' + id + '&format=json', apikey: mytardis.apiKey};
       this.socket.sendMessage('processmytardis', msg);
     }
+  }
+
+  ngOnDestroy() {
+    this.subHandle.unsubscribe()
   }
   
   onBackClick($event) {

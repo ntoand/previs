@@ -24,6 +24,7 @@ import { ICollection } from '../../core/models/collection.model';
 })
 export class CollectionComponent {
 
+  subHandles: any[] = [];
   // store
   appstate$: Observable<IAppState>;
   // notificaiton
@@ -34,11 +35,8 @@ export class CollectionComponent {
   editCollectionID = ''; // to check if the item is in edit mode
   editStr = '';  // to store edit string
 
-  needReloadCollections = new EventEmitter();
-
   constructor(private store: Store<IAppState>, private socket: SocketioService,
-              private appService: AppService, public authService: AuthService, 
-              public dialogRef: MatDialogRef<CollectionComponent>,
+              public authService: AuthService, public dialogRef: MatDialogRef<CollectionComponent>,
               @Inject(MAT_DIALOG_DATA) public data: any) { }
 
   ngOnInit() {
@@ -46,90 +44,44 @@ export class CollectionComponent {
     var scope = this;
     scope.appstate$ = this.store;
     // notification
-    scope.appstate$.pipe(
+    var h1 = scope.appstate$.pipe(
       select(selectNotification),
       map(notification => notification.item)
     ).subscribe(item =>{
       scope.notification = item;
     });
+    this.subHandles.push(h1);
+
     // collections
-    scope.appstate$.pipe(
+    var h2 = scope.appstate$.pipe(
       select(selectCollections),
       map(collection => collection.items)
     ).subscribe(items =>{
       scope.collections = items.filter( item => item.owner === 'yes');
     });
+    this.subHandles.push(h2);
 
-    this.socket.addCollectionReceived$.subscribe((m: any)=>{
+    var h3 = this.socket.addCollectionReceived$.subscribe((m: any)=>{
+      console.log('CollectionComponent addCollectionReceived$');
       this.store.dispatch(new AddCollectionDone(m));
     });
+    this.subHandles.push(h3);
 
-    this.socket.updateCollectionReceived$.subscribe((m: any)=>{
+    var h4 = this.socket.updateCollectionReceived$.subscribe((m: any)=>{
       this.store.dispatch(new UpdateCollectionDone(m));
     });
+    this.subHandles.push(h4);
 
-    this.socket.deleteCollectionReceived$.subscribe((m: any)=>{
+    var h5 = this.socket.deleteCollectionReceived$.subscribe((m: any)=>{
       this.store.dispatch(new DeleteCollectionDone(m));
     });
-
-    /*
-    var scope = this;
-    this.connection = this.appService.onMessage().subscribe(msg => {
-
-      if(!scope.isComponentMessage(msg.action)) return;
-
-      console.log(msg.data);
-      scope.message.type = '';
-      scope.message.content = '';
-      if(msg.data.status === 'error') {
-        scope.message.type = 'error';
-        scope.message.content = scope.getErrorMessage(msg.action);
-        return;
-      }
-
-      if(msg.action === 'adminaddcollection') {
-        scope.collections.push(msg.data.result);
-        scope.message.type = 'success';
-        scope.message.content = 'Collection added';
-      }
-
-      else if (msg.action === 'adminupdatecollection') {
-        for(var i=0; i < scope.collections.length; i++) {
-          if(scope.collections[i].id === msg.data.result.id) {
-            scope.collections[i].name = msg.data.result.name;
-          }
-        }
-        scope.message.type = 'success';
-        scope.message.content = 'Collection updated';
-      }
-
-      else if(msg.action === 'admindeletecollection') {
-        var ind = 0;
-        for(var i=0; i < scope.collections.length; i++) {
-          if(scope.collections[i].id === msg.data.result.id) {
-            ind = i;
-            break;
-          }
-        }
-        scope.collections.splice(ind, 1);
-        scope.message.type = 'success';
-        scope.message.content = 'Collection deleted';
-      }
-
-    });
-    */
+    this.subHandles.push(h5);
   }
 
-  isComponentMessage(action) {
-    if(action === 'adminaddcollection' || action === 'adminupdatecollection' || action === 'admindeletecollection')
-      return true;
-    return false;
-  }
-
-  getErrorMessage(action) {
-    if(action === 'adminaddcollection') return 'failed to add collection';
-    if(action === 'adminupdatecollection') return 'failed to update collection';
-    if(action === 'admindeletecollection') return 'failed to delete collection';
+  ngOnDestroy() {
+    for(var i=0; i < this.subHandles.length; i++) {
+      this.subHandles[i].unsubscribe();
+    }
   }
 
   onAddNewCollection(data) {
@@ -142,7 +94,6 @@ export class CollectionComponent {
       userEmail: this.authService.userDetails.email 
     }
     this.store.dispatch(new AddCollection({data: collection}));
-    this.needReloadCollections.emit({});
     this.collectionValue = '';
     this.editCollectionID = '';
   }
@@ -163,7 +114,6 @@ export class CollectionComponent {
         name: this.editStr,
       }
       this.store.dispatch(new UpdateCollection({data: collection}));
-      this.needReloadCollections.emit({});
     }
     this.editCollectionID = '';
     this.editStr = '';
@@ -177,7 +127,6 @@ export class CollectionComponent {
 
   onDeleteClick(collection) {
     this.store.dispatch(new DeleteCollection({data: collection}));
-    this.needReloadCollections.emit({});
   }
 
 }

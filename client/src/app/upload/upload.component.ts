@@ -2,7 +2,6 @@ import { Component, OnInit } from '@angular/core';
 import { AppService } from '@app/core/services/app.service';
 import { UploadfileComponent } from './uploadfile/uploadfile.component';
 import { UploadlinkComponent } from './uploadlink/uploadlink.component';
-import { Dataset } from '../shared/dataset.model';
 import { MytardisComponent } from './mytardis/mytardis.component';
 
 import { AuthService } from '@app/core/services/auth.service';
@@ -20,6 +19,7 @@ export class UploadComponent implements OnInit {
   
   message = { type: "", content: "" };
   tag: ITag = null;
+  subHandle = null;
   
   navPath = "upload";
 
@@ -32,7 +32,7 @@ export class UploadComponent implements OnInit {
     this.appService.setMenuIdx(1);
     
     var scope = this;
-    scope.socket.processUploadReceived$.subscribe((data: any)=>{
+    this.subHandle = scope.socket.processUploadReceived$.subscribe((data: any)=>{
       if(data.status !== 'done') {
         scope.message.type = data.status;
         scope.message.content = data.result;
@@ -42,9 +42,14 @@ export class UploadComponent implements OnInit {
         scope.message.type = 'success';
         scope.message.content = 'Please write down this tag ' + result.tag + ' for later use';
         scope.tag = scope.appService.parseTagFromResult(data.result, scope.authService.userDetails.email);
+        scope.appService.needReload = true;
       }
     });  
 
+  }
+
+  ngOnDestroy() {
+    this.subHandle.unsubscribe()
   }
 
 }

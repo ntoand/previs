@@ -19,8 +19,14 @@ export class UploadfileComponent implements OnInit {
   uploadPercent = 0;
   selectedFile = '';
   errMsg = '';
-  
+  subHandle = null;
+
   ngOnInit() {
+
+  }
+  
+  ngOnDestroy() {
+    if(this.subHandle) this.subHandle.unsubscribe()
   }
   
   onUploadFileClick(event) {
@@ -110,7 +116,7 @@ export class UploadfileComponent implements OnInit {
 
     const req = new HttpRequest('POST', path, formData, { reportProgress: true });
     
-    this.http.request(req).subscribe((event: HttpEvent<any>) => {
+    this.subHandle = this.http.request(req).subscribe((event: HttpEvent<any>) => {
       switch (event.type) {
         case HttpEventType.Sent:
           console.log('Request sent!');

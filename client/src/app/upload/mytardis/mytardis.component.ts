@@ -16,11 +16,13 @@ export class MytardisComponent implements OnInit {
   errMsg = '';
   loggedin = false;
   username = '';
+
+  subHandle = null;
   
   ngOnInit() {
     //this.appService.setMenuIdx(3);
     var scope = this;
-    scope.socket.processMytardisReceived$.subscribe((data: any)=>{
+    this.subHandle = scope.socket.processMytardisReceived$.subscribe((data: any)=>{
       //console.log('MytardisComponent processMytardisReceived$', data);
       if(data.task === 'get_json' && data.datatype === 'user') {
         if(data.status === 'error' || data.result.meta.total_count === 0) {
@@ -44,6 +46,10 @@ export class MytardisComponent implements OnInit {
       this.username = 'anonymous';
     }
     
+  }
+
+  ngOnDestroy() {
+    this.subHandle.unsubscribe()
   }
   
   onGoClick($event) {

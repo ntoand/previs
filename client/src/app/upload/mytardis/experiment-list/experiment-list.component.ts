@@ -21,13 +21,15 @@ export class ExperimentListComponent implements OnInit {
   pageIdx = 1;
   numPages = 1;
 
+  subHandle = null;
+
   constructor(private socket: SocketioService, private appService: AppService) { }
 
   ngOnInit() {
     
     //this.appService.setMenuIdx(3);
     var scope = this;
-    scope.socket.processMytardisReceived$.subscribe((data: any)=>{
+    this.subHandle = scope.socket.processMytardisReceived$.subscribe((data: any)=>{
       if(data.datatype === 'experiment' && data.task === 'get_json') {
         //console.log('ExperimentListComponent processMytardisReceived$', data);
         if(data.status === 'error') {
@@ -85,6 +87,10 @@ export class ExperimentListComponent implements OnInit {
       this.accessType = mytardis.accessType;
       this.socket.sendMessage('processmytardis', msg);
     }
+  }
+
+  ngOnDestroy() {
+    this.subHandle.unsubscribe()
   }
   
   onPrevClick($event) {

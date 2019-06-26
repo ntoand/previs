@@ -35,6 +35,7 @@ export class AppService {
   }
   
   // ===== REVIEW =====
+  public needReload = false;
   public showOptions = false;
   public collectionId = 'my';
 

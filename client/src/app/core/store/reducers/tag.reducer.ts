@@ -10,7 +10,7 @@ function parseTag(data, loginEmail) {
   tag.tag = data.tag;
   tag.dir = data.dir || data.tag;
   tag.type = data.type;
-  tag.share = data.share;
+  tag.share = data.share || {};
   tag.size = data.volumes[0].res.toString();
   if(data.collection) tag.collection = data.collection;
   
@@ -44,20 +44,11 @@ function parseTag(data, loginEmail) {
     tag.viewUrl = environment.ws_url + '/imageviewer?tag=' + data.tag;
     tag.size = tag.size + ' image(s)';
   }
+
+  tag.note = (data.note !== undefined && data.note !== null) ? data.note : '';
+  tag.password = (data.password !== undefined && data.password !== null) ? data.password : '';
+  tag.hasPassword  = (tag.password !== '') ? 'yes' : 'no';
   
-  if(data.note !== undefined && data.note !== null)
-    tag.note = data.note;
-  else
-    tag.note = '';
-
-  if(data.password !== undefined && data.password !== null) {
-    tag.password = data.password;
-  }
-  else {
-    tag.password = '';
-  }
-  if(tag.password !== '') tag.hasPassword = 'yes';
-
   return tag;
 }
 
@@ -89,9 +80,16 @@ export function tagReducers (state = initialTagState, action: TagActions): ITagS
       let items = state.items;
       for(var i=0; i < items.length; i++) {
         if(items[i].id === action.payload.result.tag) {
-          if(type  === 'note') items[i].note = action.payload.result.data.note;
-          else if(type === 'password') items[i].password = action.payload.result.data.password;
-          else if(type === 'collection') items[i].collection = action.payload.result.data.collection;
+          if(type  === 'note') {
+            items[i].note = action.payload.result.data.note;
+          }
+          else if(type === 'password') {
+            items[i].password = action.payload.result.data.password;
+            items[i].hasPassword = (items[i].password && items[i].password) !== '' ? 'yes' : 'no';
+          }
+          else if(type === 'collection') {
+            items[i].collection = action.payload.result.data.collection;
+          }
           break;
         }
       }

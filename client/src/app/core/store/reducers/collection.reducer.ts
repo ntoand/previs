@@ -5,6 +5,7 @@ import { ICollection } from "../../models/collection.model";
 function parseCollection(data, loginEmail) {
   var collection = data;
   collection.owner = data.userEmail === loginEmail ? 'yes' : 'no';
+  collection.share = data.share || {};
   return collection;
 }
 
@@ -39,12 +40,14 @@ export function collectionReducers (state = initialCollectionState, action: Coll
     }
 
     case ECollectionActions.AddCollectionDone: {
+      const my: ICollection = {id: "my", name: "-- my tags --", owner: "", numtags: 0, share: {}};
+      const share: ICollection = {id: "shared", name: "-- shared tags --", owner: "", numtags: 0, share: {}};
       let c = action.payload.result;
       const collection: ICollection = {id: c.id, name: c.name, numtags: c.numtags, share: {}, owner: 'yes'};
       return {
         ...state,
         items: [collection, ...state.items],
-        optionItems: [collection, ...state.optionItems]
+        optionItems: [my, share, collection, ...state.items]
       }
     }
 

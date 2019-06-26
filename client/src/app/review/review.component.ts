@@ -40,6 +40,7 @@ export class ReviewComponent implements OnInit {
               private dialog: MatDialog) { }
 
   navPath = "review";
+  subHandles: any[] = [];
   // store
   appstate$: Observable<IAppState>;
   // notificaiton
@@ -82,57 +83,78 @@ export class ReviewComponent implements OnInit {
     var scope = this;
     scope.appstate$ = this.store;
     // notification
-    scope.appstate$.pipe(
+    var h1 = scope.appstate$.pipe(
       select(selectNotification),
       map(notification => notification.item)
     ).subscribe(item =>{
       scope.notification = item;
     });
+    this.subHandles.push(h1);
+
     // tags
-    scope.appstate$.pipe(
+    var h2 = scope.appstate$.pipe(
       select(selectTags),
       map(tag => tag.items)
     ).subscribe(items =>{
       scope.tags = items;
       scope.dataSource.data = scope.tags;
     });
+    this.subHandles.push(h2);
+
     // collections
-    scope.appstate$.pipe(
+    var h3 = scope.appstate$.pipe(
       select(selectCollections),
       map(collection => collection)
     ).subscribe(collection =>{
       scope.collections = collection.items;
       scope.optionCollections = collection.optionItems;
     });
+    this.subHandles.push(h3);
 
-    this.socket.tagsReceived$.subscribe((m: any)=>{
+    var h4 = scope.socket.tagsReceived$.subscribe((m: any)=>{
       m.loginEmail = scope.authService.userDetails.email;
-      this.store.dispatch(new ReceiveTags(m));
+      scope.store.dispatch(new ReceiveTags(m));
     });
+    this.subHandles.push(h4);
 
-    this.socket.collectionsReceived$.subscribe((m: any)=>{
+    var h5 = scope.socket.collectionsReceived$.subscribe((m: any)=>{
       m.loginEmail = scope.authService.userDetails.email;
-      this.store.dispatch(new ReceiveCollections(m));
+      scope.store.dispatch(new ReceiveCollections(m));
     });
+    this.subHandles.push(h5);
 
-    this.socket.updateShareEmailReceived$.subscribe((m: any)=>{
+    var h6 = scope.socket.updateShareEmailReceived$.subscribe((m: any)=>{
       if(m.result.for === 'collection') {
-        this.store.dispatch(new UpdateCollectionShareEmailDone(m));
+        scope.store.dispatch(new UpdateCollectionShareEmailDone(m));
       }
     });
+    this.subHandles.push(h6);
 
-    this.socket.deleteTagReceived$.subscribe((m: any)=>{
-      this.store.dispatch(new DeleteTagsDone(m));
+    var h7 = scope.socket.deleteTagReceived$.subscribe((m: any)=>{
+      scope.store.dispatch(new DeleteTagsDone(m));
+      scope.store.dispatch(new GetCollections({userEmail: scope.authService.userDetails.email}));
     });
+    this.subHandles.push(h7);
 
-    this.store.dispatch(new SetNotification({type: '', content: '', for: 'review'}));
+    scope.store.dispatch(new SetNotification({type: '', content: '', for: 'review'}));
     
+    if(scope.appService.needReload) {
+      scope.loadData();
+      scope.appService.needReload = false;
+    }
+  }
+
+  ngOnDestroy() {
+    for(var i=0; i < this.subHandles.length; i++) {
+      this.subHandles[i].unsubscribe();
+    }
   }
 
   loadData() {
     this.store.dispatch(new SetNotification({type: 'working', content: 'loading tags...', for: 'review'}));
     this.store.dispatch(new GetTags({userEmail: this.authService.userDetails.email, collection: this.appService.collectionId}));
     this.store.dispatch(new GetCollections({userEmail: this.authService.userDetails.email}));
+    this.appService.showOptions = true;
   }
 
   findCollectionName(id) {
@@ -148,7 +170,6 @@ export class ReviewComponent implements OnInit {
   onLoadTags($event) {
     $event.preventDefault();
     this.loadData();
-    this.appService.showOptions = true;
   }
   
   deleteTag($event) {
@@ -175,22 +196,13 @@ export class ReviewComponent implements OnInit {
 
   onCollectionEdit() {
     var scope = this;
-    const dialogRef = this.dialog.open(CollectionComponent, {
+    var dialogRef = this.dialog.open(CollectionComponent, {
       width: '600px',
       data: scope.getMyCollections()
     });
-
-    dialogRef.componentInstance.needReloadCollections.subscribe((data) => {
-      console.log('needReloadCollections.subscribe');
-      scope.needReloadCollections = true;
-    });
-
-    dialogRef.afterClosed().subscribe( result => {
-      if(scope.needReloadCollections) {
-        scope.needReloadCollections = false;
-        this.store.dispatch(new GetCollections({userEmail: this.authService.userDetails.email}));
-      }
-    });
+    dialogRef.afterClosed().subscribe(data => {
+      //
+   });
   }
 
   onDatasetClick(dataset) {
@@ -200,7 +212,7 @@ export class ReviewComponent implements OnInit {
     scope.store.dispatch(new SetCurrentTagID(dataset.tag));
 
     var clone = this.collections.slice(0); clone.slice(0, 2);
-    const dialogRef = this.dialog.open(TagDetailComponent, {
+    var dialogRef = this.dialog.open(TagDetailComponent, {
       width: '800px',
       data: {dataset: dataset, collections: clone}
     });
@@ -216,7 +228,10 @@ export class ReviewComponent implements OnInit {
       }
       if(scope.needReloadCollections) {
         scope.needReloadCollections = false;
-        this.store.dispatch(new GetCollections({userEmail: this.authService.userDetails.email}));
+        setTimeout(function(){ 
+          console.log('reload collections');
+          scope.store.dispatch(new GetCollections({userEmail: scope.authService.userDetails.email}));
+        }, 2000);
       }
     });
   }

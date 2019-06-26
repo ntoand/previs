@@ -1,7 +1,6 @@
 'use strict';
 
 var https       = require('https');
-
 var myutils 	= require('./node-utils');
 
 // main entry
@@ -26,7 +25,7 @@ function genOptions(parameters) {
             "Accept": "application/json"
         };
     }
-    console.log(headers);
+    //console.log(headers);
     return {
         host: parameters.host,
         path: parameters.path,
@@ -38,8 +37,8 @@ function getJson(io, data) {
     
     //console.log(genOptions(parameters));
     https.request(genOptions(data), function(res) {
-        console.log('STATUS: ' + res.statusCode);
-        console.log('HEADERS: ' + JSON.stringify(res.headers));
+        //console.log('STATUS: ' + res.statusCode);
+        //console.log('HEADERS: ' + JSON.stringify(res.headers));
         if(res.statusCode !== 200) {
             myutils.packAndSend(io, 'processmytardis', {status: 'error', task: data.task, datatype: data.datatype, result: 'Cannot get json data', detail: res});
             return;

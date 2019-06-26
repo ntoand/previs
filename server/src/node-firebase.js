@@ -282,8 +282,13 @@ FirebaseManager.prototype.addNewCollection = function(data, callback) {
         }
         data.id = id;
         data.date = Date.now();
-        scope.db.collection('collections').doc(id).set(data);
-        callback(null, data);
+        scope.db.collection('collections').doc(id).set(data)
+        .then( () => {
+            callback(null, data);
+        })
+        .catch(e => {
+            callback(e);
+        });
     });
 }
 

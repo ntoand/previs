@@ -25,8 +25,10 @@ export class TagDetailComponent {
 
   message = { type: "", content: "" };
 
+  subHandles: any[] = [];
   // store
   appstate$: Observable<IAppState>;
+  // tag
   tag: ITag;
   // notificaiton
   notification: INotification;
@@ -73,14 +75,16 @@ export class TagDetailComponent {
     var scope = this;
     scope.appstate$ = this.store;
     // notification
-    scope.appstate$.pipe(
+    var h1 = scope.appstate$.pipe(
       select(selectNotification),
       map(notification => notification.item)
     ).subscribe(item =>{
       scope.notification = item;
     });
+    this.subHandles.push(h1);
+
     // tag
-    scope.appstate$.pipe(
+    var h2 = scope.appstate$.pipe(
       select(selectCurrentTag),
       map(item => item)
     ).subscribe(item =>{
@@ -98,23 +102,35 @@ export class TagDetailComponent {
         scope.passwordStr = scope.tag.password;
       }
     });
+    this.subHandles.push(h2);
 
     // update
-    scope.socket.updateTagReceived$.subscribe((m: any)=>{
+    var h3 = scope.socket.updateTagReceived$.subscribe((m: any)=>{
       //console.log("updateTagReceived$", m);
-      this.store.dispatch(new UpdateTagDone(m));
+      scope.store.dispatch(new UpdateTagDone(m));
     });
-    scope.socket.updateTagCollectionReceived$.subscribe((m: any)=>{
-      //console.log("updateTagCollectionReceived$", m);
-      this.store.dispatch(new UpdateTagCollectionDone(m));
-    });
+    this.subHandles.push(h3);
 
-    this.socket.updateShareEmailReceived$.subscribe((m: any)=>{
+    var h4 = scope.socket.updateTagCollectionReceived$.subscribe((m: any)=>{
+      //console.log("updateTagCollectionReceived$", m);
+      scope.store.dispatch(new UpdateTagCollectionDone(m));
+      scope.needReloadCollections.emit({});
+    });
+    this.subHandles.push(h4);
+
+    var h5 = scope.socket.updateShareEmailReceived$.subscribe((m: any)=>{
       if(m.result.for === 'tag') {
-        this.store.dispatch(new UpdateTagShareEmailDone(m));
+        scope.store.dispatch(new UpdateTagShareEmailDone(m));
       }
     });
+    this.subHandles.push(h5);
 
+  }
+
+  ngOnDestroy() {
+    for(var i=0; i < this.subHandles.length; i++) {
+      this.subHandles[i].unsubscribe();
+    }
   }
 
   findCollectionName(id, collections = null) {
@@ -223,7 +239,6 @@ export class TagDetailComponent {
     this.store.dispatch(new UpdateTagCollection({tag: this.tag.id, type: 'collection', collectionPrev: this.collectionIdPrev, data: {collection: ''}}));
     this.collectionName = '';
     this.collectionIdPrev = '';
-    this.needReloadCollections.emit({});
   }
 
   onCollectionEditGo($event) {
@@ -233,7 +248,6 @@ export class TagDetailComponent {
       this.store.dispatch(new UpdateTagCollection({tag: this.tag.id, type: 'collection', collectionPrev: this.collectionIdPrev, data: {collection: this.collectionId}}));
       this.collectionName = this.findCollectionName(this.collectionId);
       this.collectionIdPrev = this.collectionId;
-      this.needReloadCollections.emit({});
     }
   }
 
