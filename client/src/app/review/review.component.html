@@ -8,6 +8,9 @@
   
   <p><button mat-raised-button color='primary' (click)="onLoadTags($event)">Load tags</button></p>
   
+  <div class="progress" *ngIf="notification.type === 'working'">
+    <mat-spinner diameter=50></mat-spinner>
+  </div>
   <div class="alert-box {{notification.type}}" *ngIf="notification.content !== '' && notification.for === 'review'">
     <span>{{notification.type}}: </span>{{notification.content}}
   </div>

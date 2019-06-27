@@ -1,11 +1,13 @@
-<h2 *ngIf="authService.isLoggedIn()">Your profile and API key</h2>
+<h2 *ngIf="user?.loaded">Your profile and API key</h2>
 
 
-<div *ngIf="authService.isLoggedIn()" class="with-min-height">
+<div *ngIf="user?.loaded" class="with-min-height">
     <mat-card>
         <h3>Basic information</h3>
-        <p>Display name: {{authService.userDetails.displayName}}</p>
-        <p>Email: {{authService.userDetails.email}}</p>
+        <p>Display name: {{user?.item?.displayName}}</p>
+        <p>Email: {{user?.item?.email}}</p>
+        <p>Stats: {{user?.item?.numtags}} tags, {{user?.item?.disk}} MB used </p>
+        <p><button mat-button mat-raised-button color='primary' (click)='onRefresh($event)'>Refresh stats</button></p>
     </mat-card>
     
     <div class="spacing"></div>

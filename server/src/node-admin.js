@@ -56,7 +56,6 @@ var deleteFolderRecursive = function(dir) {
 function deleteTag(io, data, item) {
     var tag = item.tag;
     var dir = item.dir || tag;
-    var collection = item.collection;
     var userId = item.userId;
     data.db.getTag(tag, function(err, res){
         if (err) {
@@ -77,7 +76,7 @@ function deleteTag(io, data, item) {
         deleteFolderRecursive(tag_dir);
         
         //delete tag in database
-        data.db.deleteTag(tag, collection, function(err) {
+        data.db.deleteTag(tag, function(err) {
             if(err) {
                 myutils.packAndSend(io, data.action, {status: 'error', result: data, detail: 'failed to delete tag'});
             }
@@ -229,6 +228,20 @@ function updateShareEmail(io, data) {
     }
 }
 
+// user
+function getOrCreateUser(io, data) {
+    winston.info('node-admin getOrCreateUser');
+    data.db.getOrCreateUser(data.data, function(err, ret) {
+        if(err) {
+            winston.error(err);
+            myutils.packAndSend(io, data.action, {status: 'error', result: err});
+        }
+        else {
+            myutils.packAndSend(io, data.action, {status: 'done', result: ret});
+        }
+    })
+}
+
 module.exports.getTags = getTags;
 module.exports.deleteTags = deleteTags;
 module.exports.updateTag = updateTag;
@@ -240,3 +253,4 @@ module.exports.updateCollection = updateCollection;
 module.exports.deleteCollection = deleteCollection;
 module.exports.getDataBundleByUserEmail = getDataBundleByUserEmail;
 module.exports.updateShareEmail = updateShareEmail;
+module.exports.getOrCreateUser = getOrCreateUser;

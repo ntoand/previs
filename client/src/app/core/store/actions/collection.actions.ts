@@ -1,8 +1,6 @@
 import { Action } from "@ngrx/store";
 import { ICollection } from "@app/core/models/collection.model";
-/**
-* build enum for chat actions
-*/
+
 export enum ECollectionActions {
   GetCollections = "[Collection] Get Collections",
   ReceiveCollections = "[Collection] Collection Tags",

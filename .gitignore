@@ -11,3 +11,4 @@ server/private
 package-lock.json
 .eqcfg.eqc
 server/logs
+dist-dev

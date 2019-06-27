@@ -1,9 +1,10 @@
 /*
 DONT RUN THIS SCRIPT
 The script is implemented to upgrade and clean up firebase database to support dir and password
+To run before upgrading to v0.9.0
 */
 var crypto 		= require('crypto');
-var FilebaseManager   = require('../src/node-firebase');
+var FilebaseManager   = require('../../src/node-firebase');
 var object = new FilebaseManager();
 
 if (process.env.NODE_ENV === "production")  {

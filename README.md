@@ -1,6 +1,6 @@
 # previs
 
-Previsualisation tools for volumes, meshes, pointclouds, high resolution images 
+Previsualisation tools for volumes, meshes, pointclouds, high resolution images.
 
 This is a service provided by MIVP to Monash University staff and affiliates. 
 It provides a way to upload volumetric, mesh pointcloud and high-res images data, visualise the data on a web page, and then allows people to visualise the volume in CAVE2/VR.
@@ -71,17 +71,12 @@ or
 ./GO-server-dev.sh for development
 ```
 
-## Acknowledgement
-
-- Firebase (Auth and Firestore)
-- Potree (PotreeConveter, potree web viewer)
-- Sharevol (WebGL volume viewer)
-- Three.js (WebGL mesh viewer)
-- OpenSeadragon (Javascript high-res image viewer)
-- vips (to convert image to deep zoom format)
-
-
 ## Change log
+
+### v0.9.5
+
+- Using ngrx to manage client app state
+- Generate stats info
 
 ### v0.9.0
 
@@ -134,3 +129,13 @@ or
 - Support volume (tiffstack), mesh (obj) and pointcloud data
 - Data can be imported from local machine, shared link or MyTardis
 - View data in the CAVE2
+
+
+## Acknowledgement
+
+- Firebase (Auth and Firestore)
+- Potree (PotreeConveter, potree web viewer)
+- Sharevol (WebGL volume viewer)
+- Three.js (WebGL mesh viewer)
+- OpenSeadragon (Javascript high-res image viewer)
+- vips (to convert image to deep zoom format)

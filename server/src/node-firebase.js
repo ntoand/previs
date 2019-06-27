@@ -1,6 +1,7 @@
 var crypto      = require('crypto');
 var config	    = require('./node-config').config; 
 const fbadmin   = require("firebase-admin");
+const winston 	= require('winston');
 
 // Constructor
 function FirebaseManager() {
@@ -13,7 +14,7 @@ function FirebaseManager() {
     }
     else {
         serviceAccount = require(config.firebase_service_acc_key_dev);
-        dburl = config.firebase_db_url;
+        dburl = config.firebase_db_url_dev;
         console.log("Development firebase key " + config.firebase_service_acc_key_dev);
     }
             
@@ -41,7 +42,7 @@ FirebaseManager.prototype.createNewTag = function(callback) {
             self.createNewTag(callback);
         }
         else {
-            console.log('new tag created: ' + tagstr);
+            winston.info('new tag created: ' + tagstr);
             callback(null, tagstr);
         }
     });
@@ -138,31 +139,41 @@ FirebaseManager.prototype.getAllTags = function(callback) {
         });
 }
 
-FirebaseManager.prototype.deleteTag = function(tag, collection, callback) {
-    var tagRef = this.db.collection('tags').doc(tag);
+FirebaseManager.prototype.deleteTag = function(tag, callback) {
     var scope = this;
-    tagRef.delete()
+    var tagRef = this.db.collection('tags').doc(tag);
+    tagRef.get()
     .then(doc => {
-        if(collection && collection.length > 0) {
-            var ref = scope.db.collection('collections').doc(collection);
-            scope.db.runTransaction(t => {
-                return t.get(ref)
-                .then(doc => {
-                    let newNumTags = doc.data().numtags - 1;
-                    if(newNumTags < 0) newNumTags = 0;
-                    t.update(ref, {numtags: newNumTags});
+        const userId = doc.data().userId;
+        const disk = doc.data().disk || 0;
+        const collection = doc.data().collection;
+
+        tagRef.delete()
+        .then(doc => {
+            // update collection
+            if(collection && collection.length > 0) {
+                var ref = scope.db.collection('collections').doc(collection);
+                scope.db.runTransaction(t => {
+                    return t.get(ref)
+                    .then(doc => {
+                        let newNumTags = doc.data().numtags - 1;
+                        if(newNumTags < 0) newNumTags = 0;
+                        t.update(ref, {numtags: newNumTags});
+                    })
+                    .catch(err => winston.error(err));
                 });
-            }).then(result => {
-                console.log('transaction decrease numtags for old collection success!');
-                callback(null);
-            }).catch(err => {
-                console.log('transaction decrease numtags for old collection failure:', err);
-                callback(err);
+            }
+            // update user
+            scope.updateUserStats(userId, -1*disk, -1, function(err) {
+                if(err) winston.error(err);
             });
-        }
-        else {
+            // quick response to client
             callback(null);
-        }
+        })
+        .catch(err => {
+            callback(err);
+        });
+
     })
     .catch(err => {
         callback(err);
@@ -195,9 +206,9 @@ FirebaseManager.prototype.updateTagCollection = function(tag, collectionPrev, da
                     t.update(ref1, {numtags: newNumTags});
                 });
             }).then(result => {
-                console.log('transaction increase numtags for new collection success!');
+                winston.info('transaction increase numtags for new collection success!');
             }).catch(err => {
-                console.log('transaction increase numtags for new collection failure:', err);
+                winston.info('transaction increase numtags for new collection failure:', err);
             });
         }
 
@@ -210,9 +221,9 @@ FirebaseManager.prototype.updateTagCollection = function(tag, collectionPrev, da
                     t.update(ref2, {numtags: newNumTags});
                 });
             }).then(result => {
-                console.log('transaction decrease numtags for old collection success!');
+                winston.info('transaction decrease numtags for old collection success!');
             }).catch(err => {
-                console.log('transaction decrease numtags for old collection failure:', err);
+                winston.info('transaction decrease numtags for old collection failure:', err);
             });
         }
 
@@ -250,7 +261,6 @@ FirebaseManager.prototype.createNewCollectionID = function(callback) {
             self.createNewCollectionID(callback);
         }
         else {
-            console.log('new collection id: ' + id);
             callback(null, id);
         }
     });
@@ -277,7 +287,7 @@ FirebaseManager.prototype.addNewCollection = function(data, callback) {
     this.createNewCollectionID( function(err, id) {
         if(err) {
             callback(err);
-            console.log(err);
+            winston.error(err);
             return;
         }
         data.id = id;
@@ -455,6 +465,96 @@ FirebaseManager.prototype.generateAppApiKey = function(keyinfo, callback) {
     })
 }
 
+FirebaseManager.prototype.getOrCreateUser = function(data, callback) {
+    var userRef = this.db.collection('users').doc(data.id);
+    userRef.get()
+    .then((doc) => {
+        if (doc.exists) {
+            callback(null, doc.data());
+        } else {
+            var user = data;
+            user.numtags = 0;
+            user.disk = 0;
+            user.active = true;
+            user.quota = 0;
+            userRef.set(user, {merge: true})
+            .then( () => {
+                callback(null, user);
+            })
+            .catch( e => {
+                callback(e);
+            });
+        }
+    })
+    .catch( err => {
+        callback(err);
+    });
+}
+
+// users
+FirebaseManager.prototype.getAllUsers = function(callback) {
+    this.db.collection('users').get()
+    .then( snapshot => {
+        var users = [];
+        snapshot.forEach(doc => {
+            //console.log(doc.id, '=>', doc.data());
+            users.push(doc.data());
+        });
+        callback(null, users);
+    })
+    .catch(err => callback(err));
+}
+
+FirebaseManager.prototype.updateUser = function(id, data, callback) {
+    this.db.collection('users').doc(id).set(data, {merge: true})
+    .then( () => {
+        callback(null, data);
+    })
+    .catch( err => callback(err));
+}
+
+// stats
+FirebaseManager.prototype.updateUserStats = function(userId, diffDisk, diffNumtags, callback) {
+    var ref = this.db.collection('users').doc(userId);
+    this.db.runTransaction(t => {
+        return t.get(ref)
+        .then(doc => {
+            let newdisk = doc.data().disk + diffDisk;
+            let newnumtags = doc.data().numtags + diffNumtags;
+            t.update(ref, {disk: newdisk, numtags: newnumtags});
+        });
+    }).then(result => {
+        callback(null);
+    }).catch(err => {
+        callback(err);
+    });
+}
+
+FirebaseManager.prototype.updateTagSize = function(tag, path, userId, callback) {
+    // path: path of tag directory
+    const getSize = require('get-folder-size');
+    var scope = this;
+    getSize(path, (err, size) => {
+        if (err) {
+            callback(err);
+            return; 
+        }
+        const sizeMB = Number.parseFloat((size / 1024 / 1024).toFixed(2));
+        scope.updateTag(tag, {disk: sizeMB}, function(err) {
+            if(err) {
+                callback(err); 
+                return;
+            }
+            scope.updateUserStats(userId, sizeMB, 1, function(err) {
+                if(err) {
+                    callback(err);
+                    return;
+                }
+                callback(null);
+            })
+        });
+    });
+}
 
 // export the class
 module.exports = FirebaseManager;

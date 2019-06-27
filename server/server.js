@@ -19,9 +19,6 @@ var myupload	  = require('./src/node-upload');
 var mytardis	  = require('./src/node-mytardis');
 var myutils 	  = require('./src/node-utils');
 
-var FirebaseManager   = require('./src/node-firebase');
-var fbmanager = new FirebaseManager();
-
 var logFilename = "logs/combined.log";
 if (process.env.NODE_ENV === "production")  {
 	console.log("RUN PROD MODE");
@@ -29,6 +26,9 @@ if (process.env.NODE_ENV === "production")  {
 } else {
 	console.log("RUN DEV MODE");
 }
+
+var FirebaseManager   = require('./src/node-firebase');
+var fbmanager = new FirebaseManager();
 
 // init default winston logger
 const winston = require('winston');
@@ -343,7 +343,11 @@ io.on('connection', function (socket) {
 		mytardis.processMytardis({socket:socket, res:null}, createMsgData('processmytardis', msg));
 	});
 
-	// profile
+	// user
+	socket.on('admingetorcreateuser', function(msg) {
+		myadmin.getOrCreateUser({socket:socket, res:null}, createMsgData('admingetorcreateuser', msg));
+	});
+	
 	socket.on('processapikey', function(msg) {
 		processApiKey({socket:socket, res:null}, createMsgData('processapikey', msg));
 	});

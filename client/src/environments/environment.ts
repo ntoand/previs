@@ -6,7 +6,7 @@
 export const environment = {
   production: false,
   ws_url: 'http://118.138.241.179:3000',
-  version: 'v0.9.0 dev',
+  version: 'v0.9.5 dev',
   firebase: {
     apiKey: "AIzaSyDd6RZBynp_lsbJZ5N1IpO5IGPGcnFgBko",
     authDomain: "previs-dev.firebaseapp.com",

@@ -1,4 +1,4 @@
-var config	= require('../src/node-config').config; 
+var config	= require('../../src/node-config').config; 
 const fbadmin = require("firebase-admin");
 
 var serviceAccount = null;

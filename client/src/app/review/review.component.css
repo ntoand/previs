@@ -64,3 +64,10 @@ th.mat-sort-header-sorted {
 .sharecollection {
   font-style: italic !important;
 }
+
+.progress {
+  padding: 4px 0px;
+  text-align: center;
+  margin: auto;
+  width: 60px;
+}

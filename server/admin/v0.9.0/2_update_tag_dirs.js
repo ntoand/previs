@@ -1,9 +1,10 @@
 /*
 DONT RUN THIS SCRIPT
 The script is implemented to update directories' names to match with dir in database
+To run before upgrading to v0.9.0
 */
 var fs = require('fs');
-var FilebaseManager   = require('../src/node-firebase');
+var FilebaseManager   = require('../../src/node-firebase');
 var object = new FilebaseManager();
 var tagpath = '';
 

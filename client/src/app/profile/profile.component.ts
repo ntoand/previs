@@ -1,7 +1,11 @@
 import { Component, OnInit } from '@angular/core';
-import { AppService } from '@app/core/services/app.service';
 import { AuthService } from '@app/core/services/auth.service';
 import { SocketioService } from '@app/core/services/socketio.service';
+import { IAppState } from '@app/core/store/state/app.state';
+import { Observable } from 'rxjs';
+import { Store, select } from '@ngrx/store';
+import { selectUser } from '@app/core/store/selectors/user.selector';
+import { map } from 'rxjs/operators';
 
 @Component({
   selector: 'app-profile',
@@ -10,17 +14,34 @@ import { SocketioService } from '@app/core/services/socketio.service';
 })
 export class ProfileComponent implements OnInit {
   
+  subHandles: any[] = [];
   message = { type: "", content: "" };
   apikey = {
     key: '',
     date: ''
   };
 
-  constructor(private socket: SocketioService, private appService: AppService, public authService: AuthService) { }
+  // store
+  appstate$: Observable<IAppState>;
+  user = null;
+
+  constructor(private store: Store<IAppState>,
+              private socket: SocketioService, public authService: AuthService) { }
 
   ngOnInit() {
     var scope = this;
-    scope.socket.apiKeyReceived$.subscribe((data: any)=>{
+    scope.appstate$ = this.store;
+
+    // user
+    var h1 = scope.appstate$.pipe(
+      select(selectUser),
+      map(user => user)
+    ).subscribe(item =>{
+      scope.user = item;
+    });
+    this.subHandles.push(h1);
+
+    var h2 = scope.socket.apiKeyReceived$.subscribe((data: any)=>{
       this.message.type = '';
       this.message.content = '';
       if(data.status === 'error') {
@@ -37,6 +58,20 @@ export class ProfileComponent implements OnInit {
         this.apikey.date = d.toLocaleDateString() + ' ' + d.toLocaleTimeString();
       }
     });
+    this.subHandles.push(h2);
+  }
+
+  ngOnDestroy() {
+    for(var i=0; i < this.subHandles.length; i++) {
+      this.subHandles[i].unsubscribe();
+    }
+  }
+
+  onRefresh($event) {
+    // update user profile
+    $event.preventDefault();
+    const user = this.authService.userDetails;
+    this.socket.sendMessage("admingetorcreateuser", {data: {id: user.uid, email: user.email, displayName: user.displayName, photoURL: user.photoURL}});
   }
   
   onLoadKey($event) {

@@ -416,6 +416,7 @@ function sendViewDataToClient(io, data) {
 				
 				// save to database
 				var tag_json = {};
+				tag_json.id = data.tag;
 				tag_json.tag=data.tag;
 				tag_json.dir=data.dir;
 				tag_json.type='volume'
@@ -448,6 +449,9 @@ function sendViewDataToClient(io, data) {
 				
 					// email
 					myutils.sendEmail('ready', data);
+					data.db.updateTagSize(data.tag, data.tagdir, data.userDetails.uid, function(err) {
+						if(err) winston.error(err);
+					})
 				});
 			});
 	    });		

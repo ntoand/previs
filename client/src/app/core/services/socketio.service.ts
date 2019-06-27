@@ -39,6 +39,7 @@ export class SocketioService extends Socket {
   // share
   updateShareEmailReceived$ = this.fromEvent("adminupdateshareemail");
 
-  // profile
+  // user
+  getOrCreateUserReceived$ = this.fromEvent("admingetorcreateuser");
   apiKeyReceived$ = this.fromEvent("processapikey");
 }

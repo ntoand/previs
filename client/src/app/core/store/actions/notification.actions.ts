@@ -1,8 +1,6 @@
 import { Action } from "@ngrx/store";
 import { INotification } from '@app/core/models/notification.model';
-/**
-* build enum for chat actions
-*/
+
 export enum ENotificationActions {
   SetNotification = "[Notification] Set Notification",
 }

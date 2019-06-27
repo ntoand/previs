@@ -1,7 +1,5 @@
 import { Action } from "@ngrx/store";
-/**
-* build enum for chat actions
-*/
+
 export enum ETagActions {
   GetTags = "[Tag] Get Tags",
   ReceiveTags = "[Tag] Receive Tags",

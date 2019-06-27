@@ -11,7 +11,7 @@ import { SocketioService } from '@app/core/services/socketio.service';
 export class UploadlinkComponent implements OnInit {
 
   constructor(private socket: SocketioService,
-              private appService: AppService, public authService: AuthService) { }
+              public appService: AppService, public authService: AuthService) { }
   
   urlStr = '';
   extStr = 'zip';
