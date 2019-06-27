@@ -39,7 +39,7 @@ function updateTagDisk(tags, index=0) {
             callback(err);
             return; 
         }
-        const sizeMB = Number.parseFloat((size / 1024 / 1024).toFixed(2));
+        const sizeMB = size / 1024 / 1024;
         object.updateTag(data.tag, {id: data.tag, disk: sizeMB}, function(err, res) {
             if(err) {
                console.log(err);

@@ -132,13 +132,12 @@ function zipDirectory(dir, dirname, zipfile, cb) {
     var output = fs.createWriteStream(zipfile);
     
     archive.on('error', function(err) {
-      throw err;
       cb(err, '');
       return;
     });
     
-    output.on('end', function() {
-      console.log('Data has been drained');
+    output.on('close', function() {
+      console.log(archive.pointer() + ' total bytes archived');
       cb(null, 'end');
     });
     

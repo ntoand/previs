@@ -3,8 +3,13 @@
 # run from previs root dir
 dir=`pwd`
 
-cd ${dir}/client
-npm run build
+# build client app first to reduce down time
+if [ ! -d ${dir}/server/dist-dev ]; then
+    echo "Build client app"
+    cd ${dir}/client
+    npm run build
+fi
+
 cp ${dir}/client-script/previs-upload.py ${dir}/server/dist/assets/previs-upload.py
 
 rm -rf ${dir}/server/dist

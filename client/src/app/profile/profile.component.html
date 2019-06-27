@@ -6,7 +6,7 @@
         <h3>Basic information</h3>
         <p>Display name: {{user?.item?.displayName}}</p>
         <p>Email: {{user?.item?.email}}</p>
-        <p>Stats: {{user?.item?.numtags}} tags, {{user?.item?.disk}} MB used </p>
+        <p>Stats: {{user?.item?.numtags}} tags, {{user?.item?.diskStr}} used </p>
         <p><button mat-button mat-raised-button color='primary' (click)='onRefresh($event)'>Refresh stats</button></p>
     </mat-card>
     

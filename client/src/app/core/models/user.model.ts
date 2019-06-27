@@ -6,6 +6,7 @@ export interface IUser {
     photoURL: string;
     numtags: number;
     disk: number;
+    diskStr: string;
     quota: number;
 }
 

@@ -539,7 +539,7 @@ FirebaseManager.prototype.updateTagSize = function(tag, path, userId, callback) 
             callback(err);
             return; 
         }
-        const sizeMB = Number.parseFloat((size / 1024 / 1024).toFixed(2));
+        const sizeMB = size / 1024 / 1024;
         scope.updateTag(tag, {disk: sizeMB}, function(err) {
             if(err) {
                 callback(err); 

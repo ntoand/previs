@@ -27,6 +27,6 @@
 </div>
 
 <div *ngIf="loggedin">
-  <p>Signed in as {{username}} (if no data, please sign in again) <button (click)="onLogout($event)">Sign out</button></p>
+  <p>Signed in as {{username}} <button (click)="onLogout($event)">Sign out</button></p>
   <router-outlet name="auxMytardis"></router-outlet>
 </div>

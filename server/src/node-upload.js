@@ -493,14 +493,15 @@ function sendViewDataToClient_Meshes(io, data) {
 		
 		// clean up and zip mesh folder
 		myutils.zipDirectory(data.tagdir + '/mesh_result', '', data.tagdir + '/mesh_processed.zip', function(err){
+			winston.info('compressed file, now updateTagSize');
 			if(err) winston.error(err);
+			if (myutils.fileExists(data.inputfile)) {
+				fs.unlink(data.inputfile);
+			}
 			data.db.updateTagSize(data.tag, data.tagdir, data.userDetails.uid, function(err) {
 				if(err) winston.error(err);
 			})
 		});
-		if (myutils.fileExists(data.inputfile)) {
-			fs.unlink(data.inputfile);
-		}
 		
 		// email
 		myutils.sendEmail('ready', data);
