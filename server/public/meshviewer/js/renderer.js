@@ -261,6 +261,7 @@ var PrevisMeshRenderer = (function () {
 	            	}
 	                mesh.material[m].opacity = groupData.alpha;
 	                mesh.material[m].transparent = (groupData.alpha < 1.0);
+	                mesh.material[m].side = THREE.DoubleSide;
 	            }
 	        } else {
 	        	if(!modelData.hasmtl) {
@@ -268,6 +269,7 @@ var PrevisMeshRenderer = (function () {
 	        	}
 	            mesh.material.opacity = groupData.alpha;
 	            mesh.material.transparent = (groupData.alpha < 1.0);
+	            mesh.material.side = THREE.DoubleSide;
         	}
         }
 		        
@@ -380,14 +382,16 @@ var PrevisMeshRenderer = (function () {
 	PrevisMeshRenderer.prototype.switchCameraControl = function(type) {
 		var scope = this;
 		if(type === 'Fly control') {
+			if(this.controls) { this.controls.dispose(); this.controls = null; };
 			this.controls = new THREE.FlyControls( this.camera, this.renderer.domElement );
 			let camControls = this.controls;
-			camControls.movementSpeed = Math.max(scope.maxModelSize/4, 1);
+			camControls.movementSpeed = Math.max(scope.maxModelSize/6, 1);
 			camControls.rollSpeed = 0.25;
 			camControls.dragToLook = true;
 			camControls.autoForward = false;
 		}
 		else {
+			if(this.controls) { this.controls.dispose(); this.controls = null; };
 			this.controls = new THREE.TrackballControls( this.camera, this.renderer.domElement );
 		}
 	}

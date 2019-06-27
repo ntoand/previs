@@ -390,7 +390,7 @@ THREE.TrackballControls = function ( object, domElement ) {
 		if ( _state === STATE.NONE ) {
 
 			_state = event.button;
-
+			
 		}
 
 		if ( _state === STATE.ROTATE && ! _this.noRotate ) {
@@ -449,7 +449,7 @@ THREE.TrackballControls = function ( object, domElement ) {
 		event.stopPropagation();
 
 		_state = STATE.NONE;
-
+		
 		document.removeEventListener( 'mousemove', mousemove );
 		document.removeEventListener( 'mouseup', mouseup );
 		_this.dispatchEvent( endEvent );

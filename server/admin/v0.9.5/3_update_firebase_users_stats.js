@@ -34,8 +34,8 @@ function updateUserStats(users, index=0) {
             disk += tags[i].data.disk;
         }
         disk = Number.parseFloat(disk.toFixed(2));
-        console.log(user.email, disk, tags.length);
-        object.updateUser(user.id, {disk: disk}, function(err) {
+        console.log(user.email + ', ' + disk + ' MB, ' + tags.length + ' tags');
+        object.updateUser(user.id, {disk: disk, numtags: tags.length}, function(err) {
             if(err) {
                 console.log(err);
                 return;
