@@ -336,6 +336,7 @@ function processUploadFile_Images(io, data) {
 		//save to database
 		//var tag_url = 'data/tags/' + data.dir + '/';
 		var tag_json = {};
+		tag_json.di = data.tag;
 		tag_json.tag=data.tag;
 		tag_json.dir=data.dir;
 		tag_json.type=data.datatype;
@@ -362,7 +363,12 @@ function processUploadFile_Images(io, data) {
 			} 
 			myutils.packAndSend(io, 'processupload', {status: 'done', result: tag_json});
 			// zip pointcloids folder
-			myutils.zipDirectory(out_dir, '', data.tagdir + '/image_processed.zip');
+			myutils.zipDirectory(out_dir, '', data.tagdir + '/image_processed.zip', function(err){
+				if(err) winston.error(err);
+				data.db.updateTagSize(data.tag, data.tagdir, data.userDetails.uid, function(err) {
+					if(err) winston.error(err);
+				})
+			});
 			// email
 			myutils.sendEmail('ready', data);
 		});
@@ -379,12 +385,7 @@ function sendViewDataToClient(io, data) {
 	var jsontemp = path.dirname(process.mainModule.filename) + '/src/template.json';
 
 	var tag_url = 'data/tags/' + data.dir + '/';
-	//var jsonurl_full = tag_url + basename + '_result/vol_full.json';
-	//var jsonurl_web = tag_url + basename + '_result/vol_web.json';
-	//var thumburl = tag_url + basename + '_result/vol_web_thumb.png';
-	//var pngurl = tag_url + basename + '_result/vol_web.png';
-	//var xrwurl = tag_url + basename + '_result/vol.xrw';
-
+	
 	fs.readFile(jsontemp, 'utf8', function (err, jsondata) {
 		if (err) {
 			myutils.packAndSend(io, 'processupload', {status: 'error', result: 'cannot_generate_json'});
@@ -428,12 +429,6 @@ function sendViewDataToClient(io, data) {
 					
 				var volumes = [];
 				var volume = {};
-				//volume.data_dir='data/local/' + basename + '_result';
-				//volume.json=jsonurl_full;
-				//volume.json_web=jsonurl_web;
-				//volume.thumb=thumburl;
-				//volume.png=pngurl;
-				//volume.xrw=xrwurl;
 				volume.subdir='volume_result';
 				volume.res=obj_full.objects[0].volume.res;
 				volume.res_web=obj_web.objects[0].volume.res;
@@ -468,6 +463,7 @@ function sendViewDataToClient_Meshes(io, data) {
 
 	// write to database
 	var tag_json = {};
+	tag_json.id = data.tag;
 	tag_json.tag=data.tag;
 	tag_json.dir=data.dir;
 	tag_json.type='mesh'
@@ -496,7 +492,12 @@ function sendViewDataToClient_Meshes(io, data) {
 		myutils.packAndSend(io, 'processupload', {status: 'done', result: tag_json});
 		
 		// clean up and zip mesh folder
-		myutils.zipDirectory(data.tagdir + '/mesh_result', '', data.tagdir + '/mesh_processed.zip');
+		myutils.zipDirectory(data.tagdir + '/mesh_result', '', data.tagdir + '/mesh_processed.zip', function(err){
+			if(err) winston.error(err);
+			data.db.updateTagSize(data.tag, data.tagdir, data.userDetails.uid, function(err) {
+				if(err) winston.error(err);
+			})
+		});
 		if (myutils.fileExists(data.inputfile)) {
 			fs.unlink(data.inputfile);
 		}
@@ -554,6 +555,7 @@ function convertPointcloud(io, data, in_file) {
 	
 			//save to database
 			var tag_json = {};
+			tag_json.id = data.tag;
 			tag_json.tag=data.tag;
 			tag_json.dir=data.dir;
 			tag_json.type='point'
@@ -582,7 +584,12 @@ function convertPointcloud(io, data, in_file) {
 				} 
 				myutils.packAndSend(io, 'processupload', {status: 'done', result: tag_json});
 				// zip pointcloids folder
-				myutils.zipDirectory(out_dir + '/pointclouds/potree', 'potree', data.tagdir + '/point_processed.zip');
+				myutils.zipDirectory(out_dir + '/pointclouds/potree', 'potree', data.tagdir + '/point_processed.zip', function(err){
+					if(err) winston.error(err);
+					data.db.updateTagSize(data.tag, data.tagdir, data.userDetails.uid, function(err) {
+						if(err) winston.error(err);
+					})
+				});
 				// email
 				myutils.sendEmail('ready', data);
 			});
