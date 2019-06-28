@@ -548,6 +548,7 @@ FirebaseManager.prototype.updateTagSize = function(tag, path, userId, callback) 
                 callback(err); 
                 return;
             }
+            winston.info('Updated tag size successfully. Now update user stats...');
             scope.updateUserStats(userId, sizeMB, 1, function(err) {
                 if(err) {
                     callback(err);

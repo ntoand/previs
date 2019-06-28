@@ -9,10 +9,11 @@
 
   <div class='info-session'>Date: {{tag.dateStr}}</div>
   <div class='info-session'>Size: {{tag.size}}</div>
+  <div class='info-session'>Size on disk: {{tag.disk.toFixed(2)}} MB</div>
 
   <div class='info-session' *ngIf='collectionEditMode === false'>Collection: {{collectionName}}
     <button *ngIf="owner" (click)="onCollectionEnableEdit($event)" class='action-button'>edit</button>
-    <button *ngIf="owner" (click)="onCollectionRemove($event)" class='action-button'>remove</button>
+    <button *ngIf="owner && collectionName.length > 0" (click)="onCollectionRemove($event)" class='action-button'>remove</button>
   </div>
   <div class='info-session' *ngIf='collectionEditMode === true'>
     <select [(ngModel)]="collectionId" class="select-collection">

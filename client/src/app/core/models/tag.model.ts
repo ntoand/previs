@@ -4,6 +4,7 @@ export interface ITag {
     dir: string;
     type: string;
     size: string;
+    disk: number;
     dateStr: string;
     imgUrl: string;
     viewUrl: string;

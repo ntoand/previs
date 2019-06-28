@@ -13,6 +13,7 @@ function parseTag(data, loginEmail) {
   tag.share = data.share || {};
   tag.size = data.volumes[0].res.toString();
   if(data.collection) tag.collection = data.collection;
+  tag.disk = data.disk || 0;
   
   let d = new Date(data.date);
   //tag.dateStr = d.toString();

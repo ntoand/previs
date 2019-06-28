@@ -161,11 +161,14 @@ def saveVolume(voldata, volinfo, outdir, verbose = False, savexrw = True):
                 mos_col = 0
                 mos_row = mos_row + 1
 
-    # save image and thumbnail
+    # save image 
     impng = Image.fromarray(mos_data)
     impng.save(os.path.join(outdir, "vol_web.png"))
-    impng.thumbnail((512, 512))
-    impng.save(os.path.join(outdir, "vol_web_thumb.png"))
+    # and thumbnail
+    thumbdata = voldata[:, :, int(volinfo["numslices"]/2)]
+    thumbimg = Image.fromarray(thumbdata)
+    thumbimg.thumbnail((512, 512))
+    thumbimg.save(os.path.join(outdir, "vol_web_thumb.png"))
     # print output
     retjson = {}
     retjson["status"] = "done"
