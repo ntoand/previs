@@ -10,7 +10,7 @@
         
         <span class="header-spacer"></span>
         <span>
-          <a *ngIf="authService.isLoggedIn() == false" routerLink="/login" matTooltip="click to login"><mat-icon class="header-icon">account_circle</mat-icon></a>
+          <a *ngIf="authService.isLoggedIn() == false" routerLink="/login" matTooltip="go to login page"><mat-icon class="header-icon">account_circle</mat-icon></a>
           <!--
           <a *ngIf="authService.isLoggedIn()" href="#" (click)="signOut($event)" matTooltip="click to logout">
             <img src="{{authService.userDetails.photoURL}}" width="24" height="24" style="border-radius: 25px;"/></a>

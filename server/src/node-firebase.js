@@ -23,6 +23,8 @@ function FirebaseManager() {
         databaseURL: dburl
     });
     this.db = fbadmin.firestore();
+    const settings = {timestampsInSnapshots: true};
+    this.db.settings(settings);
 }
 
 // class methods
@@ -540,6 +542,7 @@ FirebaseManager.prototype.updateTagSize = function(tag, path, userId, callback) 
             return; 
         }
         const sizeMB = size / 1024 / 1024;
+        winston.info(['updateTagSize', tag, path, userId, sizeMB]);
         scope.updateTag(tag, {disk: sizeMB}, function(err) {
             if(err) {
                 callback(err); 

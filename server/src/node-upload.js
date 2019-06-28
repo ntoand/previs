@@ -220,7 +220,7 @@ function processUploadFile_Volumes(io, data) {
     	data.vol_scale_web = [1, data.vol_res_web[1]*settings.voxelSizeY/xref_web, data.vol_res_web[2]*settings.voxelSizeZ/xref_web];
     	
 		myutils.packAndSend(io, 'processupload', {status: 'working', result: 'Preparing json file...'});
-		sendViewDataToClient(io, data);
+		sendViewDataToClient_Volume(io, data);
     });
 }
 
@@ -336,7 +336,7 @@ function processUploadFile_Images(io, data) {
 		//save to database
 		//var tag_url = 'data/tags/' + data.dir + '/';
 		var tag_json = {};
-		tag_json.di = data.tag;
+		tag_json.id = data.tag;
 		tag_json.tag=data.tag;
 		tag_json.dir=data.dir;
 		tag_json.type=data.datatype;
@@ -346,6 +346,8 @@ function processUploadFile_Images(io, data) {
 		tag_json.processedData = 'data/tags/' + data.dir + '/image_processed.zip';
 		tag_json.userId = data.userDetails.uid;
 		tag_json.userEmail = data.userDetails.email;
+		tag_json.disk = 0;
+		tag_json.numtags = 0;
 			
 		var volumes = [];
 		var volume = {};
@@ -377,7 +379,7 @@ function processUploadFile_Images(io, data) {
 }
 
 
-function sendViewDataToClient(io, data) {
+function sendViewDataToClient_Volume(io, data) {
 	
 	var basename = data.inputfilename;
 	var jsonfile_full = data.tagdir + '/' + basename + '_result/vol_full.json';
@@ -426,6 +428,8 @@ function sendViewDataToClient(io, data) {
 				//tag_json.data = data.tagdir + '/' + data.inputfilename + '.' + data.inputfileext;
 				tag_json.userId = data.userDetails.uid;
 				tag_json.userEmail = data.userDetails.email;
+				tag_json.disk = 0;
+				tag_json.numtags = 0;
 					
 				var volumes = [];
 				var volume = {};
@@ -473,6 +477,8 @@ function sendViewDataToClient_Meshes(io, data) {
 	tag_json.processedData = 'data/tags/' + data.dir + '/mesh_processed.zip';
 	tag_json.userId = data.userDetails.uid;
 	tag_json.userEmail = data.userDetails.email;
+	tag_json.disk = 0;
+	tag_json.numtags = 0;
 
 	var volumes = [];
 	var volume = {};
@@ -562,10 +568,11 @@ function convertPointcloud(io, data, in_file) {
 			tag_json.type='point'
 			tag_json.source='localupload';
 			tag_json.date=Date.now();
-			//tag_json.data = tag_url + data.inputfilename + data.inputfileext;
 			tag_json.processedData = 'data/tags/' + data.dir + '/point_processed.zip';
 			tag_json.userId = data.userDetails.uid;
 			tag_json.userEmail = data.userDetails.email;
+			tag_json.disk = 0;
+			tag_json.numtags = 0;
 				
 			var potree_url = tag_url + basename + '_result/potree.html';
 			var volumes = [];
