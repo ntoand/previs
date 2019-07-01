@@ -26,8 +26,8 @@
       <button mat-icon-button><mat-icon class="collection-edit-icon" (click)="onCollectionEdit()">edit</mat-icon></button>
       <button mat-icon-button *ngIf="canShareCollection"><mat-icon (click)="toogleCollectionSharing()">share</mat-icon></button>
       <span class="hoz-spacer"></span>
-      <button mat-icon-button *ngIf="listView == true"><mat-icon (click)="toogleViewType()">view_module</mat-icon></button>
-      <button mat-icon-button *ngIf="listView == false"><mat-icon (click)="toogleViewType()">view_list</mat-icon></button>
+      <button mat-icon-button *ngIf="appService.listView == true"><mat-icon (click)="toogleViewType()">view_module</mat-icon></button>
+      <button mat-icon-button *ngIf="appService.listView == false"><mat-icon (click)="toogleViewType()">view_list</mat-icon></button>
     </div>
     <div *ngIf="showSharing">Share to other monash/gmail accounts:
       <div class='send-email'>
@@ -53,7 +53,7 @@
   <div *ngIf="tags.length > 0">
 
     <!-- list/table view -->
-    <table *ngIf="listView == true" mat-table [dataSource]="dataSource" matSort class="mat-elevation-z8">
+    <table *ngIf="appService.listView == true" mat-table [dataSource]="dataSource" matSort class="mat-elevation-z8">
 
       <ng-container matColumnDef="tag">
         <th mat-header-cell *matHeaderCellDef mat-sort-header> Tag </th>
@@ -104,7 +104,7 @@
     </table>
       
     <!-- grid view -->
-    <div *ngIf="listView == false" fxLayout="row wrap" fxLayoutAlign="start center" fxLayoutGap="10px">
+    <div *ngIf="appService.listView == false" fxLayout="row wrap" fxLayoutAlign="start center" fxLayoutGap="10px">
       <div class = "tag-detail" *ngFor="let tag of tags">
         
         <mat-card (click)="onDatasetClick(tag)" class="mouse-hover">

@@ -52,7 +52,6 @@ export class ReviewComponent implements OnInit {
   optionCollections: ICollection[] = [];
   needReloadCollections = false;
   // table/list view
-  listView = false;
   displayedColumns: string[] = ['tag', 'type', 'dateStr', 'size', 'collection', 'hasPassword', 'note'];
   dataSource = new MatTableDataSource(this.tags);
   //sharing
@@ -180,7 +179,7 @@ export class ReviewComponent implements OnInit {
   }
   
   toogleViewType() {
-    this.listView = !this.listView;
+    this.appService.listView = !this.appService.listView;
   }
 
   getMyCollections() {

@@ -15,5 +15,5 @@ export const environment = {
     storageBucket: "previs-dev.appspot.com",
     messagingSenderId: "862413634236"
   },
-  photogrammetry: true
+  datatypes: {'volume': true, 'mesh': true, 'point': true, 'image': true, 'photogrammetry': true}
 };

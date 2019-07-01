@@ -6,6 +6,9 @@ import os.path
 import json
 import shutil
 
+import warnings
+warnings.filterwarnings("ignore")
+
 def copyToDroneCluster(infile):
     call='scp -r ' +infile.replace('/photogrammetry.zip','') + ' handreas@monash@drone1.erc.monash.edu:e:/handreas/incoming/'
     print(call)

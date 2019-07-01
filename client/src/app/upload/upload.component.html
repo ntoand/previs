@@ -1,149 +1,14 @@
-<h2 *ngIf="authService.isLoggedIn()">Upload your data (volume, mesh or pointcloud)</h2>
+<h2 *ngIf="authService.isLoggedIn()">Upload your data (volume, mesh, pointcloud or high-res image)</h2>
 
 <div>
   <app-login [navPath]="navPath"></app-login>
   <div class="spacing"></div>
 </div>
 
-<div *ngIf="authService.isLoggedIn()">
-  <mat-card>
-    <div class="block">
-        <mat-radio-group class="type-radio-group" [(ngModel)]="appService.dataType">
-          <mat-radio-button class="type-radio-button" value="volume">Volume</mat-radio-button>
-          <mat-radio-button class="type-radio-button" value="mesh">Mesh</mat-radio-button>
-          <mat-radio-button class="type-radio-button" value="point">Pointcloud</mat-radio-button>
-          <mat-radio-button class="type-radio-button" value="image">Image</mat-radio-button>
-          <mat-radio-button *ngIf=photogrammetryEnabled class="type-radio-button" value="photogrammetry">Photogrammetry</mat-radio-button>
-        </mat-radio-group>
-    </div>
-    
-    <div class="help-block">
-      <div *ngIf="appService.dataType === 'volume'" class="collapse-able">
-        <details>
-          <summary>
-            Upload a volume: .zip file of an indexed image stack, a multi-dimensional (stacked) TIFF file, Nifti (.nii, .nii.gz) or a compressed XRW file
-          </summary>
-          <p>Note: 16-bit data will be converted to 8-bit and rescaled</p>
-          <p>Example data <a href="data/example/tiffstack-foot.zip">tiffstack-foot.zip</a> (image stack) and <a href="data/example/foot-3d.tif">foot-3d.tif</a> (multi-dim tiff)</p>
-          <p><b>How to prepare stack zip file data:</b></p>
-          <li>Create a directory to store slices</li>
-          <li>Convert slices to tiff format if needed using image editors (e.g. ImageMagick)</li>
-          <li>Slices (images) are named in order (e.g. 0001.tif, 0002.tif, ...)</li>
-          <li>Compress the directory into a zip file</li>
-          <p>Your zip should look something like this:</p>
-          <ul class="example-code">
-            <li>tiffs/</li>
-            <li>tiffs/0001.tif</li>
-            <li>tiffs/0002.tif</li>
-            <li>tiffs/0003.tif</li>
-            <li>tiffs/0004.tif</li>
-          </ul>
-        </details>
-      </div>
-      
-      <div *ngIf="appService.dataType === 'mesh'">
-        <details>
-          <summary>
-            Upload a Wavefront OBJ zip tree
-          </summary>
-          <p>
-            <li>A .zip file containing an object or scene made up of one or more .OBJ files</li>
-            <li>Each directory in the .zip file will produce a group in your 3D scene (only one directory deep is supported)</li>
-            <li>Group names come from their directory names; the names of mesh files are not important</li>
-            <li>Material texture is supported. Name of material (.mtl) must match the name of OBJ file.</li>
-            <li>Material file and texture images must be placed in the same directory of OBJ file</li>
-          </p>
-          <p>Example data <a href="data/example/heart-bp3.0.zip">heart-bp3.0.zip</a></p>
-          <p><b>How to prepare data:</b></p>
-          <li>Create a directory to store OBJ files</li>
-          <li>Add subdirectories for each group, named as the group should be named (only a depth of one directory is currently supported)</li>
-          <li>Add OBJ, MTL and images files to the appropriate group subdirectories</li>
-          <li>Compress all subdirectories into one zip file</li>
-          <p>Your zip should look something like this:</p>
-          <ul class="example-code">
-            <li>group1/</li>
-            <li>group1/first-mesh.obj</li>
-            <li>group1/first-mesh.mtl</li>
-            <li>group1/first-mesh-tex01.jpg (first-mesh.mtl has a reference to this file)</li>
-            <li>group1/other-mesh.obj</li>
-            <li>group2/</li>
-            <li>group2/another-mesh.obj</li>
-            <li>group3/</li>
-            <li>group3/yet-another-mesh.obj</li>
-            <li>group3/and-another-mesh.obj</li>
-          </ul>
-        </details>
-      </div>
-      
-      <div *ngIf="appService.dataType === 'point'">
-        <details>
-          <summary>
-            Upload one pointcloud file. Support .las, .laz, .ptx, .ply, .xyz, .txt
-          </summary>
-          <p>
-            <li>You can also upload a zip file containing a .las, .laz, .ptx, .ply, .xyz, or .txt to reduce file size</li>
-            <li>In .xyz/.txt file, each line contains a point data in format X Y Z R G B with R,G,B in range [0 255] </li>
-            <li>It may take long to process big data (~10min for 100k points). Please contact us if you have big data.</li>
-            <li>Example data <a href="data/example/ripple.las.zip">ripple.las.zip</a> (65KB)</li>
-          </p>
-        </details>
-      </div>
-      
-      <div *ngIf="appService.dataType === 'image'" class="collapse-able">
-        <details>
-          <summary>
-            Upload high resolution image(s). Support image type: .tif, .jpg, .png
-          </summary>
-          <p>If you want to upload multiple images, the images must be stored in a zip file</p>
-          <p>Your zip should look something like this:</p>
-          <ul class="example-code">
-            <li>images/</li>
-            <li>images/image01.tif</li>
-            <li>images/image02.png</li>
-          </ul>
-        </details>
-      </div>
-      
-      <div *ngIf="appService.dataType === 'photogrammetry'">
-        <details>
-          <summary>
-            Upload a zip with photogrammetry images
-          </summary>
-          <p>
-            <li>A .zip file containing photogrammetry images</li>
-            
-          </p>
-         
-        </details>
-      </div>
-      
-      <div *ngIf="appService.dataType === 'volume'" class="collapse-able">
-        <details>
-          <summary>
-            <b>Volume settings</b>
-          </summary>
-          <p>Voxel size x <input type="number" step="0.01" [(ngModel)]="appService.settings.voxelSizeX" class="option-input" > 
-                        y <input type="number" step="0.01" [(ngModel)]="appService.settings.voxelSizeY" class="option-input" > 
-                        z <input type="number" step="0.01" [(ngModel)]="appService.settings.voxelSizeZ" class="option-input" > 
-             (will be used when no voxelsize information is available in uploaded file)
-          </p>
-          <p>Channel index <input type="number"  [(ngModel)]="appService.settings.channel" class="option-input" > 
-             Timestep <input type="number"  [(ngModel)]="appService.settings.time" class="option-input" > 
-             (in case your stacked tiff has more than 1 channel or 1 timestep. Index starts from 0)
-          </p>
-        </details>
-      </div>
-      
-      <div>
-        <p><mat-checkbox [(ngModel)]="appService.settings.sendEmail">Notify me via email when data processing is complete</mat-checkbox></p>
-      </div>
-      
-    </div>
-  </mat-card>
-  
-  <div class="spacing"></div>
+<div *ngIf="authService.isLoggedIn()" class="main-part">
   
   <mat-card>
+    <h4>See <a href="https://github.com/mivp/previs/wiki/Uploading-data-to-previs" target="_blank">uploading data to previs</a> for more information.</h4>
     <div class="block">
      <mat-radio-group class="upload-radio-group" [(ngModel)]="appService.uploadType">
         <mat-radio-button class="type-radio-button" value="local">Local upload</mat-radio-button>
@@ -167,25 +32,47 @@
   </mat-card>
   
   <div class="spacing"></div>
-  <mat-card>
+
+  <mat-card *ngIf="showResultDiv">
     <div class="block" id="processing_anchor">
-      <mat-card-header>
-          <mat-card-title>Selected data type: <b>{{appService.dataType}}</b>, upload type: <b>{{appService.uploadType}}</b></mat-card-title>
-      </mat-card-header>
       
+      <div class="block" *ngIf="tag === null">
+          <mat-radio-group class="type-radio-group" [(ngModel)]="appService.dataType" *ngFor="let dt of dataTypes">
+            <mat-radio-button class="type-radio-button" value={{dt}}>{{dt}}</mat-radio-button>
+          </mat-radio-group>
+      </div>
+
+      <div class="block" *ngIf="appService.dataType === 'volume' && tag === null">
+          <p>Voxel size x <input type="number" step="0.01" [(ngModel)]="appService.settings.voxelSizeX" class="option-input" > 
+            y <input type="number" step="0.01" [(ngModel)]="appService.settings.voxelSizeY" class="option-input" > 
+            z <input type="number" step="0.01" [(ngModel)]="appService.settings.voxelSizeZ" class="option-input" > 
+          (will be used when no voxelsize information is available in uploaded file)
+          </p>
+          <p>Channel index <input type="number"  [(ngModel)]="appService.settings.channel" class="option-input" > 
+          Timestep <input type="number"  [(ngModel)]="appService.settings.time" class="option-input" > 
+          (in case your stacked tiff has more than 1 channel or 1 timestep. Index starts from 0)
+          </p>
+      </div>
+
       <div class="progress" *ngIf="message.type === 'working'">
         <mat-spinner diameter=50></mat-spinner>
       </div>
-      
+        
       <div class="alert-box {{message.type}}" *ngIf="message.content !== ''">
         <span>{{message.type}}: </span>{{message.content}}
       </div>
+
+      <div class="block" *ngIf="(appService.dataType === 'volume' || dataTypes.length > 1) && !disableProcessButton">
+        <button mat-raised-button color='primary' (click)=onProcessClick($event)>PROCESS</button>
+      </div>
+
       <div class="result" *ngIf="tag">
+        <h3>Tag details:</h3>
         <p>{{tag.id}} ({{tag.type | lowercase}})</p>
         <p>Date: {{tag.dateStr}}</p>
         <p>Size: {{tag.size}}</p>
-        <a href={{tag.viewUrl}} target="_blank"><button mat-button color='primary'>VIEW ON WEB</button></a>
-        <a href={{tag.qrUrl}} target="_blank"><button mat-button color='primary'>QR CODE</button></a>
+        <a href={{tag.viewUrl}} target="_blank"><button mat-raised-button color='primary'>View on web</button></a>
+        <a href={{tag.qrUrl}} target="_blank" class="left-margin"><button mat-raised-button color='primary'>QR code</button></a>
       </div>
     </div>
   </mat-card>

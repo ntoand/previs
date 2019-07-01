@@ -13,7 +13,6 @@ export function userReducers (state = initialUserState, action: UserActions): IU
         let disk = result.disk || 0;
         const user = {
             id: result.id,
-            name: result.name,
             email: result.email,
             displayName: result.displayName,
             photoURL: result.photoURL,
@@ -21,7 +20,8 @@ export function userReducers (state = initialUserState, action: UserActions): IU
             numtags: result.numtags || 0,
             disk: disk,
             quota: result.quota || 0,
-            diskStr: disk < 1024 ? disk.toFixed(2)+' MB' : (disk/1024).toFixed(2)+' GB'
+            diskStr: disk < 1024 ? disk.toFixed(2)+' MB' : (disk/1024).toFixed(2)+' GB',
+            mytardisApikey: result.mytardisApikey || ''
         }
         return {
           ...state,

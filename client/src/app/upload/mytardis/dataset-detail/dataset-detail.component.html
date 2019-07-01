@@ -20,7 +20,7 @@
 <ul class="list-view">
   <li *ngFor="let item of datafiles">
     <button (click)="onDetailClick($event, item.id)"><b>Detail</b></button> 
-    <button (click)="onRunClick($event, item.id, item.filename)"><b>Run</b></button> {{item.id}}: {{item.filename}}
+    <button (click)="onImportClick($event, item.id, item.filename)"><b>Import</b></button> {{item.id}}: {{item.filename}}
     <span *ngIf="detailId === item.id"><b>{{detailStr}}</b></span>
   </li>
 </ul>

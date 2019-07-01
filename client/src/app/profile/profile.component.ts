@@ -24,6 +24,9 @@ export class ProfileComponent implements OnInit {
   // store
   appstate$: Observable<IAppState>;
   user = null;
+  // edit
+  mytardisApikeyStr = '';
+  mytardisApikeyEditMode = false;
 
   constructor(private store: Store<IAppState>,
               private socket: SocketioService, public authService: AuthService) { }
@@ -36,8 +39,9 @@ export class ProfileComponent implements OnInit {
     var h1 = scope.appstate$.pipe(
       select(selectUser),
       map(user => user)
-    ).subscribe(item =>{
-      scope.user = item;
+    ).subscribe(user =>{
+      scope.user = user;
+      if(user.item) scope.mytardisApikeyStr = user.item.mytardisApikey;
     });
     this.subHandles.push(h1);
 
@@ -111,6 +115,27 @@ export class ProfileComponent implements OnInit {
     selBox.select();
     document.execCommand('copy');
     document.body.removeChild(selBox);
+  }
+
+  onMytardisApikeyEnableEdit($event) {
+    $event.preventDefault();
+    this.mytardisApikeyEditMode = true;
+  }
+
+  onMytardisApikeyEditCancel($event) {
+    $event.preventDefault();
+    this.mytardisApikeyEditMode = false;
+  }
+
+  onMytardisApikeyEditGo($event) {
+    $event.preventDefault();
+    if(this.mytardisApikeyStr.trim().length === 0) {
+      this.message.type = 'error';
+      this.message.content = 'Empty api key';
+      return;
+    }
+    this.socket.sendMessage('adminupdateuser', {data: {id: this.authService.userDetails.uid, mytardisApikey: this.mytardisApikeyStr}});
+    this.mytardisApikeyEditMode = false;
   }
 
 }

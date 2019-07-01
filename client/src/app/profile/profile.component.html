@@ -2,10 +2,23 @@
 
 
 <div *ngIf="user?.loaded" class="with-min-height">
+    <div class="alert-box {{message.type}}" *ngIf="message.content !== ''">
+        <span>{{message.type}}: </span>{{message.content}}
+    </div>
+
     <mat-card>
         <h3>Basic information</h3>
         <p>Display name: {{user?.item?.displayName}}</p>
         <p>Email: {{user?.item?.email}}</p>
+        <p *ngIf='mytardisApikeyEditMode === false'>Mytardis API key: 
+            <span>{{mytardisApikeyStr}} </span>
+            <span><button (click)="onMytardisApikeyEnableEdit($event)" class='action-button'>edit</button></span>
+        </p>
+        <p *ngIf='mytardisApikeyEditMode === true'>
+            <span><input [(ngModel)]="mytardisApikeyStr" class="input-str"></span>
+            <span><a href="#" (click)="onMytardisApikeyEditGo($event)"><mat-icon class="small-button">check</mat-icon></a></span>
+            <span><a href="#" (click)="onMytardisApikeyEditCancel($event)"><mat-icon class="small-button">close</mat-icon></a></span>
+        </p>
         <p>Stats: {{user?.item?.numtags}} tags, {{user?.item?.diskStr}} used </p>
         <p><button mat-button mat-raised-button color='primary' (click)='onRefresh($event)'>Refresh stats</button></p>
     </mat-card>
@@ -18,10 +31,6 @@
         <span class="hoz-space"><button mat-button mat-raised-button color='primary' (click)='onLoadKey($event)'>View key</button></span>
         <span class="hoz-space"><button mat-button mat-raised-button color='primary' (click)='onGenerateKey($event)'>Generate new key</button></span>
         <span class="hoz-space"><button mat-button mat-raised-button color='primary' (click)='onCopyToClipboard($event)'>Copy key to clipboard</button></span>
-        
-        <div class="alert-box {{message.type}}" *ngIf="message.content !== ''">
-            <span>{{message.type}}: </span>{{message.content}}
-        </div>
         
         <p>API Key: <b>{{apikey.key}}</b></p>
         <p>Created on: {{apikey.date}}</p>

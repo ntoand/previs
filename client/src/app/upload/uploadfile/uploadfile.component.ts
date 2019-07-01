@@ -135,13 +135,7 @@ export class UploadfileComponent implements OnInit {
             return;
           }
           this.renderer.selectRootElement('.uploadfile').value = '';
-          const userDetails = {
-            uid: this.authService.userDetails.uid,
-            email: this.authService.userDetails.email,
-            displayName: this.authService.userDetails.displayName
-          };
-          this.socket.sendMessage('processupload', {task: "process", file: result.file, datatype: this.appService.dataType, uploadtype: 'local',
-                                    userDetails: userDetails, settings: this.appService.settings } );
+          this.socket.sendMessage('processupload', {task: "getdatatypes", file: result.file, datatype: this.appService.dataType, uploadtype: 'local'});
           
           let x = document.querySelector("#processing_anchor");
           if (x){

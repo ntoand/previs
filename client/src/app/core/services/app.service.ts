@@ -17,7 +17,7 @@ export class AppService {
   }
 
   // ===== UPLOAD =====
-  public dataType: string = "volume";
+  public dataType: string = "none";
   public uploadType: string = "local";
   public settings = {
     voxelSizeX: 1,
@@ -35,6 +35,7 @@ export class AppService {
   }
   
   // ===== REVIEW =====
+  public listView = false;
   public needReload = false;
   public showOptions = false;
   public collectionId = 'my';

@@ -117,52 +117,13 @@ export class DatasetDetailComponent implements OnInit {
     this.socket.sendMessage('processmytardis', msg);
   }
   
-  onRunClick($event, id, filename) {
+  onImportClick($event, id, filename) {
     $event.preventDefault();
     
     this.errMsg = '';
-    let dataType = this.appService.dataType;
-    let settings = this.appService.settings;
-    
-    //check filename
-    let fileext = filename.split('.').pop().toLowerCase();
-    if(dataType === 'volume') {
-      if (fileext !== 'zip' && fileext !== 'tif' && fileext !== 'tiff' && fileext !== 'xrw') {
-        this.errMsg = "Volume requires zip, tiff or xrw file!";
-        return;
-      }
-    }
-    else if (dataType === 'mesh') {
-      if (fileext !== 'zip') {
-        this.errMsg = "Volume requires zip file!";
-        return;
-      }
-    }
-    else if (dataType === 'point') {
-      if (fileext !== 'las' && fileext !== 'laz' && fileext !== 'ptx' && fileext !== 'ply' && fileext !== 'xyz' && fileext !== 'txt' && fileext !== 'zip' ) {
-        this.errMsg = "Pointcloud requies las/laz, ptx, ply, xyz/txt, or zip file";
-        return;
-      }
-    }
-    else if (dataType == "image") {
-      if (fileext !== 'tif' && fileext !== 'tiff' && fileext !== 'jpg' && fileext !== 'png' && fileext !== 'zip') {
-        this.errMsg = "Image(s) requies .tif, .png, .jpg, or .zip file";
-        return;
-      }
-    }
-    else {
-      this.errMsg = "invalid dataType";
-      return;
-    }
-    
     const mytardis = this.appService.mytardis;
-    const userDetails = {
-      uid: this.authService.userDetails.uid,
-      email: this.authService.userDetails.email,
-      displayName: this.authService.userDetails.displayName
-    };
-    this.socket.sendMessage('processupload', {task: "process", datatype: dataType, uploadtype: 'mytardis', 
-                             fileid: id, filename: filename, auth: mytardis, userDetails: userDetails, settings: settings });
+    this.socket.sendMessage('processupload', {task: "getdatatypes", datatype: this.appService.dataType, uploadtype: 'mytardis',
+                                                                    fileid: id, filename: filename, auth: mytardis,});
                              
     let x = document.querySelector("#processing_anchor");
     if (x){

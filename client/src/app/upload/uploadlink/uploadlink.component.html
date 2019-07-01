@@ -5,32 +5,9 @@
     <mat-form-field class="full-width">
       <input matInput placeholder="shared link" [(ngModel)]="urlStr" name="urlStr">
     </mat-form-field>
-    
-    <mat-form-field *ngIf="appService.dataType === 'volume'">
-      <mat-select [(value)]="extStr">
-        <mat-option value="zip">file ext .zip</mat-option>
-        <mat-option value="tif">file ext .tif</mat-option>
-        <mat-option value="xrw">file ext .xrw</mat-option>
-        <mat-option value="nii">file ext .nii</mat-option>
-        <mat-option value="nii.gz">file ext .nii.gz</mat-option>
-      </mat-select>
-    </mat-form-field>
-    
-    <mat-form-field *ngIf="appService.dataType === 'point'">
-      <mat-select [(value)]="extStr">
-        <mat-option value="zip">file ext .zip</mat-option>
-        <mat-option value="las">file ext .las</mat-option>
-        <mat-option value="laz">file ext .laz</mat-option>
-        <mat-option value="ptx">file ext .ptx</mat-option>
-        <mat-option value="ply">file ext .ply</mat-option>
-      </mat-select>
-    </mat-form-field>
-    
-    <mat-form-field *ngIf="appService.dataType === 'image'">
-      <mat-select [(value)]="extStr">
-        <mat-option value="zip">file ext .zip</mat-option>
-        <mat-option value="tif">file ext .tif</mat-option>
-      </mat-select>
+
+    <mat-form-field>
+      <input matInput placeholder="file ext (zip, laz, ...)" [(ngModel)]="extStr" name="extStr">
     </mat-form-field>
     
     <div class="alert-box error" *ngIf="errMsg !== ''">
@@ -38,7 +15,7 @@
     </div>
     
     <div>
-      <button mat-raised-button color="primary" (click)="onGoClick($event)" type="submit">Go</button>
+      <button mat-raised-button color="primary" (click)="onImportClick($event)" type="submit">Import</button>
     </div>
     
   </form>

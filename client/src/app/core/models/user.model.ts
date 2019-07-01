@@ -8,6 +8,7 @@ export interface IUser {
     disk: number;
     diskStr: string;
     quota: number;
+    mytardisApikey: string;
 }
 
   

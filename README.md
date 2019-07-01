@@ -77,6 +77,7 @@ or
 
 - Using ngrx to manage client app state
 - Generate stats info
+- Do not need to define data type before uploading
 
 ### v0.9.0
 

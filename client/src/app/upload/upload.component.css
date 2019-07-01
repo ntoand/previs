@@ -53,3 +53,11 @@ summary:focus {
     text-align: center;
     width: 50px;
 }
+
+.left-margin {
+    margin-left: 10px;
+}
+
+.main-part {
+    min-height: 600px;
+}

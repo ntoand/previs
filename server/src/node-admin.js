@@ -242,6 +242,19 @@ function getOrCreateUser(io, data) {
     })
 }
 
+function updateUser(io, data) {
+    winston.info('updateUser');
+    data.db.updateUser(data.data.id, data.data, function(err, res) {
+        if(err) {
+            winston.error(err);
+            myutils.packAndSend(io, data.action, {status: 'error', result: err});
+        }
+        else {
+            myutils.packAndSend(io, data.action, {status: 'done', result: res});
+        }
+    });
+}
+
 module.exports.getTags = getTags;
 module.exports.deleteTags = deleteTags;
 module.exports.updateTag = updateTag;
@@ -254,3 +267,4 @@ module.exports.deleteCollection = deleteCollection;
 module.exports.getDataBundleByUserEmail = getDataBundleByUserEmail;
 module.exports.updateShareEmail = updateShareEmail;
 module.exports.getOrCreateUser = getOrCreateUser;
+module.exports.updateUser = updateUser;

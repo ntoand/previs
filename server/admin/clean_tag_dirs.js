@@ -3,20 +3,18 @@ DONT RUN THIS SCRIPT
 The script is implemented to clean up directories with tag reference from the database
 */
 var fs = require('fs');
+var path        = require('path');
 var FilebaseManager   = require('../src/node-firebase');
 var object = new FilebaseManager();
 var tagpath = '';
-var trashdir = '';
 
 if (process.env.NODE_ENV === "production")  {
    console.log('Mode: production')
    tagpath = '/home/ubuntu/git/previs/server/public/data/tags/';
-   trashdir = '/dataprevis/_trash/20190603/';
 }
 else {
    console.log('Mod: development');
    tagpath = '/home/ubuntu/git/previs/server/public/data/tags/';
-   trashdir = '/home/ubuntu/git/previs/server/public/data/_trash/';
 }
 
 // get list of directories
@@ -26,6 +24,19 @@ const isDirectory = source => lstatSync(source).isDirectory();
 const getDirectories = source =>
   readdirSync(source).map(name => join(source, name)).filter(isDirectory);
 
+var deleteFolderRecursive = function(dir) {
+     if( fs.existsSync(dir) ) {
+          fs.readdirSync(dir).forEach(function(file,index){
+          var curDir = path.join(dir, file);
+          if(fs.lstatSync(curDir).isDirectory()) { // recurse
+               deleteFolderRecursive(curDir);
+          } else { // delete file
+               fs.unlinkSync(curDir);
+          }
+          });
+          fs.rmdirSync(dir);
+     }
+};
 
 object.getAllTags(function(err, res) {
    if(err) {
@@ -49,14 +60,13 @@ object.getAllTags(function(err, res) {
        let parts = dirs[i].split('/');
        let dirname = parts[parts.length-1];
        if(!dirname.includes('000000') && tagdir[dirname] !== true) {
-            console.log(dirname);
-            console.log(dirname, dirs[i], trashdir+dirname);
+            console.log(dirname, dirs[i]);
+            count += 1
             if (fs.existsSync(dirs[i])) {
-                fs.renameSync(dirs[i], trashdir+dirname);
-                count = count + 1;
+               deleteFolderRecursive(dirs[i]);
             }
        }
    }
-   console.log('moved',count, 'items');
+   console.log('cleaned',count, 'items');
    
 });

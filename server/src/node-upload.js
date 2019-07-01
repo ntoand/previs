@@ -14,26 +14,32 @@ var crypto 		= require('crypto');
 const winston 	= require('winston');
 
 function processUpload(io, data) {
-	
-	winston.info('processUpload');
-	var file = data.file;
-	//var filepath = config.tags_data_dir + file;
-	//var datatype = data.datatype;
-	var uploadtype = data.uploadtype;
-	
-	if (uploadtype === 'local') {
+	let uploadtype = data.uploadtype;
+
+	winston.info(['processUpload', data.uploadtype, data.datatype]);
+	if(data.task === 'getdatatypes') {
+		if (uploadtype === 'local') {
+			processUploadFile(io, data);
+		}
+		else if (uploadtype === 'link') {
+			processUploadLink(io, data);
+		}
+		else if (uploadtype === 'mytardis') {
+			processUploadMytardis(io, data);
+		}
+		else {
+			winston.info ('Invalid upload type');
+			myutils.packAndSend(io, 'processupload', {status: 'error', task: data.task, result: 'Invalid upload type'});
+			return;
+		}
+	}
+	else if (data.task === 'process') {
+		// data.file contains information the file to be processed
+		// no need to download the file again
 		processUploadFile(io, data);
 	}
-	else if (uploadtype === 'link') {
-		processUploadLink(io, data);
-	}
-	else if (uploadtype === 'mytardis') {
-		processUploadMytardis(io, data);
-	}
 	else {
-		winston.info ('Invalid upload type');
-		myutils.packAndSend(io, 'processupload', {status: 'error', result: 'Invalid upload type'});
-		return;
+		myutils.packAndSend(io, 'processupload', {status: 'error', task: data.task, result: 'Unnown task'});
 	}
 }
 
@@ -49,32 +55,32 @@ function processUploadLink(io, data) {
 	}
 	
 	if (id === '' || id.length < 25) {
-		myutils.packAndSend(io, 'processupload', {status: 'error', result: 'Fail to extract id'});
+		myutils.packAndSend(io, 'processupload', {status: 'error', task: data.task, result: 'Fail to extract id'});
 		return;
 	}
 	
 	var destfile = config.tags_data_dir + id + '.' + data.ext;
 	var cmd = 'cd ' + config.scripts_dir + ' && python downloadlink.py ' + service + ' ' + id + ' ' + destfile;
 	winston.info(cmd);
-	myutils.packAndSend(io, 'processupload', {status: 'working', result: 'Downloading file from shared link...'})
+	myutils.packAndSend(io, 'processupload', {status: 'working', task: data.task, result: 'Downloading file from shared link...'})
 	exec(cmd, function(err, stdout, stderr) 
     {
     	winston.info(stdout);
     	winston.info(stderr);
     	if(err)
 		{
-			myutils.packAndSend(io, 'processupload', {status: 'error', result: 'cannot download file from shared link', detail: stderr});
+			myutils.packAndSend(io, 'processupload', {status: 'error', task: data.task, result: 'cannot download file from shared link', detail: stderr});
 			myutils.sendEmail('fail', data, {status: 'error', result: 'cannot download file from shared link', detail: stderr});
 			return;
 		}
 		//check file exist
 		if(myutils.fileExists(destfile) === false) {
-			myutils.packAndSend(io, 'processupload', {status: 'error', result: 'cannot download file from shared link', detail: stderr});
+			myutils.packAndSend(io, 'processupload', {status: 'error', task: data.task, result: 'cannot download file from shared link', detail: stderr});
 			myutils.sendEmail('fail', data, {status: 'error', result: 'cannot download file from shared link', detail: stderr});
 			return;
 		}
 		
-		myutils.packAndSend(io, 'processupload', {status: 'working', result: 'Processing downloaded file...'});
+		myutils.packAndSend(io, 'processupload', {status: 'working', task: data.task, result: 'Processing downloaded file...'});
 		data.file = id + '.' + data.ext;
 		processUploadFile(io, data);
     });
@@ -91,23 +97,23 @@ function processUploadMytardis(io, data) {
 	// download file
 	var url = 'https://' + host + '/api/v1/dataset_file/' + fileid + '/download/';
 	winston.info(url);
-	myutils.packAndSend(io, 'processupload', {status: 'working', result: 'Downloading file from mytardis...'})
+	myutils.packAndSend(io, 'processupload', {status: 'working', task: data.task, result: 'Downloading file from mytardis...'})
 	myutils.downloadFileHttps(url, apikey, destfile, function(err) {
 		if(err) {
 			winston.error(err);
-			myutils.packAndSend(io, 'processupload', {status: 'error', result: 'Fail to download file ' + fileid});
+			myutils.packAndSend(io, 'processupload', {status: 'error', task: data.task, result: 'Fail to download file ' + fileid});
 			myutils.sendEmail('fail', data, {status: 'error', result: 'Fail to download file ' + fileid});
 			return;
 		}
 
 	   //check file exist
 		if(myutils.fileExists(destfile) === false) {
-			myutils.packAndSend(io, 'processupload', {status: 'error', result: 'cannot download file from mytardis'});
+			myutils.packAndSend(io, 'processupload', {status: 'error', task: data.task, result: 'cannot download file from mytardis'});
 			myutils.sendEmail('fail', data, {status: 'error', result: 'cannot download file from mytardis'});
 			return;
 		}
 		
-		myutils.packAndSend(io, 'processupload', {status: 'working', result: 'Processing downloaded file...'});
+		myutils.packAndSend(io, 'processupload', {status: 'working', task: data.task, result: 'Processing downloaded file...'});
 		data.file = fileid + '_' + filename;
 		processUploadFile(io, data);
 	});
@@ -118,71 +124,72 @@ function processUploadFile(io, data) {
 	var filepath = config.tags_data_dir + file;
 	var fileext = file.split('.').pop().toLowerCase();
 	var datatype = data.datatype;
-	
-	if (fileext === "zip") {
-		// check zip file
-		myutils.packAndSend(io, 'processupload', {status: 'working', result: 'Checking zipfile...'});
-		var cmd_test = 'cd ' + config.scripts_dir + ' && python checkzip.py -f ' + filepath + " -t " + datatype;
-		
-		try {
-			winston.info(cmd_test);
-			var out = execSync(cmd_test).toString();
-			out = JSON.parse(out)
-			winston.info(out);
-			if (!out.match) {
-				myutils.packAndSend(io, 'processupload', {status: 'error', result: 'Zip file contents do not match type'});
-				myutils.sendEmail('fail', data, {status: 'error', result: 'Zip file contents do not match type'});
-				return;
-			}
-		}
-		catch(err) {
-			winston.error(err.message);
-			myutils.packAndSend(io, 'processupload', {status: 'error', result: 'Checking zip file type failed!', detail: err.message});
-			myutils.sendEmail('fail', data, {status: 'error', result: 'Checking zip file type failed!', detail: err.message});
-			return;
-		}
-	}
-	
-	data.db.createNewTag(function(err, tag_str) {
-		if(err) {
-			myutils.packAndSend(io, 'processupload', {status: 'error', result: 'cannot create tag'});
-			return;
-		}
-		data.tag = tag_str;
-		data.dir = tag_str + '_' + crypto.randomBytes(3).toString('hex');
-		data.tagdir = config.tags_data_dir + data.dir;
-		data.inputfile = data.tagdir + '/' + datatype + '.' + fileext;
-		data.inputfilename = datatype;
-		data.inputfileext = fileext;
-		// create tag dir
-		myutils.createDirSync(data.tagdir);
-		
-		myutils.packAndSend(io, 'processupload', {status: 'working', result: 'Renaming file'});
-		myutils.moveFile(filepath, data.inputfile, function(err) {
+
+	// check file to guess datatypes and send back to client
+	if(data.task === 'getdatatypes') {
+		myutils.packAndSend(io, 'processupload', {status: 'working', task: data.task, result: 'Detecting datatype...'});
+		var cmd = 'cd ' + config.scripts_dir + ' && python getdatatypes.py -f ' + filepath;
+		exec(cmd, function(err, stdout, stderr) {
+			winston.info(stdout);
+			winston.info(stderr);
 			if(err) {
-				myutils.packAndSend(io, 'processupload', {status: 'error', result: 'cannot move file to tag dir'});
+				myutils.packAndSend(io, 'processupload', {status: 'error', task: data.task, result: 'failed to get datatypes from uploaded file', detail: stderr});
 				return;
 			}
-			if(datatype === 'volume') {
-				processUploadFile_Volumes(io, data);
+			var info = JSON.parse(stdout);
+			winston.info(info);
+			if(info.status === 'error') {
+				myutils.packAndSend(io, 'processupload', {status: 'error', task: data.task, result: 'no datatype can be found, please check input file', detail: info.detail});
+				return;
 			}
-			else if (datatype === 'mesh') {
-				processUploadFile_Meshes(io, data);
-			}
-			else if (datatype === 'point') {
-				processUploadFile_Points(io, data);
-			}
-			else if (datatype === 'image') {
-				processUploadFile_Images(io, data);
-			}
-			else if (datatype === 'photogrammetry') {
-				processUploadFile_Photogrammetry(io, data);
-			}
-			else {
-				myutils.packAndSend(io, 'processupload', {status: 'error', result: 'unsupported data type'});
-			}
+			myutils.packAndSend(io, 'processupload', {status: 'done', task: data.task, result: {'datatypes': info.datatypes, 'file': data.file}});
+			return;
 		});
-	});
+	}
+
+	// process upload file
+	else {
+		data.db.createNewTag(function(err, tag_str) {
+			if(err) {
+				myutils.packAndSend(io, 'processupload', {status: 'error', task: data.task, result: 'cannot create tag'});
+				return;
+			}
+			data.tag = tag_str;
+			data.dir = tag_str + '_' + crypto.randomBytes(3).toString('hex');
+			data.tagdir = config.tags_data_dir + data.dir;
+			data.inputfile = data.tagdir + '/' + datatype + '.' + fileext;
+			data.inputfilename = datatype;
+			data.inputfileext = fileext;
+			// create tag dir
+			myutils.createDirSync(data.tagdir);
+			
+			myutils.packAndSend(io, 'processupload', {status: 'working', task: data.task, result: 'Renaming file'});
+			myutils.moveFile(filepath, data.inputfile, function(err) {
+				if(err) {
+					myutils.packAndSend(io, 'processupload', {status: 'error', task: data.task, result: 'cannot move file to tag dir'});
+					return;
+				}
+				if(datatype === 'volume') {
+					processUploadFile_Volumes(io, data);
+				}
+				else if (datatype === 'mesh') {
+					processUploadFile_Meshes(io, data);
+				}
+				else if (datatype === 'point') {
+					processUploadFile_Points(io, data);
+				}
+				else if (datatype === 'image') {
+					processUploadFile_Images(io, data);
+				}
+				else if (datatype === 'photogrammetry') {
+					processUploadFile_Photogrammetry(io, data);
+				}
+				else {
+					myutils.packAndSend(io, 'processupload', {status: 'error', task: data.task, result: 'unsupported data type'});
+				}
+			});
+		});
+	} // else
 }
 
 // process zip volume file
@@ -194,12 +201,12 @@ function processUploadFile_Volumes(io, data) {
 	var out_dir = data.tagdir + '/volume_result';
 	var cmd = 'cd ' + config.scripts_dir + ' && python processvolume.py -i ' + inputfile + ' -o ' + out_dir + ' -c ' + settings.channel + ' -t ' + settings.time;
 	winston.info(cmd);
-	myutils.packAndSend(io, 'processupload', {status: 'working', result: 'Converting image stack to xrw and mosaic png...'})
+	myutils.packAndSend(io, 'processupload', {status: 'working', task: data.task, result: 'Converting image stack to xrw and mosaic png...'})
 	exec(cmd, function(err, stdout, stderr) {
     	winston.info(stdout);
     	winston.info(stderr);
     	if(err) {
-			myutils.packAndSend(io, 'processupload', {status: 'error', result: 'cannot convert image stack to xrw', detail: stderr});
+			myutils.packAndSend(io, 'processupload', {status: 'error', task: data.task, result: 'cannot convert image stack to xrw', detail: stderr});
 			myutils.sendEmail('fail', data, {status: 'error', result: 'cannot convert image stack to xrw', detail: stderr});
 			return;
 		}
@@ -219,7 +226,7 @@ function processUploadFile_Volumes(io, data) {
     	var xref_web = data.vol_res_web[0]*settings.voxelSizeX;
     	data.vol_scale_web = [1, data.vol_res_web[1]*settings.voxelSizeY/xref_web, data.vol_res_web[2]*settings.voxelSizeZ/xref_web];
     	
-		myutils.packAndSend(io, 'processupload', {status: 'working', result: 'Preparing json file...'});
+		myutils.packAndSend(io, 'processupload', {status: 'working', task: data.task, result: 'Preparing json file...'});
 		sendViewDataToClient_Volume(io, data);
     });
 }
@@ -228,7 +235,7 @@ function processUploadFile_Volumes(io, data) {
 function processUploadFile_Meshes(io, data) {
 	winston.info('processUploadFile_Meshes');
 	
-	myutils.packAndSend(io, 'processupload', {status: 'working', result: 'Processing meshes...'});
+	myutils.packAndSend(io, 'processupload', {status: 'working', task: data.task, result: 'Processing meshes...'});
 	var inputfile = data.inputfile;
 	
 	var out_dir = data.tagdir + '/mesh_result';
@@ -240,12 +247,12 @@ function processUploadFile_Meshes(io, data) {
     	winston.info(stderr);
     	if(err)
 		{
-			myutils.packAndSend(io, 'processupload', {status: 'error', result: 'Processing the meshes archive failed!', detail: stderr});
+			myutils.packAndSend(io, 'processupload', {status: 'error', task: data.task, result: 'Processing the meshes archive failed!', detail: stderr});
 			myutils.sendEmail('fail', data, {status: 'error', result: 'Processing the meshes archive failed!', detail: stderr});
 			return;
 		}
 		data.numobjects = JSON.parse(stdout);
-	    myutils.packAndSend(io, 'processupload', {status: 'working', result: 'Files unpacked, all groups processed..'})
+	    myutils.packAndSend(io, 'processupload', {status: 'working', task: data.task, result: 'Files unpacked, all groups processed..'})
 		sendViewDataToClient_Meshes(io, data);
     });
 }
@@ -260,18 +267,18 @@ function processUploadFile_Photogrammetry(io, data) {
 	var out_dir = data.tagdir + '/photogrammetry_result';
 	var cmd = 'cd ' + config.scripts_dir + ' && python processphotogrammetry.py -i ' + inputfile + ' -o ' + out_dir;
 	winston.info(cmd);
-	myutils.packAndSend(io, 'processupload', {status: 'working', result: 'Processing photogrammetry images...'})
+	myutils.packAndSend(io, 'processupload', {status: 'working', task: data.task, result: 'Processing photogrammetry images...'})
 	exec(cmd, function(err, stdout, stderr) 
     {
     	winston.info(stdout);
     	winston.info(stderr);
     	if(err)
 		{
-			myutils.packAndSend(io, 'processupload', {status: 'error', result: 'Processing images failed', detail: stderr});
+			myutils.packAndSend(io, 'processupload', {status: 'error', task: data.task, result: 'Processing images failed', detail: stderr});
 			myutils.sendEmail('fail', data, {status: 'error', result: 'Processing photogrammetry images failed.', detail: stderr});
 			return;
 		}
-		myutils.packAndSend(io, 'processupload', {status: 'working', result: 'Processing photogrammetry...You will be notified via email when finished'+data.tag});
+		myutils.packAndSend(io, 'processupload', {status: 'working', task: data.task, result: 'Processing photogrammetry...You will be notified via email when finished'+data.tag});
 		//myutils.packAndSend(io, 'processupload', {status: 'done', result: tag_json});
     });
     //myutils.packAndSend(io, 'processupload', {status: 'done', result: "unknown"});
@@ -285,7 +292,7 @@ function processUploadFile_Points(io, data)
 		var out_dir = data.tagdir + '/' + filename + '_result';
 		extract(data.inputfile, { dir: out_dir }, function (err) {
 			if(err) {
-				myutils.packAndSend(io, 'processupload', {status: 'error', result: 'cannot unzip file', detail: err});
+				myutils.packAndSend(io, 'processupload', {status: 'error', task: data.task, result: 'cannot unzip file', detail: err});
 				return;
 			}
 			fs.unlinkSync(data.inputfile);
@@ -301,8 +308,8 @@ function processUploadFile_Points(io, data)
 			        }
 			    }
 			    if (found === false) {
-			    	myutils.packAndSend(io, 'processupload', {status: 'error', result: 'Cannot find pointcloud file', detail: err});
-			    	myutils.sendEmail('fail', data, {status: 'error', result: 'Cannot find pointcloud file', detail: err});
+			    	myutils.packAndSend(io, 'processupload', {status: 'error', task: data.task, result: 'Cannot find pointcloud file', detail: err});
+			    	myutils.sendEmail('fail', data, {status: 'error', task: data.task, result: 'Cannot find pointcloud file', detail: err});
 					return;
 			    }
 			});
@@ -321,12 +328,12 @@ function processUploadFile_Images(io, data) {
 	var out_dir = data.tagdir + '/image_result';
 	var cmd = 'cd ' + config.scripts_dir + ' && python processimage.py -i ' + inputfile + ' -o ' + out_dir;
 	winston.info(cmd);
-	myutils.packAndSend(io, 'processupload', {status: 'working', result: 'Converting images...'})
+	myutils.packAndSend(io, 'processupload', {status: 'working', task: data.task, result: 'Converting images...'})
 	exec(cmd, function(err, stdout, stderr) {
     	winston.info(stdout);
     	winston.info(stderr);
     	if(err) {
-			myutils.packAndSend(io, 'processupload', {status: 'error', result: 'Failed to convert images', detail: stderr});
+			myutils.packAndSend(io, 'processupload', {status: 'error', task: data.task, result: 'Failed to convert images', detail: stderr});
 			myutils.sendEmail('fail', data, {status: 'error', result: 'Failed to convert images', detail: stderr});
 			return;
 		}
@@ -357,13 +364,13 @@ function processUploadFile_Images(io, data) {
 		volume.res = [outputimages.length];
 		volumes.push(volume);
 		tag_json.volumes=volumes;
-		
+
 		data.db.insertNewTag(tag_json, function(err, res) {
 			if (err) {
-				myutils.packAndSend(io, 'processupload', {status: 'error', result: 'Cannot insert new tag'});
+				myutils.packAndSend(io, 'processupload', {status: 'error', task: data.task, result: 'Cannot insert new tag'});
 				return;
 			} 
-			myutils.packAndSend(io, 'processupload', {status: 'done', result: tag_json});
+			myutils.packAndSend(io, 'processupload', {status: 'done', task: data.task, result: tag_json});
 			// zip pointcloids folder
 			myutils.zipDirectory(out_dir, '', data.tagdir + '/image_processed.zip', function(err){
 				if(err) winston.error(err);
@@ -390,7 +397,7 @@ function sendViewDataToClient_Volume(io, data) {
 	
 	fs.readFile(jsontemp, 'utf8', function (err, jsondata) {
 		if (err) {
-			myutils.packAndSend(io, 'processupload', {status: 'error', result: 'cannot_generate_json'});
+			myutils.packAndSend(io, 'processupload', {status: 'error', task: data.task, result: 'cannot_generate_json'});
 			return;
 		} 
 		var obj_full = JSON.parse(jsondata);
@@ -406,14 +413,14 @@ function sendViewDataToClient_Volume(io, data) {
     	//write json first
 		fs.writeFile( jsonfile_full, JSON.stringify(obj_full, null, 4), function(err) {
 			if (err) {
-				myutils.packAndSend(io, 'processupload', {status: 'error', result: 'cannot_generate_json_full'});
+				myutils.packAndSend(io, 'processupload', {status: 'error', task: data.task, result: 'cannot_generate_json_full'});
 				return;
 			} 
 			
 			//write json file for web
 			fs.writeFile( jsonfile_web, JSON.stringify(obj_web, null, 4), function(err) {
 				if (err) {
-					myutils.packAndSend(io, 'processupload', {status: 'error', result: 'cannot_generate_json_full'});
+					myutils.packAndSend(io, 'processupload', {status: 'error', task: data.task, result: 'cannot_generate_json_full'});
 					return;
 				} 
 				
@@ -441,10 +448,10 @@ function sendViewDataToClient_Volume(io, data) {
 				
 				data.db.insertNewTag(tag_json, function(err, res) {
 					if (err) {
-						myutils.packAndSend(io, 'processupload', {status: 'error', result: 'cannot_generate_tag_json'});
+						myutils.packAndSend(io, 'processupload', {status: 'error', task: data.task, result: 'cannot_generate_tag_json'});
 						return;
 					} 
-					myutils.packAndSend(io, 'processupload', {status: 'done', result: tag_json});
+					myutils.packAndSend(io, 'processupload', {status: 'done', task: data.task, result: tag_json});
 				
 					// email
 					myutils.sendEmail('ready', data);
@@ -492,10 +499,10 @@ function sendViewDataToClient_Meshes(io, data) {
 	
 	data.db.insertNewTag(tag_json, function(err, res) {
 		if (err) {
-			myutils.packAndSend(io, 'processupload', {status: 'error', result: 'cannot_generate_tag_json'});
+			myutils.packAndSend(io, 'processupload', {status: 'error', task: data.task, result: 'cannot_generate_tag_json'});
 			return;
 		} 
-		myutils.packAndSend(io, 'processupload', {status: 'done', result: tag_json});
+		myutils.packAndSend(io, 'processupload', {status: 'done', task: data.task, result: tag_json});
 		
 		// clean up and zip mesh folder
 		myutils.zipDirectory(data.tagdir + '/mesh_result', '', data.tagdir + '/mesh_processed.zip', function(err){
@@ -529,19 +536,19 @@ function convertPointcloud(io, data, in_file) {
 		cmd = 'cd ' + config.potree_converter_dir + ' && ./PotreeConverter ' + in_file + ' -o ' + convert_out_dir;
 	} 
 	winston.info(cmd);
-	myutils.packAndSend(io, 'processupload', {status: 'working', result: 'Converting pointcloud...(it takes long time to process big data e.g. ~10min for 100k points)'});
+	myutils.packAndSend(io, 'processupload', {status: 'working', task: data.task, result: 'Converting pointcloud...(it takes long time to process big data e.g. ~10min for 100k points)'});
 	exec(cmd, function(err, stdout, stderr) {
     	winston.info(stdout);
     	winston.info(stderr);
     	if(err) {
-			myutils.packAndSend(io, 'processupload', {status: 'error', result: 'cannot_convert_pointcloud', detail: stderr});
+			myutils.packAndSend(io, 'processupload', {status: 'error', task: data.task, result: 'cannot_convert_pointcloud', detail: stderr});
 			myutils.sendEmail('fail', data, {status: 'error', result: 'cannot_convert_pointcloud', detail: stderr});
 			return;
 		}
 		
 		saveDefaultPotreeSetting(data, function(err){
 			if(err) {
-				myutils.packAndSend(io, 'processupload', {status: 'error', result: "cannot_save_default_json"});
+				myutils.packAndSend(io, 'processupload', {status: 'error', task: data.task, result: "cannot_save_default_json"});
 				return;
 			}
 			
@@ -555,7 +562,7 @@ function convertPointcloud(io, data, in_file) {
 			}
 			winston.info(numpoints);
 			if(numpoints === '0') {
-				myutils.packAndSend(io, 'processupload', {status: 'error', result: "numpoints = 0; failed to convert pointcloud, please check data format"});
+				myutils.packAndSend(io, 'processupload', {status: 'error', task: data.task, result: "numpoints = 0; failed to convert pointcloud, please check data format"});
 				myutils.sendEmail('fail', data, {status: 'error', result: "numpoints = 0; failed to convert pointcloud, please check data format"});
 				return;
 			}
@@ -586,11 +593,11 @@ function convertPointcloud(io, data, in_file) {
 			
 			data.db.insertNewTag(tag_json, function(err, res) {
 				if (err) {
-					myutils.packAndSend(io, 'processupload', {status: 'error', result: 'cannot_generate_tag_json'});
+					myutils.packAndSend(io, 'processupload', {status: 'error', task: data.task, result: 'cannot_generate_tag_json'});
 					//throw err;
 					return;
 				} 
-				myutils.packAndSend(io, 'processupload', {status: 'done', result: tag_json});
+				myutils.packAndSend(io, 'processupload', {status: 'done', task: data.task, result: tag_json});
 				// zip pointcloids folder
 				myutils.zipDirectory(out_dir + '/pointclouds/potree', 'potree', data.tagdir + '/point_processed.zip', function(err){
 					if(err) winston.error(err);

@@ -20,7 +20,7 @@ export class UploadlinkComponent implements OnInit {
   ngOnInit() {
   }
 
-  onGoClick($event) {
+  onImportClick($event) {
     $event.preventDefault();
     this.errMsg = '';
     console.log('go clicked');
@@ -28,13 +28,8 @@ export class UploadlinkComponent implements OnInit {
       this.errMsg = 'Please provide valid Google Drive shared link';
       return;
     }
-    const userDetails = {
-      uid: this.authService.userDetails.uid,
-      email: this.authService.userDetails.email,
-      displayName: this.authService.userDetails.displayName
-    };
-    this.socket.sendMessage('processupload', {task: "process", url: this.urlStr, ext: this.extStr, datatype: this.appService.dataType, uploadtype: 'link',
-                              userDetails: userDetails, settings: this.appService.settings });
+
+    this.socket.sendMessage('processupload', {task: "getdatatypes", url: this.urlStr, ext: this.extStr, datatype: this.appService.dataType, uploadtype: 'link'});
     
     let x = document.querySelector("#processing_anchor");
     if (x){

@@ -11,6 +11,9 @@ from PIL import Image
 # Author: Toan Nguyen
 # Date: May 2018
 
+import warnings
+warnings.filterwarnings("ignore")
+
 def validFilename(filename):
     """
     Check if finename is valid
