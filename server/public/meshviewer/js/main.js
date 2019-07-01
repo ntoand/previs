@@ -212,7 +212,7 @@ checkAndLoadPrevisTag(gTag, "", function(info) {
 	app.resizeDisplayGL();
 	app.initContent( gPreset, function() {
 		buildGui();
-		socket.emit('getsavelist', { type: 'mesh', tag:  gTag});
+		socket.emit('getsavelist', { type: 'mesh', tag:  gTag, dir: gDir});
 	});
 	// kick off main loop
 	render();
