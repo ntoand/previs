@@ -4,9 +4,9 @@
   <app-login [navPath]="navPath"></app-login>
 </div>
 
+<div class="spacing"></div>
+
 <div *ngIf="authService.isLoggedIn()" class="with-min-height">
-  
-  <p><button mat-raised-button color='primary' (click)="onLoadTags($event)">Load tags</button></p>
   
   <div class="progress" *ngIf="notification.type === 'working'">
     <mat-spinner diameter=50></mat-spinner>
@@ -28,6 +28,7 @@
       <span class="hoz-spacer"></span>
       <button mat-icon-button *ngIf="appService.listView == true"><mat-icon (click)="toogleViewType()">view_module</mat-icon></button>
       <button mat-icon-button *ngIf="appService.listView == false"><mat-icon (click)="toogleViewType()">view_list</mat-icon></button>
+      <button mat-icon-button (click)="onRefreshClick()"><mat-icon>refresh</mat-icon></button>
     </div>
     <div *ngIf="showSharing">Share to other monash/gmail accounts:
       <div class='send-email'>

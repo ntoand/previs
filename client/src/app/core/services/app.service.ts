@@ -35,6 +35,7 @@ export class AppService {
   }
   
   // ===== REVIEW =====
+  public loaded = false;
   public listView = false;
   public needReload = false;
   public showOptions = false;

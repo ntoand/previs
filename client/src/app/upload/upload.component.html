@@ -9,6 +9,9 @@
   
   <mat-card>
     <h4>See <a href="https://github.com/mivp/previs/wiki/Uploading-data-to-previs" target="_blank">uploading data to previs</a> for more information.</h4>
+    <div>
+      <p><mat-checkbox [(ngModel)]="appService.settings.sendEmail">Notify me via email when data processing is complete</mat-checkbox></p>
+    </div>
     <div class="block">
      <mat-radio-group class="upload-radio-group" [(ngModel)]="appService.uploadType">
         <mat-radio-button class="type-radio-button" value="local">Local upload</mat-radio-button>

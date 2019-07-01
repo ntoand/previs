@@ -27,6 +27,7 @@ import { selectCollections } from '@app/core/store/selectors/collection.selector
 import { INotification } from '../core/models/notification.model';
 import { selectNotification } from '@app/core/store/selectors/notification.selector';
 import { SetNotification } from '@app/core/store/actions/notification.actions';
+import { selectUser } from '@app/core/store/selectors/user.selector';
 
 @Component({
   selector: 'app-review',
@@ -135,6 +136,18 @@ export class ReviewComponent implements OnInit {
     });
     this.subHandles.push(h7);
 
+    // user
+    var h8 = scope.appstate$.pipe(
+      select(selectUser),
+      map(user => user)
+    ).subscribe(user =>{
+      if(user.loaded && !scope.appService.loaded) {
+        scope.loadData();
+        scope.appService.loaded = true;
+      }
+    });
+    this.subHandles.push(h8);
+
     scope.store.dispatch(new SetNotification({type: '', content: '', for: 'review'}));
     
     if(scope.appService.needReload) {
@@ -166,8 +179,7 @@ export class ReviewComponent implements OnInit {
     return '';
   }
 
-  onLoadTags($event) {
-    $event.preventDefault();
+  onRefreshClick() {
     this.loadData();
   }
   
