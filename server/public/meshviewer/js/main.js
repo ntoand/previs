@@ -19,6 +19,11 @@ var resetTranslate = function() {
 	app.resetTranslate();
 }
 
+var resetRenderOrder = function() {
+	app.resetRenderOrder();
+	buildGui();
+}
+
 var resetMessage = function() {
 	showMessage('');
 }
@@ -101,7 +106,8 @@ var buildGui = function() {
 			background: json.views.backgroundColour,
 			centreObjects: centreObjects,
 			resetTranslate: resetTranslate,
-			showAxis: json.views.showAxis
+			showAxis: json.views.showAxis,
+			resetRenderOrder: resetRenderOrder
 		},
     	objects: json.objects
 	};
@@ -146,6 +152,7 @@ var buildGui = function() {
 	
 	views.add(obj.views, 'centreObjects').name('Centre objects');
 	views.add(obj.views, 'resetTranslate').name('Reset translate');
+	views.add(obj.views, 'resetRenderOrder').name('Reset ren order');
 	
 	var groups = gui.addFolder("Mesh groups");
     groups.open();
@@ -185,6 +192,15 @@ var buildGui = function() {
 		hVisible.onChange(function(value) {
 			//console.log('hVisible', this.index, value);
 			obj.objects[this.index].visible = value;
+			app.updateScene();
+		});
+
+		var hRenderOrder = groupItem.add(obj.objects[i], 'renderOrder');
+		hRenderOrder.index = i;
+		hRenderOrder.onChange(function(value) {
+			//console.log('hRenderOrder', this.index, value);
+			const v = Math.round(value);
+			obj.objects[this.index].renderOrder = v < 0 ? 0 : v;
 			app.updateScene();
 		});
 		

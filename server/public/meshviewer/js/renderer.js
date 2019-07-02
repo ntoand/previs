@@ -98,7 +98,12 @@ var PrevisMeshRenderer = (function () {
 	               if(a.name > b.name) return 1;
 	               if(a.name < b.name) return -1;
 	               return 0;
-	            });
+				});
+				
+				// add renderOrder
+				for(var i=0; i < jsonObj.length; i++) {
+					if(!jsonObj[i].renderOrder) jsonObj[i].renderOrder = 0;
+				}
 	            
 	        	scope.json.objects = jsonObj;
 	            console.log('loadScene', scope.json);
@@ -281,11 +286,13 @@ var PrevisMeshRenderer = (function () {
 		for(var i=0; i < objects.length; i++) {
 			var group = scope.groups[i];
 			const groupData = objects[i];
+			//group.renderOrder = groupData.renderOrder;
 			for(var j=0; j < group.children.length; j++) {
 				var model = group.children[j];
 				const modelData = objects[i].objects[j];
 				
 				model.visible = groupData.visible;
+				model.renderOrder = groupData.renderOrder;
 				scope._updateMaterial(model, groupData, modelData);
 			}
 		}
@@ -310,7 +317,17 @@ var PrevisMeshRenderer = (function () {
     PrevisMeshRenderer.prototype.resetTranslate = function() {
     	this.json.views.translate = [0, 0, 0];
         this._updateObjects();
-    }
+	}
+	
+	PrevisMeshRenderer.prototype.resetRenderOrder = function() {
+		console.log('resetRenderOrder');
+		var scope = this;
+		let objects = scope.json.objects;
+		for(var i=0; i < objects.length; i++) {
+			scope.json.objects[i].renderOrder = 0;
+		}
+		this.updateScene();
+	}
     
     PrevisMeshRenderer.prototype.updateBackground = function () {
     	this.renderer.setClearColor(new THREE.Color(this.json.views.backgroundColour[0]/255, this.json.views.backgroundColour[1]/255,
