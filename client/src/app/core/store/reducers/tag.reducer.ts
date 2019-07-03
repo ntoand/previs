@@ -14,6 +14,7 @@ function parseTag(data, loginEmail) {
   tag.size = data.volumes[0].res.toString();
   if(data.collection) tag.collection = data.collection;
   tag.disk = data.disk || 0;
+  tag.hasThumbnail = data.hasThumbnail || false;
   
   let d = new Date(data.date);
   //tag.dateStr = d.toString();
@@ -28,7 +29,8 @@ function parseTag(data, loginEmail) {
     tag.viewUrl = environment.ws_url + '/sharevol/index.html?tag=' + data.tag;
   } 
   else if (tag.type === 'mesh') {
-    tag.imgUrl = 'assets/img/no-image-box.png';
+    tag.imgUrl = tag.hasThumbnail === true ? environment.ws_url  + '/data/tags/' + tag.dir + '/thumbnail.png?' + (new Date()).getTime() 
+                                            : 'assets/img/no-image-box.png';
     tag.viewUrl = environment.ws_url + '/meshviewer/?tag=' + data.tag;
     if(tag.size ==='0,0,0')
       tag.size = 'not available';
@@ -36,7 +38,8 @@ function parseTag(data, loginEmail) {
       tag.size = tag.size + ' objects';
   }
   else if (tag.type === 'point') {
-    tag.imgUrl = 'assets/img/no-image-box.png';
+    tag.imgUrl = tag.hasThumbnail === true ? environment.ws_url + '/data/tags/' + tag.dir + '/thumbnail.png?' +(new Date()).getTime() 
+                                          : 'assets/img/no-image-box.png';
     tag.viewUrl = environment.ws_url + '/pointviewer/?tag=' + data.tag;
     tag.size = tag.size + ' points';
   }

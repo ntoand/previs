@@ -355,6 +355,11 @@ io.on('connection', function (socket) {
 	socket.on('processapikey', function(msg) {
 		processApiKey({socket:socket, res:null}, createMsgData('processapikey', msg));
 	});
+
+	// ==== save thumbnail from client ====
+	socket.on('savethumbnail', function(data) {
+		saveThumbnail(socket, data);
+	});
   	
     // ==== sharevol ====
 	socket.on('savedatajson', function(data) {
@@ -490,4 +495,25 @@ function processApiKey(myio, data)
 			}
 		});
 	}
+}
+
+function saveThumbnail(socket, data) {
+	let tagdir = data.dir || data.tag;
+	let type = data.type; // volume, mesh, point
+	if(type !== 'mesh' && type !== 'point') {
+		socket.emit('savethumbnail', {status: 'error', result: 'invalid type'});
+		return;
+	}
+	let filename = config.tags_data_dir + tagdir + '/thumbnail.png';
+	var imgData = data.base64.replace(/^data:image\/\w+;base64,/, "");
+	var buf = new Buffer(imgData, 'base64');
+	fs.writeFile(filename, buf);
+	if(data.base64) delete data.base64;
+	fbmanager.updateTag(data.tag, {hasThumbnail: true}, function(err) {
+		if(err) {
+			socket.emit('savethumbnail', {status: 'error', result: 'failed to update tag'});
+			return;
+		}
+		socket.emit('savethumbnail', {status: 'done', result: data});
+	})
 }

@@ -6,6 +6,7 @@ var socket = io();
 var url = new URL(window.location.href);
 var gTag = url.searchParams.get("tag");
 var gDir = null;
+var gHasThumbnail = false;
 console.log(window.location);
 console.log("Tag:" + gTag);
 
@@ -64,4 +65,35 @@ function updateDatDropdown(target, list){
     }
     if (innerHTMLStr != "") target.domElement.children[0].innerHTML = innerHTMLStr;
 }
+
+function resizeImage(base64Str, callback) {
+    var MAX_WIDTH = 512;
+    var MAX_HEIGHT = 512;
+
+    var img = new Image();
+    img.src = base64Str;
+    img.onload = function(){
+        var height = img.height;
+        var width = img.width;
+        if (width > height) {
+            if (width > MAX_WIDTH) {
+                height *= MAX_WIDTH / width;
+                width = MAX_WIDTH;
+            }
+        } 
+        else {
+            if (height > MAX_HEIGHT) {
+                width *= MAX_HEIGHT / height;
+                height = MAX_HEIGHT;
+            }
+        }
+        var canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        var ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+        callback(canvas.toDataURL());
+    }   
+}
+
 // ======== END UTILS =============

@@ -10,6 +10,7 @@ var PrevisMeshRenderer = (function () {
 		this.aspectRatio = 1;
 		this.recalcAspectRatio();
 
+		this.loaded = false;
 		this.scene = null;
 		this.cameraDefaults = {
 			posCamera: new THREE.Vector3( 0.0, 1.0, 5.0 ),
@@ -244,7 +245,8 @@ var PrevisMeshRenderer = (function () {
 	    this.axis = new THREE.AxesHelper( ml );
 		this.scene.add( this.axis );
 	    
-	    scope.updateAll();
+		scope.updateAll();
+		scope.loaded = true;
 	}
 	
 	PrevisMeshRenderer.prototype._updateMaterial = function(model, groupData, modelData) {
@@ -418,6 +420,14 @@ var PrevisMeshRenderer = (function () {
 		var delta = this.clock.getDelta();
 		this.controls.update(delta);
 		this.renderer.render( this.scene, this.camera );
+	};
+
+	PrevisMeshRenderer.prototype.generateThumbnail = function (callback) {
+		this.renderer.render( this.scene, this.camera );
+		var imgData = this.renderer.domElement.toDataURL();
+		resizedImg = resizeImage(imgData, function(resizedImg) {
+			callback(resizedImg);
+		});
 	};
 
 	return PrevisMeshRenderer;

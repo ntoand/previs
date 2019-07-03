@@ -9,6 +9,11 @@ var resizeWindow = function () {
 var render = function () {
 	requestAnimationFrame( render );
 	app.render();
+
+	if(app.loaded && gHasThumbnail === false) {
+		gHasThumbnail = true;
+		saveThumbnail();
+	}
 };
 
 var centreObjects = function () {
@@ -90,6 +95,12 @@ var loadSettings = function() {
 	});
 }
 
+var saveThumbnail = function() {
+	showMessage("Save current display as tag thumbnail");
+	resizedImg = app.generateThumbnail(function(resizedImg) {
+		socket.emit('savethumbnail', {type: 'mesh', tag:  gTag, dir: gDir, base64: resizedImg});
+	});
+}
 
 var buildGui = function() {
 	
@@ -101,6 +112,7 @@ var buildGui = function() {
 		Preset: gPreset,
 		saveSettings: saveSettings,
 		saveSettingsAs: saveSettingsAs,
+		saveThumbnail: saveThumbnail,
 		cameraControl: cameraControlList[0],
 		views: {
 			background: json.views.backgroundColour,
@@ -127,9 +139,10 @@ var buildGui = function() {
 	if(!gTag.includes('000000')) {
 		gui.add(obj, 'saveSettings').name('Save');
 		gui.add(obj, 'saveSettingsAs').name('Save as');
+		gui.add(obj, 'saveThumbnail').name('Save thumbnail');
 	}
 
-	var cameraControl = gui.add(obj, 'cameraControl', cameraControlList).name('Camera Control').listen();
+	var cameraControl = gui.add(obj, 'cameraControl', cameraControlList).name('Camera control').listen();
 	cameraControl.onFinishChange(function(value) {
 		app.switchCameraControl(value);
 	});
@@ -220,10 +233,21 @@ socket.on('getsavelist', function(data) {
     }
 });
 
+socket.on('savethumbnail', function(data) {
+	if(data.status === 'error') {
+		showMessage("Error! Cannot save thumbnail");
+	}
+	else {
+		showMessage("Success: thumbnail saved");
+	}
+	setTimeout(resetMessage, 3000);
+});
+
 checkAndLoadPrevisTag(gTag, "", function(info) {
 	console.log("success: now can load data", info);
 	console.log( 'Starting initialisation phase...' );
 	gDir = info.dir || gTag;
+	gHasThumbnail = info.hasThumbnail ? info.hasThumbnail : false;
 	app.initGL();
 	app.resizeDisplayGL();
 	app.initContent( gPreset, function() {
