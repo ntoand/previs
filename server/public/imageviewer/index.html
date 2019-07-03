@@ -1,6 +1,19 @@
 <!doctype html>
 <html>
     <head>
+        <!-- Global site tag (gtag.js) - Google Analytics -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=UA-122143314-1"></script>
+        <script>
+            if(window.location.hostname.includes('mivp-dws1.erc.monash.edu'))
+            {
+                console.log('enable google analytics');
+                window.dataLayer = window.dataLayer || [];
+                function gtag(){dataLayer.push(arguments);}
+                gtag('js', new Date());
+                gtag('config', 'UA-122143314-1');
+            }
+        </script>
+
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=0" />
         <title>High resolution image viewer</title>
