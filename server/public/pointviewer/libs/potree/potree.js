@@ -4619,6 +4619,7 @@ uniform bool uIsLeafNode;
 uniform vec3 uColor;
 uniform float uOpacity;
 
+uniform int elevationDirection;
 uniform vec2 elevationRange;
 uniform vec2 intensityRange;
 
@@ -4956,7 +4957,14 @@ float getGpsTime(){
 
 vec3 getElevation(){
 	vec4 world = modelMatrix * vec4( position, 1.0 );
-	float w = (world.z - elevationRange.x) / (elevationRange.y - elevationRange.x);
+	//float w = (world.z - elevationRange.x) / (elevationRange.y - elevationRange.x);
+	float w;
+	if(elevationDirection == 0)
+		w = (world.x - elevationRange.x) / (elevationRange.y - elevationRange.x);
+	else if(elevationDirection == 1)
+		w = (world.y - elevationRange.x) / (elevationRange.y - elevationRange.x);
+	else
+		w = (world.z - elevationRange.x) / (elevationRange.y - elevationRange.x);
 	vec3 cElevation = texture2D(gradient, vec2(w,1.0-w)).rgb;
 	
 	return cElevation;
@@ -5952,6 +5960,7 @@ uniform bool uIsLeafNode;
 uniform vec3 uColor;
 uniform float uOpacity;
 
+uniform int elevationDirection;
 uniform vec2 elevationRange;
 uniform vec2 intensityRange;
 
@@ -6289,7 +6298,14 @@ float getGpsTime(){
 
 vec3 getElevation(){
 	vec4 world = modelMatrix * vec4( position, 1.0 );
-	float w = (world.z - elevationRange.x) / (elevationRange.y - elevationRange.x);
+	//float w = (world.z - elevationRange.x) / (elevationRange.y - elevationRange.x);
+	float w;
+	if(elevationDirection == 0)
+		w = (world.x - elevationRange.x) / (elevationRange.y - elevationRange.x);
+	else if(elevationDirection == 1)
+		w = (world.x - elevationRange.y) / (elevationRange.y - elevationRange.x);
+	else
+		w = (world.z - elevationRange.y) / (elevationRange.y - elevationRange.x);
 	vec3 cElevation = texture(gradient, vec2(w,1.0-w)).rgb;
 	
 	return cElevation;
@@ -7573,7 +7589,7 @@ void main() {
 				});
 			}
 		}
-
+		
 		get heightMin () {
 			return this.uniforms.elevationRange.value[0];
 		}
@@ -11131,6 +11147,7 @@ void main() {
 				//uniform float opacity;
 				shader.setUniform1f("uOpacity", material.opacity);
 
+				shader.setUniform1i('elevationDirection', material.elevationDirection);
 				shader.setUniform2f("elevationRange", material.elevationRange);
 				shader.setUniform2f("intensityRange", material.intensityRange);
 				//uniform float intensityGamma;

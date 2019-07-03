@@ -498,6 +498,7 @@ function processApiKey(myio, data)
 }
 
 function saveThumbnail(socket, data) {
+	winston.info(['saveThumbnail', data.type, data.tag, data.dir]);
 	let tagdir = data.dir || data.tag;
 	let type = data.type; // volume, mesh, point
 	if(type !== 'mesh' && type !== 'point') {
