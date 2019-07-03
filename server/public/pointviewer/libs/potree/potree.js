@@ -4619,7 +4619,6 @@ uniform bool uIsLeafNode;
 uniform vec3 uColor;
 uniform float uOpacity;
 
-uniform int elevationDirection;
 uniform vec2 elevationRange;
 uniform vec2 intensityRange;
 
@@ -4957,14 +4956,7 @@ float getGpsTime(){
 
 vec3 getElevation(){
 	vec4 world = modelMatrix * vec4( position, 1.0 );
-	//float w = (world.z - elevationRange.x) / (elevationRange.y - elevationRange.x);
-	float w;
-	if(elevationDirection == 0)
-		w = (world.x - elevationRange.x) / (elevationRange.y - elevationRange.x);
-	else if(elevationDirection == 1)
-		w = (world.y - elevationRange.x) / (elevationRange.y - elevationRange.x);
-	else
-		w = (world.z - elevationRange.x) / (elevationRange.y - elevationRange.x);
+	float w = (world.z - elevationRange.x) / (elevationRange.y - elevationRange.x);
 	vec3 cElevation = texture2D(gradient, vec2(w,1.0-w)).rgb;
 	
 	return cElevation;
@@ -5960,7 +5952,6 @@ uniform bool uIsLeafNode;
 uniform vec3 uColor;
 uniform float uOpacity;
 
-uniform int elevationDirection;
 uniform vec2 elevationRange;
 uniform vec2 intensityRange;
 
@@ -6298,14 +6289,7 @@ float getGpsTime(){
 
 vec3 getElevation(){
 	vec4 world = modelMatrix * vec4( position, 1.0 );
-	//float w = (world.z - elevationRange.x) / (elevationRange.y - elevationRange.x);
-	float w;
-	if(elevationDirection == 0)
-		w = (world.x - elevationRange.x) / (elevationRange.y - elevationRange.x);
-	else if(elevationDirection == 1)
-		w = (world.x - elevationRange.y) / (elevationRange.y - elevationRange.x);
-	else
-		w = (world.z - elevationRange.y) / (elevationRange.y - elevationRange.x);
+	float w = (world.z - elevationRange.x) / (elevationRange.y - elevationRange.x);
 	vec3 cElevation = texture(gradient, vec2(w,1.0-w)).rgb;
 	
 	return cElevation;
@@ -7589,7 +7573,7 @@ void main() {
 				});
 			}
 		}
-		
+
 		get heightMin () {
 			return this.uniforms.elevationRange.value[0];
 		}
@@ -11147,7 +11131,6 @@ void main() {
 				//uniform float opacity;
 				shader.setUniform1f("uOpacity", material.opacity);
 
-				shader.setUniform1i('elevationDirection', material.elevationDirection);
 				shader.setUniform2f("elevationRange", material.elevationRange);
 				shader.setUniform2f("intensityRange", material.intensityRange);
 				//uniform float intensityGamma;
@@ -23330,7 +23313,16 @@ ENDSEC
 	            
 	            $('#status').text("Loaded succesfully!");
 	            $("#info").show();
-	            setTimeout(scope.hideMessage, 3000);
+	            if(gHasThumbnail === false) {
+	                gHasThumbnail = true;
+	                setTimeout(function() {
+	                    scope.saveThumbnail();
+	                }, 2000);
+	            }
+	            else {
+	                setTimeout(scope.hideMessage, 3000);
+	            }
+	                
 	        });
 	          
 	          
@@ -23348,6 +23340,17 @@ ENDSEC
 	                $("#info").show();
 	                setTimeout(scope.hideMessage, 3000);
 	            }
+	        });
+
+	        scope.socket.on('savethumbnail', function(data){
+	            if(data.status == "error") {
+	                $('#status').text("Error! Cannot save thumbnail");    
+	            }
+	            else {
+	                $('#status').text("Success: thumbnail saved!");
+	            }
+	            $("#info").show();
+	            setTimeout(scope.hideMessage, 3000);
 	        });
 	    }
 
@@ -23400,6 +23403,9 @@ ENDSEC
 	            SaveAs: function () {
 	                scope.saveSettingsAs();
 	            },
+	            SaveThumbnail: function() {
+	                scope.saveThumbnail();
+	            },
 	            PointSize: scope.material.size,
 	            PointSizing: Object.keys(Potree.PointSizeType)[scope.material.pointSizeType],
 	            PointShape: Object.keys(Potree.PointShape)[scope.material.shape],
@@ -23438,11 +23444,12 @@ ENDSEC
 	        
 	        if(!scope.demo) {
 	            gui.add(obj, 'Save');
-	            gui.add(obj, 'SaveAs').name('Save As');
+	            gui.add(obj, 'SaveAs').name('Save as');
+	            gui.add(obj, 'SaveThumbnail').name('Save thumbnail');
 	        }
 
 	        // Navigation
-	        var navigation = gui.add(obj, 'Navigation', scope.navigationList).name('Camera Control').listen();
+	        var navigation = gui.add(obj, 'Navigation', scope.navigationList).name('Camera control').listen();
 	        navigation.onFinishChange(function(value) {
 	            obj.Navigation = value;
 	            if(value === 'Orbit control') {
@@ -23611,6 +23618,17 @@ ENDSEC
 	        scope.saveSettings();
 	    }
 
+	    saveThumbnail() {
+	        $('#status').text("Save current scene as tag thumbnail!");
+	        $("#info").show();
+	        var scope = this;
+	        scope.viewer.render();
+	        var imgData = scope.viewer.renderer.domElement.toDataURL();
+	        scope.resizeImage(imgData, function(resizedImg) {
+				scope.socket.emit('savethumbnail', {type: 'point', tag: gTag, dir: gDir, base64: resizedImg});
+			});
+	    }
+
 	    updateDatDropdown(target, list){   
 	        let innerHTMLStr = "";
 	        if(list.constructor.name == 'Array'){
@@ -23655,6 +23673,35 @@ ENDSEC
 	        //let bMax = box.max.z + 0.2 * bWidth;
 	    }
 
+	    resizeImage(base64Str, callback) {
+	        var MAX_WIDTH = 512;
+	        var MAX_HEIGHT = 512;
+	    
+	        var img = new Image();
+	        img.src = base64Str;
+	        img.onload = function(){
+	            var height = img.height;
+	            var width = img.width;
+	            if (width > height) {
+	                if (width > MAX_WIDTH) {
+	                    height *= MAX_WIDTH / width;
+	                    width = MAX_WIDTH;
+	                }
+	            } 
+	            else {
+	                if (height > MAX_HEIGHT) {
+	                    width *= MAX_HEIGHT / height;
+	                    height = MAX_HEIGHT;
+	                }
+	            }
+	            var canvas = document.createElement('canvas');
+	            canvas.width = width;
+	            canvas.height = height;
+	            var ctx = canvas.getContext('2d');
+	            ctx.drawImage(img, 0, 0, width, height);
+	            callback(canvas.toDataURL());
+	        };   
+	    }
 
 	}
 

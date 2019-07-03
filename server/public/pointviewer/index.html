@@ -80,6 +80,7 @@
 		var url = new URL(window.location.href);
 		var gTag = url.searchParams.get("tag");
 		var gDir = null;
+		var gHasThumbnail = false;
 		console.log(gTag);
 		if(gTag === null || gTag === undefined) {
 			alert('Invalid tag');
@@ -89,6 +90,7 @@
 				console.log("success: now can load data", info);
 				$("#info").show();
 				gDir = info.dir || info.tag;
+				gHasThumbnail = info.hasThumbnail ? info.hasThumbnail : false;
 				var dataloc = "data/tags/" + gDir + "/point_result/pointclouds/potree/cloud.js";
 
 				window.viewer = new Potree.Viewer(document.getElementById("potree_render_area"));

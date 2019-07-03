@@ -425,7 +425,7 @@ var PrevisMeshRenderer = (function () {
 	PrevisMeshRenderer.prototype.generateThumbnail = function (callback) {
 		this.renderer.render( this.scene, this.camera );
 		var imgData = this.renderer.domElement.toDataURL();
-		resizedImg = resizeImage(imgData, function(resizedImg) {
+		resizeImage(imgData, function(resizedImg) {
 			callback(resizedImg);
 		});
 	};
