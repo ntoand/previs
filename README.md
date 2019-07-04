@@ -78,6 +78,8 @@ or
 - Using ngrx to manage client app state
 - Generate stats info
 - Do not need to define data type before uploading
+- Generate mesh/point thumbnails from client viewers
+- Add admin page to view stats
 
 ### v0.9.0
 

@@ -157,16 +157,16 @@ export class AdminComponent implements OnInit {
 
       // users
       const email = tags[i].userEmail;
+      const date = moment(new Date(tags[i].date));
       if(!userDict[email]) {
         userDict[email] = {
-          disk: 0,
-          tag: 0,
-          start: scope.endDate.clone(),
-          end: scope.startDate.clone()
+          disk: tags[i].disk ? tags[i].disk : 0,
+          tag: 1,
+          start: date.clone(),
+          end: date.clone()
         };
       }
       else {
-        const date = moment(new Date(tags[i].date));
         userDict[email].disk += tags[i].disk ? tags[i].disk : 0;
         userDict[email].tag += 1;
         if(userDict[email].start > date) userDict[email].start = date.clone();

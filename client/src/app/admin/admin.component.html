@@ -12,7 +12,7 @@
 
   <div>
     <h3>From {{startDate.format("DD/MM/YYYY")}} to {{endDate.format("DD/MM/YYYY")}}:
-    {{stats.tag}} tags, {{users.length}} users, {{(stats.disk/1024).toFixed(2)}} GB disk used</h3>
+    {{stats.tag}} tags, {{users.length}} users, {{(stats.disk/1024).toFixed(3)}} GB disk used</h3>
   </div>
 
   <h4>Number of tags VS month</h4>
@@ -88,7 +88,7 @@
 
       <ng-container matColumnDef="disk">
         <th mat-header-cell *matHeaderCellDef mat-sort-header> Disk (GB) </th>
-        <td mat-cell *matCellDef="let element"> {{(element.disk/1024).toFixed(2)}} </td>
+        <td mat-cell *matCellDef="let element"> {{(element.disk/1024).toFixed(3)}} </td>
       </ng-container>
 
       <ng-container matColumnDef="start">
