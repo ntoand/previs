@@ -203,7 +203,7 @@ app.get('/rest/info', function (req, res) {
 				return;
 			}
 			if(info.password) info.password = "******";
-			clientAccessLog.info({request: 'get', tag: tag, type: info.type, key: key, appname: keydata.appname});
+			clientAccessLog.info({request: 'get', ip: req.headers['x-real-ip'], tag: tag, type: info.type, key: key, appname: keydata.appname, referer: req.headers.referer});
 			res.setHeader('Content-Type', 'application/json');
 			res.send(info);
 		});
@@ -219,7 +219,7 @@ app.post('/rest/info', function (req, res) {
 		res.send(JSON.stringify({ status: "error", code: "100", result: "no tag provided" }, null, 4));
 		return;
 	}
-	
+
 	let demoTags = ['000000_arteries_brain', '000000_galaxy', '000000_hoyoverde',
                     '000000_image_cmu1', '000000_mesh_baybridge', '000000_mesh_heart'];
     if(demoTags.includes(tag)) {
@@ -249,7 +249,7 @@ app.post('/rest/info', function (req, res) {
 			}
 			info.password = "******";
 		}
-		clientAccessLog.info({request: 'post', tag: tag, type: info.type});
+		clientAccessLog.info({request: 'post', ip: req.headers['x-real-ip'], tag: tag, type: info.type, referer: req.headers.referer});
 		res.setHeader('Content-Type', 'application/json');
 		res.send(info);
 	});
@@ -271,12 +271,12 @@ function createMsgData(action, msg) {
 
 // ===== SOCKET IO ===========
 io.on('connection', function (socket) {
-	//winston.info('A client connected');
+	winston.info('A client connected from: ' + socket.handshake.headers['x-real-ip'] + ' referer: ' + socket.handshake.headers.referer);
 	
 	socket.on('disconnect', function(){
-    	//winston.info('user disconnected');
+    	winston.info('user disconnected from: ' + socket.handshake.headers['x-real-ip'] + ' referer: ' + socket.handshake.headers.referer);
 	});
-	  
+
 	// ==== client app messages ====
 	// tag
 	socket.on('admingettags', function(msg) {
