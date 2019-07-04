@@ -1,6 +1,6 @@
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
-import { FormsModule } from '@angular/forms'; 
+import { FormsModule, ReactiveFormsModule } from '@angular/forms'; 
 import { HttpClientModule } from '@angular/common/http';
 
 import { StoreModule } from "@ngrx/store";
@@ -30,8 +30,9 @@ import { ProfileComponent } from './profile/profile.component';
 import { MatToolbarModule, MatButtonModule, MatIconModule, MatInputModule, 
          MatCardModule, MatRadioModule, MatProgressBarModule, MatProgressSpinnerModule, MatSelectModule,
          MatDialogModule, MatTooltipModule, MatCheckboxModule, MatMenuModule, 
-         MatTableModule, MatSortModule, MatChipsModule } from '@angular/material';
+         MatTableModule, MatSortModule, MatChipsModule, MatNativeDateModule } from '@angular/material';
 import { NgxChartsModule } from '@swimlane/ngx-charts';
+import { MatDatepickerModule } from '@angular/material/datepicker';
 
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 import { AppService } from '@app/core/services/app.service';
@@ -79,6 +80,7 @@ import { AdminComponent } from './admin/admin.component';
     BrowserModule,
     AppRoutingModule,
     FormsModule,
+    ReactiveFormsModule,
     FlexLayoutModule,
     BrowserAnimationsModule,
     HttpClientModule,
@@ -98,12 +100,14 @@ import { AdminComponent } from './admin/admin.component';
     MatTableModule,
     MatSortModule,
     MatChipsModule,
+    MatDatepickerModule,
+    MatNativeDateModule,
     AngularFireModule.initializeApp(environment.firebase),
     AngularFirestoreModule, // imports firebase/firestore, only needed for database features
     AngularFireAuthModule, // imports firebase/auth, only needed for auth features,
     NgxChartsModule
   ],
-  providers: [AppService, AuthService],
+  providers: [AppService, AuthService, MatDatepickerModule],
   bootstrap: [AppComponent],
   entryComponents: [TagDetailComponent, CollectionComponent]
 })

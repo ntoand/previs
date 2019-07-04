@@ -11,6 +11,8 @@ import * as moment from 'moment';
 import { NgxChartsModule } from '@swimlane/ngx-charts';
 import {MatSort} from '@angular/material/sort';
 import {MatTableDataSource} from '@angular/material/table';
+// for date picket
+import {FormControl} from '@angular/forms';
 
 @Component({
   selector: 'app-admin',
@@ -26,6 +28,8 @@ export class AdminComponent implements OnInit {
   user = null;
 
   // data
+  dpStart = new FormControl(new Date());
+  dpEnd = new FormControl(new Date());
   loaded = false;
   admin = false;
   allTags = [];
@@ -127,6 +131,21 @@ export class AdminComponent implements OnInit {
       const date = moment(new Date(tags[i].date));
       if(scope.startDate > date) scope.startDate = date;
     }
+
+    scope.dpStart = new FormControl(scope.startDate.toDate());
+    scope.dpEnd = new FormControl(scope.endDate.toDate());
+  }
+
+  onStartDateChange($event) {
+    console.log('onStartDateChange', $event);
+    this.startDate = moment($event.value);
+    this.processStatsData();
+  }
+
+  onEndDateChange($event) {
+    console.log('onEndDateChange', $event);
+    this.endDate = moment($event.value);
+    this.processStatsData();
   }
 
   processStatsData() {
@@ -174,9 +193,10 @@ export class AdminComponent implements OnInit {
       }
     }
     
+    scope.users = [];
     Object.keys(userDict).forEach(function(key,index) {
-      const start = userDict[key].start.format('DD/MM/YYYY');
-      const end = userDict[key].end.format('DD/MM/YYYY');
+      const start = userDict[key].start.format('MM/DD/YYYY');
+      const end = userDict[key].end.format('MM/DD/YYYY');
       scope.users.push({
         email: key,
         disk: userDict[key].disk,

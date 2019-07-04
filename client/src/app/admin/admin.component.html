@@ -11,8 +11,26 @@
   <h2>Previs insights</h2>
 
   <div>
-    <h3>From {{startDate.format("DD/MM/YYYY")}} to {{endDate.format("DD/MM/YYYY")}}:
-    {{stats.tag}} tags, {{users.length}} users, {{(stats.disk/1024).toFixed(3)}} GB disk used</h3>
+    <span class='datepicker'>
+      <mat-form-field>
+        <input matInput [matDatepicker]="picker1" placeholder="From" [formControl]="dpStart" (dateChange)="onStartDateChange($event)">
+        <mat-datepicker-toggle matSuffix [for]="picker1"></mat-datepicker-toggle>
+        <mat-datepicker #picker1></mat-datepicker>
+      </mat-form-field>
+    </span>
+
+    <span class='datepicker'>
+      <mat-form-field class='datepicker'>
+        <input matInput [matDatepicker]="picker2" placeholder="To" [formControl]="dpEnd" (dateChange)="onEndDateChange($event)">
+        <mat-datepicker-toggle matSuffix [for]="picker2"></mat-datepicker-toggle>
+        <mat-datepicker #picker2></mat-datepicker>
+      </mat-form-field>
+    </span>
+  </div>
+
+  <div>
+    <h3>Summary:{{stats.tag}} tags, {{users.length}} users, {{(stats.disk/1024).toFixed(3)}} GB disk used</h3>
+    <div class="spacing"></div>
   </div>
 
   <h4>Number of tags VS month</h4>

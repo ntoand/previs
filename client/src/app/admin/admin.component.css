@@ -29,3 +29,7 @@ table {
 .users-table-footer {
     font-weight: bold;
 }
+
+.datepicker {
+    margin-right: 10px;
+}
