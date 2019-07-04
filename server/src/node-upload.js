@@ -427,10 +427,10 @@ function sendViewDataToClient_Volume(io, data) {
 				// save to database
 				var tag_json = {};
 				tag_json.id = data.tag;
-				tag_json.tag=data.tag;
-				tag_json.dir=data.dir;
-				tag_json.type='volume'
-				tag_json.source='localupload';
+				tag_json.tag = data.tag;
+				tag_json.dir = data.dir;
+				tag_json.type = 'volume'
+				tag_json.source = data.uploadtype;
 				tag_json.date=Date.now();
 				//tag_json.data = data.tagdir + '/' + data.inputfilename + '.' + data.inputfileext;
 				tag_json.userId = data.userDetails.uid;

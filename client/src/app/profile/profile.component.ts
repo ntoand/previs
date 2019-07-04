@@ -6,6 +6,7 @@ import { Observable } from 'rxjs';
 import { Store, select } from '@ngrx/store';
 import { selectUser } from '@app/core/store/selectors/user.selector';
 import { map } from 'rxjs/operators';
+import { AppService } from '../core/services/app.service';
 
 @Component({
   selector: 'app-profile',
@@ -28,7 +29,7 @@ export class ProfileComponent implements OnInit {
   mytardisApikeyStr = '';
   mytardisApikeyEditMode = false;
 
-  constructor(private store: Store<IAppState>,
+  constructor(private store: Store<IAppState>, public appService: AppService,
               private socket: SocketioService, public authService: AuthService) { }
 
   ngOnInit() {
@@ -46,20 +47,20 @@ export class ProfileComponent implements OnInit {
     this.subHandles.push(h1);
 
     var h2 = scope.socket.apiKeyReceived$.subscribe((data: any)=>{
-      this.message.type = '';
-      this.message.content = '';
+      scope.message.type = '';
+      scope.message.content = '';
       if(data.status === 'error') {
-        this.message.type = 'error';
-        this.message.content = 'failed to get api key';
+        scope.message.type = 'error';
+        scope.message.content = 'failed to get api key';
         return;
       }
       
       let result = data.result;
-      this.apikey.key = result.key;
-      this.apikey.date = '';
+      scope.apikey.key = result.key;
+      scope.apikey.date = '';
       if(result.date !== '') {
         var d = new Date(result.date);
-        this.apikey.date = d.toLocaleDateString() + ' ' + d.toLocaleTimeString();
+        scope.apikey.date = d.toLocaleDateString() + ' ' + d.toLocaleTimeString();
       }
     });
     this.subHandles.push(h2);
@@ -136,6 +137,10 @@ export class ProfileComponent implements OnInit {
     }
     this.socket.sendMessage('adminupdateuser', {data: {id: this.authService.userDetails.uid, mytardisApikey: this.mytardisApikeyStr}});
     this.mytardisApikeyEditMode = false;
+  }
+
+  onMenuClick(id) {
+    this.appService.setMenuIdx(id);
   }
 
 }

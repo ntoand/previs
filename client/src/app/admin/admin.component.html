@@ -1,0 +1,121 @@
+<div *ngIf="loaded === false" class="waiting-container">
+  <mat-spinner diameter=50></mat-spinner>
+</div>
+
+<div *ngIf="loaded && !admin">
+  <h2>Only admin can view this page!</h2>
+</div>
+
+<div *ngIf="loaded && admin">
+
+  <h2>Previs insights</h2>
+
+  <div>
+    <h3>From {{startDate.format("DD/MM/YYYY")}} to {{endDate.format("DD/MM/YYYY")}}:
+    {{stats.tag}} tags, {{users.length}} users, {{(stats.disk/1024).toFixed(2)}} GB disk used</h3>
+  </div>
+
+  <h4>Number of tags VS month</h4>
+  <div class="chart-container">
+    <ngx-charts-bar-vertical
+      [scheme]="colorScheme"
+      [results]="tagVSMonth"
+      [gradient]="gradient"
+      [xAxis]="showXAxis"
+      [yAxis]="showYAxis"
+      [legend]="showLegend"
+      [showXAxisLabel]="showXAxisLabel"
+      [showYAxisLabel]="showYAxisLabel"
+      [xAxisLabel]="xAxisLabel"
+      [yAxisLabel]="yAxisLabelTagVSMonth"
+      (select)="onSelect($event)">
+    </ngx-charts-bar-vertical>
+  </div>
+
+  <h4>Disk usage VS month</h4>
+  <div class="chart-container">
+    <ngx-charts-bar-vertical
+      [scheme]="colorScheme"
+      [results]="diskVSMonth"
+      [gradient]="gradient"
+      [xAxis]="showXAxis"
+      [yAxis]="showYAxis"
+      [legend]="showLegend"
+      [showXAxisLabel]="showXAxisLabel"
+      [showYAxisLabel]="showYAxisLabel"
+      [xAxisLabel]="xAxisLabel"
+      [yAxisLabel]="yAxisLabelDiskVSMonth"
+      (select)="onSelect($event)">
+    </ngx-charts-bar-vertical>
+  </div>
+
+  <h4>Data types and Upload types</h4>
+  <div fxLayout="row wrap" fxLayoutAlign="start center" fxLayoutGap="2px">
+    <div class="chart-container2">
+      <ngx-charts-pie-chart
+        [scheme]="colorScheme"
+        [results]="dataType"
+        [gradient]="gradient"
+        [legend]="showPieLegend"
+        (select)="onSelect($event)">
+      </ngx-charts-pie-chart>
+    </div>
+    <div class="chart-container2">
+      <ngx-charts-pie-chart
+        [scheme]="colorScheme"
+        [results]="uploadType"
+        [gradient]="gradient"
+        [legend]="showPieLegend"
+        (select)="onSelect($event)">
+      </ngx-charts-pie-chart>
+    </div>
+  </div>
+
+  <div class="users-table">
+    <h4>Users</h4>
+    <!-- list/table view -->
+    <table *ngIf="users.length > 0" mat-table [dataSource]="dataSource" matSort class="mat-elevation-z8">
+
+      <ng-container matColumnDef="email">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header> Email </th>
+        <td mat-cell *matCellDef="let element"> {{element.email}} </td>
+      </ng-container>
+
+      <ng-container matColumnDef="tag">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header> # tags </th>
+        <td mat-cell *matCellDef="let element"> {{element.tag}} </td>
+      </ng-container>
+
+      <ng-container matColumnDef="disk">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header> Disk (GB) </th>
+        <td mat-cell *matCellDef="let element"> {{(element.disk/1024).toFixed(2)}} </td>
+      </ng-container>
+
+      <ng-container matColumnDef="start">
+        <th mat-header-cell *matHeaderCellDef> First upload </th>
+        <td mat-cell *matCellDef="let element"> {{element.start}} </td>
+      </ng-container>
+
+      <ng-container matColumnDef="end">
+        <th mat-header-cell *matHeaderCellDef> Last upload </th>
+        <td mat-cell *matCellDef="let element"> {{element.end}} </td>
+      </ng-container>
+
+      <ng-container matColumnDef="note">
+        <th mat-header-cell *matHeaderCellDef> Note </th>
+        <td mat-cell *matCellDef="let element"> {{element.note}} </td>
+      </ng-container>
+
+      <ng-container matColumnDef="summary">
+          <td mat-footer-cell *matFooterCellDef colspan="6">
+            Number of users: {{users.length}}
+          </td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+      <tr mat-footer-row *matFooterRowDef="['summary']" class="users-table-footer"></tr>
+    </table>
+  </div>
+
+</div>

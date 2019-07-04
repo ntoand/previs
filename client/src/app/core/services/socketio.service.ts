@@ -43,4 +43,5 @@ export class SocketioService extends Socket {
   getOrCreateUserReceived$ = this.fromEvent("admingetorcreateuser");
   apiKeyReceived$ = this.fromEvent("processapikey");
   updateUserReceived$ = this.fromEvent('adminupdateuser');
+  getDataForStatsReceived$ = this.fromEvent('getdataforstats');
 }

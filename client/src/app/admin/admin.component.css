@@ -1,0 +1,31 @@
+.waiting-container {
+    padding-top: 10px;
+    text-align: "center";
+}
+
+.chart-container {
+    margin-top: 10px;
+    margin-bottom: 5px;
+    height: 410px;
+}
+
+.chart-container2 {
+    margin-top: 10px;
+    margin-bottom: 5px;
+    height: 250px;
+    width: 550px;
+}
+
+.users-table {
+    width: 100%;
+    padding-top: 10px;
+    padding-bottom: 10px;
+}
+
+table {
+    width: 100%;
+}
+
+.users-table-footer {
+    font-weight: bold;
+}

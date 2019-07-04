@@ -21,7 +21,8 @@ export function userReducers (state = initialUserState, action: UserActions): IU
             disk: disk,
             quota: result.quota || 0,
             diskStr: disk < 1024 ? disk.toFixed(2)+' MB' : (disk/1024).toFixed(2)+' GB',
-            mytardisApikey: result.mytardisApikey || ''
+            mytardisApikey: result.mytardisApikey || '',
+            admin: result.admin || false
         }
         return {
           ...state,

@@ -31,6 +31,7 @@ import { MatToolbarModule, MatButtonModule, MatIconModule, MatInputModule,
          MatCardModule, MatRadioModule, MatProgressBarModule, MatProgressSpinnerModule, MatSelectModule,
          MatDialogModule, MatTooltipModule, MatCheckboxModule, MatMenuModule, 
          MatTableModule, MatSortModule, MatChipsModule } from '@angular/material';
+import { NgxChartsModule } from '@swimlane/ngx-charts';
 
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 import { AppService } from '@app/core/services/app.service';
@@ -47,6 +48,7 @@ import { LoginComponent } from './login/login.component';
 import { AuthService } from '@app/core/services/auth.service';
 import { TagDetailComponent } from './review/tag-detail/tag-detail.component';
 import { CollectionComponent } from './review/collection/collection.component';
+import { AdminComponent } from './admin/admin.component';
 
 @NgModule({
   declarations: [
@@ -65,7 +67,8 @@ import { CollectionComponent } from './review/collection/collection.component';
     LoginComponent,
     TagDetailComponent,
     ProfileComponent,
-    CollectionComponent
+    CollectionComponent,
+    AdminComponent
   ],
   imports: [
     StoreModule.forRoot(appReducers, { metaReducers }),
@@ -97,7 +100,8 @@ import { CollectionComponent } from './review/collection/collection.component';
     MatChipsModule,
     AngularFireModule.initializeApp(environment.firebase),
     AngularFirestoreModule, // imports firebase/firestore, only needed for database features
-    AngularFireAuthModule // imports firebase/auth, only needed for auth features,
+    AngularFireAuthModule, // imports firebase/auth, only needed for auth features,
+    NgxChartsModule
   ],
   providers: [AppService, AuthService],
   bootstrap: [AppComponent],

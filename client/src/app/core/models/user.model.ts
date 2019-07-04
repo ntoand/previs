@@ -9,6 +9,7 @@ export interface IUser {
     diskStr: string;
     quota: number;
     mytardisApikey: string;
+    admin: boolean;
 }
 
   

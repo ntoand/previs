@@ -20,7 +20,10 @@
             <span><a href="#" (click)="onMytardisApikeyEditCancel($event)"><mat-icon class="small-button">close</mat-icon></a></span>
         </p>
         <p>Stats: {{user?.item?.numtags}} tags, {{user?.item?.diskStr}} used </p>
-        <p><button mat-button mat-raised-button color='primary' (click)='onRefresh($event)'>Refresh stats</button></p>
+        <p>
+            <button mat-button mat-raised-button color='primary' (click)='onRefresh($event)'>Refresh stats</button>
+            <a *ngIf="user?.item?.admin === true" routerLink="/admin" (click)="onMenuClick(4)" class="left-margin"><button mat-button mat-raised-button color='primary'>Admin</button></a>
+        </p>
     </mat-card>
     
     <div class="spacing"></div>

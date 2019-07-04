@@ -347,13 +347,21 @@ io.on('connection', function (socket) {
 	socket.on('admingetorcreateuser', function(msg) {
 		myadmin.getOrCreateUser({socket:socket, res:null}, createMsgData('admingetorcreateuser', msg));
 	});
+
+	socket.on('processapikey', function(msg) {
+		processApiKey({socket:socket, res:null}, createMsgData('admingetorcreateuser', msg));
+	});
 	
 	socket.on('adminupdateuser', function(msg) {
 		myadmin.updateUser({socket:socket, res:null}, createMsgData('adminupdateuser', msg));
 	});
 
-	socket.on('processapikey', function(msg) {
-		processApiKey({socket:socket, res:null}, createMsgData('processapikey', msg));
+	socket.on('adminupdateuser', function(msg) {
+		myadmin.updateUser({socket:socket, res:null}, createMsgData('adminupdateuser', msg));
+	});
+
+	socket.on('getdataforstats', function(msg) {
+		myadmin.getDataForStats({socket:socket, res:null}, createMsgData('getdataforstats', msg));
 	});
 
 	// ==== save thumbnail from client ====

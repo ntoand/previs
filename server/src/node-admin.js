@@ -255,6 +255,19 @@ function updateUser(io, data) {
     });
 }
 
+function getDataForStats(io, data) {
+    winston.info('getDataForStats');
+    data.db.getAllTags(function(err, res) {
+        if(err) {
+            winston.error(err);
+            myutils.packAndSend(io, data.action, {status: 'error', result: err});
+            return;
+        }
+        var tags = res.map(item => item.data);
+        myutils.packAndSend(io, data.action, {status: 'done', result: {tags: tags}});
+    })
+}
+
 module.exports.getTags = getTags;
 module.exports.deleteTags = deleteTags;
 module.exports.updateTag = updateTag;
@@ -268,3 +281,4 @@ module.exports.getDataBundleByUserEmail = getDataBundleByUserEmail;
 module.exports.updateShareEmail = updateShareEmail;
 module.exports.getOrCreateUser = getOrCreateUser;
 module.exports.updateUser = updateUser;
+module.exports.getDataForStats = getDataForStats;
