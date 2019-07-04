@@ -27,9 +27,6 @@ if (process.env.NODE_ENV === "production")  {
 	console.log("RUN DEV MODE");
 }
 
-var FirebaseManager   = require('./src/node-firebase');
-var fbmanager = new FirebaseManager();
-
 // init default winston logger
 const winston = require('winston');
 winston.configure({
@@ -46,13 +43,22 @@ winston.configure({
 		new winston.transports.Console({ format: winston.format.simple() })
 	]
 });
-winston.info('server starts');
-
-
-process.argv.forEach(function (val, index, array) {
-	winston.info(index + ': ' + val);
+winston.loggers.add('client_access', {
+	format: winston.format.combine(
+		winston.format.timestamp({
+			format: 'YYYY-MM-DD HH:mm:ss'
+		}),
+		winston.format.json()
+	),
+	transports: [
+		new winston.transports.File({ filename: 'logs/client_access.log' }),
+	]
 });
+const clientAccessLog = winston.loggers.get('client_access');
 
+// database
+var FirebaseManager   = require('./src/node-firebase');
+var fbmanager = new FirebaseManager();
 
 // ===== INITIALISATION ======
 var app = express();
@@ -85,12 +91,9 @@ function doLocalUpload(req, res) {
 
   	form
   	.on('field', function(field, value) {
-    	winston.info(field, value);
     	fields.push([field, value]);
   	})
   	.on('file', function(field, file) {
-    	winston.info(field);
-    	winston.info(file);
     	files.push([field, file]);
   	})
   	.on('error', function(err) {
@@ -98,7 +101,6 @@ function doLocalUpload(req, res) {
 		res.json({status: 'error', detail: err});
   	})
   	.on('end', function() {
-    	winston.info('-> upload done');
     	var filebase = path.parse(files[0][1].path).base;
     	res.json({status: 'done', file: filebase});
     });
@@ -108,8 +110,6 @@ function doLocalUpload(req, res) {
 
 
 app.post('/localupload', function (req, res) {
-	winston.info('receive and process .zip file');
-	
 	var key = req.query.key;
 	winston.info('localupload', key);
 	// TODO: using key for web client upload
@@ -176,22 +176,6 @@ app.post('/rest/processupload', function (req, res) {
 });
 
 
-app.post('/rest/adminlogin', function (req, res) {
-
-	var user = req.body.user;
-	var password = req.body.password;
-	//console.log(user + ' ' + password);
-
-	if(user != "admin" || password != "c4ve2016") {
-		res.setHeader('Content-Type', 'application/json');
-		res.send(JSON.stringify({ status: "error", result: "Cannot run login" }, null, 4));
-		return;
-	}
-	res.setHeader('Content-Type', 'application/json');
-	res.send(JSON.stringify({ status: "success", result: "Can login" }, null, 4));
-});
-
-
 //url/info?tag=tag
 app.get('/rest/info', function (req, res) {
 	var tag = req.query.tag;
@@ -204,8 +188,7 @@ app.get('/rest/info', function (req, res) {
 	}
 
 	fbmanager.getKeyInfo(key, function(err, keydata) {
-		winston.error(err);
-		winston.info(keydata);
+		if(err) winston.error(err);
 		if(err || keydata.type !== 'app') {
 			res.setHeader('Content-Type', 'application/json');
 			res.send(JSON.stringify({ status: "error", code: "100", result: "api key is nor provided or invalid" }, null, 4));
@@ -213,7 +196,6 @@ app.get('/rest/info', function (req, res) {
 		}
 
 		fbmanager.getTag(tag, function(err, info) { 
-			winston.info(info);
 			if(err || !info) {
 				winston.error(err);
 				res.setHeader('Content-Type', 'application/json');
@@ -221,6 +203,7 @@ app.get('/rest/info', function (req, res) {
 				return;
 			}
 			if(info.password) info.password = "******";
+			clientAccessLog.info({request: 'get', tag: tag, type: info.type, key: key, appname: keydata.appname});
 			res.setHeader('Content-Type', 'application/json');
 			res.send(info);
 		});
@@ -236,7 +219,6 @@ app.post('/rest/info', function (req, res) {
 		res.send(JSON.stringify({ status: "error", code: "100", result: "no tag provided" }, null, 4));
 		return;
 	}
-	winston.info('/rest/info POST ' + tag);
 	
 	let demoTags = ['000000_arteries_brain', '000000_galaxy', '000000_hoyoverde',
                     '000000_image_cmu1', '000000_mesh_baybridge', '000000_mesh_heart'];
@@ -267,6 +249,7 @@ app.post('/rest/info', function (req, res) {
 			}
 			info.password = "******";
 		}
+		clientAccessLog.info({request: 'post', tag: tag, type: info.type});
 		res.setHeader('Content-Type', 'application/json');
 		res.send(info);
 	});
@@ -288,10 +271,10 @@ function createMsgData(action, msg) {
 
 // ===== SOCKET IO ===========
 io.on('connection', function (socket) {
-	winston.info('A client connected');
+	//winston.info('A client connected');
 	
 	socket.on('disconnect', function(){
-    	winston.info('user disconnected');
+    	//winston.info('user disconnected');
 	});
 	  
 	// ==== client app messages ====
@@ -416,9 +399,6 @@ function saveDataJson(socket, data) {
 
 function saveMeshParams(socket, data)
 {
-	winston.info("Received saveparams from mesh viewer");
-	winston.info(data);
-	
 	let filename = 'mesh.json';
 	let preset = data.preset;
 	if(preset && preset !== 'default') {
@@ -433,7 +413,6 @@ function saveMeshParams(socket, data)
 			return;
 		}
 		
-		winston.info("Saved mesh params");
 		socket.emit('savemeshjson', { status: 'done', result: data });
 	});
 }
@@ -461,7 +440,7 @@ function getSaveList(socket, data)
 		dir += 'gigapoint_*.json';
 		startind = 10;
 	}
-	winston.info(dir);
+	//winston.info(dir);
 		
 	glob(dir, options, function (err, files) {
 	    if(err) { 
