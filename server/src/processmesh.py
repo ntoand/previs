@@ -5,9 +5,12 @@ import zipfile
 import os.path
 import json
 import shutil
+import re
+import fileinput
 
 # Author: Toan Nguyen
 # Date: May 2018
+# Modified: July 2019 (support python3, replace spaces in names with underscore)
 
 import warnings
 warnings.filterwarnings("ignore")
@@ -70,6 +73,22 @@ def fixMtlFile(mtlfile, verbose):
         outfile.write(content)
 
 
+def fixObjFile(objfile, verbose):
+    """
+    Update mtl file names
+    :param objfile:
+    :param verbose:
+    :return:
+    """
+    if verbose:
+        print ("fixing file " + objfile)
+
+    for line in fileinput.input(objfile, inplace=True):
+        if "mtllib" in line:
+            line = "mtllib " + re.sub('\s+', '_', line[6:].strip()) + "\n"
+        print("%s" % line),
+
+
 def processMeshes(infile, outdir, verbose = False):
     """
     Travel the zip file and generate meta data
@@ -99,9 +118,10 @@ def processMeshes(infile, outdir, verbose = False):
             continue
         parts = splitFilename(fname, hasContainerDir)
         if len(parts) == 2:
-            groupname = parts[0]
-            filename = parts[1]
+            groupname =  re.sub('\s+', '_', parts[0])
+            filename = re.sub('\s+', '_', parts[1])
             extension = os.path.splitext(filename)[1].lower()
+            hasSpace = (" " in parts[0]) or (" " in parts[1])
 
             #extract
             groupdir = os.path.join(outdir, groupname)
@@ -109,7 +129,10 @@ def processMeshes(infile, outdir, verbose = False):
                 os.makedirs(groupdir)
 
             source = zfile.open(cmpinfo)
-            target = file(os.path.join(groupdir, filename), "wb")
+            if verbose:
+                print(groupdir + '; ' + filename)
+
+            target = open(os.path.join(groupdir, filename), "wb")
             with source, target:
                 shutil.copyfileobj(source, target)
 
@@ -119,6 +142,9 @@ def processMeshes(infile, outdir, verbose = False):
 
                 if extension == ".obj":
                     groups[groupname]["obj"].append(filename)
+                    if hasSpace:
+                        objfile = os.path.join(os.path.join(outdir, groupname), filename)
+                        fixObjFile(objfile, verbose)
                 else:
                     groups[groupname]["mtl"].append(filename)
                     mtlfile = os.path.join(os.path.join(outdir, groupname), filename)
@@ -126,12 +152,12 @@ def processMeshes(infile, outdir, verbose = False):
 
     zfile.close()
     if verbose:
-        print groups
+        print (groups)
 
-    objectcount = 0;
+    objectcount = 0
     metajson = []
     #python 2
-    for key, value in groups.iteritems():
+    for key, value in groups.items():
         groupjson = {}
         groupjson["name"] = key
         groupjson["visible"] = True
@@ -152,13 +178,13 @@ def processMeshes(infile, outdir, verbose = False):
 
         metajson.append(groupjson)
         
-    meshjson = {};
-    meshjson["views"] = {};
-    meshjson["views"]["translate"] = [0, 0, 0];
-    meshjson["objects"] = metajson;
+    meshjson = {}
+    meshjson["views"] = {}
+    meshjson["views"]["translate"] = [0, 0, 0]
+    meshjson["objects"] = metajson
 
     if verbose:
-        print meshjson
+        print (meshjson)
 
     #write json file
     outfilename = os.path.join(outdir, "mesh.json")
