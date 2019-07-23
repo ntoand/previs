@@ -666,6 +666,14 @@ function saveDefaultPotreeSetting(data, callback) {
 }
 
 // ==== for potree viewer ====
+function getDirectionIndexFromString(direction) {
+	if(direction == 'X')
+		return 0;
+	if(direction == 'Y')
+		return 1;
+	return 2;
+}
+
 function savePotreeSettings(io, data) {
 	var dir = data.Dir;
 	var destfile = config.tags_data_dir + dir + '/gigapoint.json';
@@ -689,7 +697,7 @@ function savePotreeSettings(io, data) {
 		pointSizeRange: [2, 600],
 		sizeType: data.PointSizing.toLowerCase(),
 		quality: data.PointShape.toLowerCase(),
-		elevationDirection: 1,
+		elevationDirection: getDirectionIndexFromString(data.ElevDirection),
 		elevationRange: [range_min, range_max],
 		filter: data.EDL ? "edl" : "none",
 		filterEdl: [data.EDLStrength, data.EDLRadius],
