@@ -88,6 +88,7 @@ function doLocalUpload(req, res) {
   	form.encoding = 'utf-8';
   	form.multiples = false;
   	form.keepExtensions = true;
+  	form.maxFileSize = 5 * 1024 * 1024 * 1024; // 5GB
 
   	form
   	.on('field', function(field, value) {
