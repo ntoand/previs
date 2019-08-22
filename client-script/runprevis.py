@@ -108,8 +108,9 @@ def runVolume(info):
         json.dump(jsondata, outfile, sort_keys=False, indent=4, ensure_ascii=False)
     
     # LavaVR run script    
-    cmd = ['cp', 'run_volume.py', info['local_tag_dir'] + '/init.py']
-    subprocess.check_output(cmd)
+    if not os.path.exists(info['local_tag_dir'] + '/init.py'):
+        cmd = ['cp', 'run_volume.py', info['local_tag_dir'] + '/init.py']
+        subprocess.check_output(cmd)
     
     #run
     runViewer(info)
@@ -140,8 +141,9 @@ def runMesh(info):
     print 'download', file_url
     downloadFile(file_url, file_local)
 
-    cmd = ['cp', 'run_mesh.py', info['local_tag_dir'] + '/init.py']
-    subprocess.check_output(cmd)
+    if not os.path.exists(info['local_tag_dir'] + '/init.py'):
+        cmd = ['cp', 'run_mesh.py', info['local_tag_dir'] + '/init.py']
+        subprocess.check_output(cmd)
 
     #run
     runViewer(info)
@@ -171,8 +173,9 @@ def runPoint(info):
     os.chdir(info['cwd'])
 
     #copy
-    cmd = ['cp', 'run_gigapoint.py', info['local_tag_dir']]
-    subprocess.check_output(cmd)
+    if not os.path.exists(info['local_tag_dir'] + '/run_gigapoint.py'):
+        cmd = ['cp', 'run_gigapoint.py', info['local_tag_dir']]
+        subprocess.check_output(cmd)
     
     # download gigapoint.json file
     file_url = host + '/data/tags/' + info['tag_dir'] + '/gigapoint.json'
