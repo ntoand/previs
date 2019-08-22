@@ -30,4 +30,4 @@ with open(jsonfile, 'rt') as f:
             obj.file(str(fn), colours=[colour])
             if visible: obj["opacity"] = 1.0
 
-lv.interactive()
+#lv.interactive()
