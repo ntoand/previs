@@ -488,11 +488,14 @@ function saveThumbnail(socket, data) {
 	winston.info(['saveThumbnail', data.type, data.tag, data.dir]);
 	let tagdir = data.dir || data.tag;
 	let type = data.type; // volume, mesh, point
-	if(type !== 'mesh' && type !== 'point') {
+	if(type !== 'volume' && type !== 'mesh' && type !== 'point') {
 		socket.emit('savethumbnail', {status: 'error', result: 'invalid type'});
 		return;
 	}
 	let filename = config.tags_data_dir + tagdir + '/thumbnail.png';
+	if(type === 'volume') {
+		filename = config.tags_data_dir + tagdir + '/volume_result/vol_web_thumb.png';
+	}
 	var imgData = data.base64.replace(/^data:image\/\w+;base64,/, "");
 	var buf = new Buffer(imgData, 'base64');
 	fs.writeFile(filename, buf);
