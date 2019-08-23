@@ -70,5 +70,6 @@
 <div mat-dialog-actions>
   <a href={{tag.viewUrl}} target="_blank"><button mat-button color='primary'>VIEW WEB</button></a>
   <a href={{tag.qrUrl}} target="_blank"><button mat-button color='primary'>QR</button></a>
-  <button mat-button color='warn' *ngIf="owner" (click)="onDeleteTag(tag)">DELETE</button>
+  <button mat-button color='warn' *ngIf="owner && tag.status==='processed'" (click)="onDeleteTag(tag)">DELETE</button>
+  <button mat-button color='warn' disabled *ngIf="owner && tag.status==='processing'" (click)="onDeleteTag(tag)">DELETE</button>
 </div>

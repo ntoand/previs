@@ -355,6 +355,7 @@ function processUploadFile_Images(io, data) {
 		tag_json.userEmail = data.userDetails.email;
 		tag_json.disk = 0;
 		tag_json.numtags = 0;
+		tag_json.status = 'processing';
 			
 		var volumes = [];
 		var volume = {};
@@ -437,6 +438,7 @@ function sendViewDataToClient_Volume(io, data) {
 				tag_json.userEmail = data.userDetails.email;
 				tag_json.disk = 0;
 				tag_json.numtags = 0;
+				tag_json.status = 'processing';
 					
 				var volumes = [];
 				var volume = {};
@@ -486,6 +488,7 @@ function sendViewDataToClient_Meshes(io, data) {
 	tag_json.userEmail = data.userDetails.email;
 	tag_json.disk = 0;
 	tag_json.numtags = 0;
+	tag_json.status = 'processing';
 
 	var volumes = [];
 	var volume = {};
@@ -580,6 +583,7 @@ function convertPointcloud(io, data, in_file) {
 			tag_json.userEmail = data.userDetails.email;
 			tag_json.disk = 0;
 			tag_json.numtags = 0;
+			tag_json.status = 'processing';
 				
 			var potree_url = tag_url + basename + '_result/potree.html';
 			var volumes = [];

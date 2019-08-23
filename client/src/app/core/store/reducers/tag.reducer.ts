@@ -15,6 +15,7 @@ function parseTag(data, loginEmail) {
   if(data.collection) tag.collection = data.collection;
   tag.disk = data.disk || 0;
   tag.hasThumbnail = data.hasThumbnail || false;
+  tag.status = data.status || 'processed';
   
   let d = new Date(data.date);
   //tag.dateStr = d.toString();

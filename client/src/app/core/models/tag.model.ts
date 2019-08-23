@@ -15,6 +15,7 @@ export interface ITag {
     collection: string;
     share: any;
     hasThumbnail: boolean;
+    status: string;
     // devired
     owner: string;
 }

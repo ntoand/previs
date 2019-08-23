@@ -543,7 +543,7 @@ FirebaseManager.prototype.updateTagSize = function(tag, path, userId, callback) 
         }
         const sizeMB = size / 1024 / 1024;
         winston.info(['updateTagSize', tag, path, userId, sizeMB]);
-        scope.updateTag(tag, {disk: sizeMB}, function(err) {
+        scope.updateTag(tag, {disk: sizeMB, status: 'processed'}, function(err) {
             if(err) {
                 callback(err); 
                 return;
