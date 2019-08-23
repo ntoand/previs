@@ -26,7 +26,7 @@ function parseTag(data, loginEmail) {
   var dirPath = 'data/tags/' + tag.dir + '/' + subdir + '/';
   
   if (tag.type === 'volume') {
-    tag.imgUrl =  environment.ws_url + '/' + dirPath + 'vol_web_thumb.png';  
+    tag.imgUrl =  environment.ws_url + '/' + dirPath + 'vol_web_thumb.png?' + (new Date()).getTime();  
     tag.viewUrl = environment.ws_url + '/sharevol/index.html?tag=' + data.tag;
   } 
   else if (tag.type === 'mesh') {
